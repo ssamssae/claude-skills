@@ -109,36 +109,33 @@ allowed-tools: Bash, Write, Edit, Read
 todos.md 를 수정한 후에는 항상 개인 홈페이지(`ssamssae.github.io/daejong-page/todos.html`)에도 동일 내용 스냅샷을 반영해야 한다. 사용자는 이걸 수동으로 할 필요가 없도록 기대함.
 
 **위치**: `/Users/user/daejong-page/todos/`
-- 스냅샷 파일명: `YYYY-MM-DD_vX.Y.Z.md` (예: `2026-04-17_v1.0.1.md`)
-- 인덱스: `/Users/user/daejong-page/todos/index.json` — 버전 히스토리 배열
+- 스냅샷 파일명: `YYYY-MM-DD.md` (하루 1파일, 버전 없이 날짜만)
+- 인덱스: `/Users/user/daejong-page/todos/index.json`
 
 **절차 (todos.md 커밋 완료 후):**
 
-1. `Read /Users/user/daejong-page/todos/index.json` 으로 최신 버전 확인
-2. 버전 결정:
-   - 같은 날짜에 이미 스냅샷이 있으면 patch 증가 (v1.0.1 → v1.0.2)
-   - 새 날짜면 patch 증가 + 새 날짜 파일명 (예: `2026-04-18_v1.0.2.md`)
-3. 스냅샷 작성: `cp ~/todo/todos.md /Users/user/daejong-page/todos/YYYY-MM-DD_vX.Y.Z.md`
-4. index.json 업데이트: 새 버전을 배열 맨 앞에 추가:
+1. 스냅샷 작성 (덮어쓰기): `cp ~/todo/todos.md /Users/user/daejong-page/todos/YYYY-MM-DD.md`
+   - 같은 날 이미 파일이 있으면 **덮어쓴다**. 이력은 git commit 히스토리에 남는다.
+2. `Read /Users/user/daejong-page/todos/index.json` 으로 현재 상태 확인
+3. index.json 업데이트: `entries` 배열에 해당 entry 추가·갱신
    ```json
    {
-     "file": "2026-04-17_v1.0.2.md",
-     "date": "2026-04-17",
-     "version": "v1.0.2",
-     "updated": "2026-04-17T01:08:00+09:00"
+     "file": "YYYY-MM-DD.md",
+     "date": "YYYY-MM-DD",
+     "updated": "YYYY-MM-DDTHH:MM:SS+09:00"
    }
    ```
-   (`updated` 는 현재 KST 로컬 시각 ISO8601)
-5. `cd /Users/user/daejong-page && git add todos/ && git commit -m "todos: vX.Y.Z — <요약>" && git push`
+   - 같은 `file` 이 이미 있으면 `updated` 만 갱신. 중복 추가 금지.
+   - `entries` 는 `date` 내림차순(최신이 먼저).
+4. `cd /Users/user/daejong-page && git add todos/ && git commit -m "todos: YYYY-MM-DD — <요약>" && git push`
 
 **커밋 메시지 요약**은 이번 변경의 핵심만 한줄:
-- 추가 1건: `todos: v1.0.2 — 추가: <제목>`
-- 완료 1건: `todos: v1.0.2 — 완료: <제목>`
-- 여러 건: `todos: v1.0.2 — N건 업데이트`
+- 추가 1건: `todos: YYYY-MM-DD — 추가: <제목>`
+- 완료 1건: `todos: YYYY-MM-DD — 완료: <제목>`
+- 여러 건: `todos: YYYY-MM-DD — N건 업데이트`
 
 **주의:**
-- 기존 스냅샷 파일(v1.0.0 등)은 **절대 덮어쓰지 말 것**. 버전 히스토리는 영구 보존.
-- index.json 의 `versions` 배열은 **최신이 먼저** (내림차순)
+- 구 형식 버전 파일(`YYYY-MM-DD_vX.Y.Z.md`)이 과거에 남아 있어도 건드리지 않음. 새로 쓰는 건 무조건 버전 없는 `YYYY-MM-DD.md`.
 - 홈페이지 동기화 실패해도 todos.md 업데이트는 유지. 동기화 실패는 사용자에게 한 줄로만 보고하고 계속 진행.
 
 ## 응답 포맷
