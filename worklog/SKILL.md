@@ -1,6 +1,6 @@
 ---
 name: worklog
-description: 하루 전체 작업 내용(현재 세션 + 그날의 모든 Claude Code 세션 로그 + 모든 프로젝트의 git 커밋)을 수집·요약해서 docs/worklog/YYYY-MM-DD.md 로 저장하고 git 커밋·푸시. 매일 작업 종료 시 반복 실행.
+description: 하루 전체 작업 내용(현재 세션 + 그날의 모든 Claude Code 세션 로그 + 모든 프로젝트의 git 커밋)을 수집·요약해서 docs/worklog/YYYY-MM-DD.md 로 저장하고 git 커밋·푸시한다. 사용자가 "작업일지", "일지", "일지 써줘", "오늘 일지", "일지 기록", "/worklog" 등을 말하면 이 스킬 호출.
 allowed-tools: Bash, Write, Edit, Read, Glob, Grep
 ---
 
