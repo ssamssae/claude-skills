@@ -135,7 +135,9 @@ todos.md 를 수정한 후에는 항상 개인 홈페이지(`ssamssae.github.io/
 - 여러 건: `todos: YYYY-MM-DD — N건 업데이트`
 
 **주의:**
-- 구 형식 버전 파일(`YYYY-MM-DD_vX.Y.Z.md`)이 과거에 남아 있어도 건드리지 않음. 새로 쓰는 건 무조건 버전 없는 `YYYY-MM-DD.md`.
+- 파일명은 무조건 `YYYY-MM-DD.md` (버전 번호·시간 접미사 금지). 하루에 여러 번 수정해도 같은 파일을 덮어쓴다. 이력은 git commit 로그로 본다.
+- 과거 `YYYY-MM-DD_vX.Y.Z.md` 형식 파일은 이미 정리 완료. 혹시 발견되면 `YYYY-MM-DD.md` 로 rename + index.json 의 version 필드 제거.
+- index.json 는 `entries` 배열(신규 포맷). 구 `versions` 필드가 남아 있으면 마이그레이션해서 entries 로 통일.
 - 홈페이지 동기화 실패해도 todos.md 업데이트는 유지. 동기화 실패는 사용자에게 한 줄로만 보고하고 계속 진행.
 
 ## 응답 포맷
