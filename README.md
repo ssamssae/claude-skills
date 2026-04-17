@@ -9,6 +9,7 @@
 | 이름 | 용도 |
 |---|---|
 | [ctx](ctx/SKILL.md) | 현재 세션 진행 상황 요약 (완료/진행중/블로커/다음액션/할일) |
+| [done](done/SKILL.md) | 오늘 한 일 체크리스트 자동 수집 (한 줄 체크박스 포맷, daejong-page/done 페이지 연동) |
 | [irun](irun/SKILL.md) | Flutter 앱을 iPhone 에 clean + release run |
 | [morning-reporter](morning-reporter/SKILL.md) | 매일 아침 일일업무 브리핑 (어제 커밋 + 오늘 할일 + 뉴스 + 주식) |
 | [side-project-briefing](side-project-briefing/SKILL.md) | 매일 아침 사이드 프로젝트 아이디어 브리핑 (웹 리서치 기반) |
