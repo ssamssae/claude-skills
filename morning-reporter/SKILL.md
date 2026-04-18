@@ -1,6 +1,6 @@
 ---
 name: morning-reporter
-description: 매일 아침 일일업무 브리핑. 어제 git 커밋 요약, 오늘 할일, 블로커 체크 후 텔레그램 전송.
+description: (수동 호출 전용) 어제 git 커밋 요약 + 오늘 할일 + 블로커 체크만 따로 보고 싶을 때 사용. 자동 실행은 /morning-briefing 통합 스킬로 2026-04-18 이전됨.
 allowed-tools: Bash, Read, Glob, Grep, WebSearch
 ---
 

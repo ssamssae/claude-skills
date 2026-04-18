@@ -1,6 +1,6 @@
 ---
 name: side-project-briefing
-description: 매일 아침 웹 리서치 기반 사이드 프로젝트 아이디어 브리핑을 생성하고 텔레그램으로 전송한다. CronCreate(durable) 로 매일 09시 자동 실행되며, 수동으로도 호출 가능.
+description: (수동 호출 전용) 사이드 프로젝트 아이디어 브리핑만 따로 받고 싶을 때 사용. 상세 파일(~/Documents/side-project-briefings/YYYY-MM-DD.md) 저장 포함. 자동 실행은 /morning-briefing 통합 스킬로 2026-04-18 이전됨.
 allowed-tools: WebSearch, WebFetch, Bash, Write, Read
 ---
 

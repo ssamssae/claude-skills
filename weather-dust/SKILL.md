@@ -1,6 +1,6 @@
 ---
 name: weather-dust
-description: 매일 아침 서울 날씨 + 미세먼지 정보를 웹 검색으로 가져와 텔레그램 전송.
+description: (수동 호출 전용) 서울 날씨 + 미세먼지만 따로 보고 싶을 때 사용. 자동 실행은 /morning-briefing 통합 스킬로 2026-04-18 이전됨.
 allowed-tools: WebSearch, WebFetch, Bash
 ---
 
