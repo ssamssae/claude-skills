@@ -84,6 +84,33 @@ gh pr view <URL> --json additions,deletions,files,body --jq \
 - 파일 목록에 `.env`, `key`, `token`, `secret` 문자열 → 민감 파일 경고
 - 통과 → "✅ 안전 머지 가능", 의심 → "⚠️ 수동 리뷰 권장"
 
+**repo 별칭 (복붙용 답장 문구 생성)**
+
+텔레그램 메시지는 모바일에서 복붙하기 편하도록 각 PR 마다 `💬 답장: "<별칭> #N 머지"` 한 줄을 덧붙인다. 별칭은 아래 테이블 참조:
+
+| repo nameWithOwner | 별칭 |
+|---|---|
+| `ssamssae/dutch_pay_calculator` | `더치페이` |
+| `ssamssae/simple-memo-app` | `메모요` |
+| `ssamssae/yakmukja` | `약묵자` |
+| `ssamssae/babmeokja` | `밥먹자` |
+| `ssamssae/daejong-page` | `daejong-page` |
+| (그 외) | repo 이름의 `/` 뒤 부분 그대로 |
+
+파이썬으로 변환:
+```python
+ALIASES = {
+    'ssamssae/dutch_pay_calculator': '더치페이',
+    'ssamssae/simple-memo-app': '메모요',
+    'ssamssae/yakmukja': '약묵자',
+    'ssamssae/babmeokja': '밥먹자',
+    'ssamssae/daejong-page': 'daejong-page',
+}
+alias = ALIASES.get(repo_full, repo_full.split('/')[-1])
+```
+
+/merge-janitor 가 자연어로 `<별칭> #N 머지` 를 받으면 repo 매칭해 해당 PR 을 처리한다. (매칭 실패 시 /merge-janitor 가 되묻기)
+
 ### 2. 웹 검색 (병렬 가능, 실패는 섹션별 격리)
 
 최소 4개 쿼리:
@@ -136,9 +163,11 @@ gh pr view <URL> --json additions,deletions,files,body --jq \
 🤖 야간 러너 PR (있을 때만 섹션 생성)
   • [repo] #N — [제목 핵심만] (+X/-Y줄)
     ✅ 안전 머지 가능 · 🔗 [URL]
+    💬 답장: "[별칭] #N 머지"
   • [repo] #N — [제목] (+X/-Y줄)
     ⚠️ 대형 변경, 수동 리뷰 권장 · 🔗 [URL]
-  👉 답장 "PR #N 머지" 또는 "PR #N 닫아" 로 처리 가능
+    💬 답장: "[별칭] #N 머지" (확인 후 머지)
+  👉 닫으려면 "[별칭] #N 닫아"
 
 📰 주요 뉴스
   1. [제목] — [한 줄]
