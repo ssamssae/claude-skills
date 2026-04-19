@@ -16,13 +16,45 @@ WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 
 - `/merge-janitor 3 --squash` — 동일
 - `/merge-janitor 3 close` — PR #3 을 닫기
 - `/merge-janitor 3 --close` — 동일
-- 자연어: "PR #3 머지", "PR 5번 머지해", "PR #3 squash 머지", "PR #7 닫아", "janitor PR 3 merge"
+- 자연어 (repo 별칭 포함, morning-briefing 1-E 섹션의 답장 포맷):
+  - "더치페이 #1 머지" · "메모요 #1 닫아" · "약묵자 #3 squash 머지" · "밥먹자 #2 머지해"
+  - 별칭 없는 형태도 여전히 지원: "PR #3 머지", "PR 5번 머지해", "PR #7 닫아", "janitor PR 3 merge"
 
-`$ARGUMENTS` 에서 PR 번호와 모드를 파싱:
-- 숫자 하나만 있고 "close"·"squash" 키워드 없음 → **머지 모드 (strategy=merge)**
-- "close" 또는 "--close" 또는 "닫아" 포함 → **닫기 모드**
-- "squash" 또는 "--squash" 포함 → **머지 모드 (strategy=squash)**
-- "머지", "merge" 키워드는 머지 모드 명시 (strategy 는 squash 플래그 유무로 결정)
+### repo 별칭 테이블
+
+morning-briefing 과 동일한 테이블 유지 (양쪽 스킬이 같은 별칭을 써야 매칭 성공):
+
+| 별칭 | repo nameWithOwner |
+|---|---|
+| `더치페이` | `ssamssae/dutch_pay_calculator` |
+| `메모요` | `ssamssae/simple-memo-app` |
+| `약묵자` | `ssamssae/yakmukja` |
+| `밥먹자` | `ssamssae/babmeokja` |
+| `daejong-page` | `ssamssae/daejong-page` |
+| (그 외) | repo 이름의 `/` 뒤 부분 그대로 |
+
+파이썬 딕셔너리로 내장:
+```python
+ALIASES = {
+    '더치페이': 'ssamssae/dutch_pay_calculator',
+    '메모요': 'ssamssae/simple-memo-app',
+    '약묵자': 'ssamssae/yakmukja',
+    '밥먹자': 'ssamssae/babmeokja',
+    'daejong-page': 'ssamssae/daejong-page',
+}
+```
+
+### 파싱 규칙
+
+`$ARGUMENTS` (또는 사용자 자연어) 에서:
+- 별칭 토큰이 하나 포함되면 해당 repo 로 필터링 (1단계 검색 결과에서 `repository.nameWithOwner == ALIASES[별칭]` 인 것만)
+- 별칭이 없으면 모든 janitor PR 중 번호 일치로 찾음 (기존 동작)
+- 숫자: `#` 뒤 숫자, 또는 `N번` 패턴, 또는 단순 정수 토큰 → PR 번호
+- "close"·"닫아"·"--close" → **닫기 모드**
+- "squash"·"--squash" → **머지 모드 (strategy=squash)**
+- 그 외 기본 → **머지 모드 (strategy=merge)**
+
+여러 repo 에 같은 번호 PR 이 있을 때: 별칭 없이 호출되면 repo 목록을 제시하고 되묻기. 별칭이 있으면 바로 진행.
 
 ## 실행 절차
 
@@ -39,9 +71,11 @@ gh search prs author:@me is:open is:pr janitor \
 
 결과에서 `number == N` 이고 `title` 이 `[janitor]` 로 시작하는 PR 필터링.
 
-- **0개**: "해당 번호의 open janitor PR 이 없습니다. 이미 머지·닫혔거나 번호 오타" 리포트 후 종료
+**호출에 repo 별칭이 포함됐으면** 1차 필터에 `repository.nameWithOwner == ALIASES[별칭]` 조건 추가.
+
+- **0개**: "해당 번호의 open janitor PR 이 없습니다. 이미 머지·닫혔거나 번호 오타" 리포트 후 종료 (별칭이 잘못된 경우도 여기 포함, 에러 메시지에 "별칭 '<X>' 에 해당하는 repo 에 PR #N 없음" 으로 힌트)
 - **1개**: 1-b 로 진행
-- **2개 이상 (다른 repo 에 같은 PR 번호)**: 각 repo 이름과 URL 을 보여주고 "어느 repo 인지 알려주세요" 물어보고 대기
+- **2개 이상 (다른 repo 에 같은 PR 번호)**: 각 repo 이름과 URL 을 보여주고 "어느 repo 인지, 또는 별칭으로 다시 불러주세요" 물어보고 대기. 별칭이 이미 주어졌다면 이 분기는 발생 안 함.
 
 **1-b. 상세 조회 (pr view)**: 1-a 의 URL 로 diff 메타 확보
 ```bash
