@@ -25,17 +25,27 @@ WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 
 
 ### 1. PR 식별 (크로스 repo 탐색)
 
+`gh search prs` 는 `additions/deletions/files` 필드 미지원. 2단계로 분리한다.
+
+**1-a. 목록 조회 (search)**:
 ```bash
 gh search prs author:@me is:open is:pr janitor \
-  --json number,url,repository,title,additions,deletions,files,body \
+  --json number,url,repository,title \
   --limit 20
 ```
 
 결과에서 `number == N` 이고 `title` 이 `[janitor]` 로 시작하는 PR 필터링.
 
 - **0개**: "해당 번호의 open janitor PR 이 없습니다. 이미 머지·닫혔거나 번호 오타" 리포트 후 종료
-- **1개**: 이어서 진행
+- **1개**: 1-b 로 진행
 - **2개 이상 (다른 repo 에 같은 PR 번호)**: 각 repo 이름과 URL 을 보여주고 "어느 repo 인지 알려주세요" 물어보고 대기
+
+**1-b. 상세 조회 (pr view)**: 1-a 의 URL 로 diff 메타 확보
+```bash
+gh pr view <URL> --json additions,deletions,files,body
+```
+
+여기서 `additions`, `deletions`, `files[]` 로 3번 안전 체크 수행.
 
 ### 2. 닫기 모드
 
