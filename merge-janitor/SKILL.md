@@ -11,15 +11,18 @@ WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 
 ## 호출 패턴
 
 전부 이 스킬을 호출해야 함:
-- `/merge-janitor 3` — PR #3 을 머지
+- `/merge-janitor 3` — PR #3 을 머지 (default: `--merge`, 히스토리 보존)
+- `/merge-janitor 3 squash` — PR #3 을 squash 머지
+- `/merge-janitor 3 --squash` — 동일
 - `/merge-janitor 3 close` — PR #3 을 닫기
 - `/merge-janitor 3 --close` — 동일
-- 자연어: "PR #3 머지", "PR 5번 머지해", "PR #7 닫아", "janitor PR 3 merge"
+- 자연어: "PR #3 머지", "PR 5번 머지해", "PR #3 squash 머지", "PR #7 닫아", "janitor PR 3 merge"
 
 `$ARGUMENTS` 에서 PR 번호와 모드를 파싱:
-- 숫자 하나만 있고 "close" 키워드 없음 → **머지 모드**
+- 숫자 하나만 있고 "close"·"squash" 키워드 없음 → **머지 모드 (strategy=merge)**
 - "close" 또는 "--close" 또는 "닫아" 포함 → **닫기 모드**
-- "머지", "merge" 키워드는 머지 모드 명시
+- "squash" 또는 "--squash" 포함 → **머지 모드 (strategy=squash)**
+- "머지", "merge" 키워드는 머지 모드 명시 (strategy 는 squash 플래그 유무로 결정)
 
 ## 실행 절차
 
@@ -92,11 +95,22 @@ PR 메타데이터에서 판정:
 
 ### 5. 머지 실행
 
+**기본 전략: `--merge` (히스토리 보존).**
+이유: janitor 커밋은 conventional commits (docs:/chore:/test:/fix:) 규칙으로 atomic 하게 쪼개져 있어 보존 가치가 있고, 개인 repo 의 git log 는 그 자체가 기억 보조장치. squash 하면 bisect/blame 해상도가 떨어짐.
+
+`$ARGUMENTS` 에 `squash`/`--squash` 가 있을 때만 squash 전략 사용.
+
 ```bash
+# default (merge)
+gh pr merge <URL> --merge --delete-branch
+
+# squash 명시 시
 gh pr merge <URL> --squash --delete-branch
 ```
 
-- `--squash`: janitor 커밋이 여러 개여도 하나로 합침
+옵션:
+- `--merge` (default): 정규 merge commit + 각 janitor 커밋이 main 에 그대로 반영됨
+- `--squash` (명시 요청 시): janitor 커밋 여러 개를 하나로 합침. 나중에 WIP 반복 커밋 패턴 생기면 default 로 전환 고려.
 - `--delete-branch`: 머지 성공 시 원격 브랜치 자동 삭제
 - `--auto` 는 기본 사용 안 함 (required check 없는 개인 repo 가 대부분이라 불필요. check 가 걸려 있으면 사용자에게 먼저 확인.)
 
