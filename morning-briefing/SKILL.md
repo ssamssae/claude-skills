@@ -50,6 +50,40 @@ todos.md 미완료와 합쳐 중복 제거.
 
 진행중 항목 중 `블로커`·`대기`·`심사` 키워드 포함 항목 별도 리스트.
 
+**1-E. 야간 러너 PR 검토 대기열**
+
+WSL 의 `/night-runner` 가 밤사이 만든 janitor PR 목록 조회. 본진(Mac) 에서 리뷰·머지 판단.
+
+```bash
+gh search prs author:@me is:open is:pr janitor \
+  --json url,title,repository,number,createdAt \
+  --limit 20 2>/dev/null | \
+  python3 -c "
+import json, sys
+try:
+    prs = json.load(sys.stdin)
+except Exception:
+    prs = []
+# 제목이 '[janitor]' 로 시작하는 것만
+filtered = [p for p in prs if p.get('title','').startswith('[janitor]')]
+for p in filtered:
+    repo = p.get('repository',{}).get('nameWithOwner','?')
+    print(f\"{p['createdAt'][:10]}|{repo}|#{p['number']}|{p['title']}|{p['url']}\")
+"
+```
+
+각 PR 마다 diff 요약:
+```bash
+gh pr view <URL> --json additions,deletions,files,body --jq \
+  '{adds: .additions, dels: .deletions, file_count: (.files|length), first_3: (.files[0:3]|map(.path))}'
+```
+
+**안전 체크** (각 PR 에 대해):
+- 변경 줄 수 ≤ 300 (넘으면 "대형 변경" 경고)
+- 파일 목록에 `pubspec.yaml` 포함 → SDK 버전 diff 확인
+- 파일 목록에 `.env`, `key`, `token`, `secret` 문자열 → 민감 파일 경고
+- 통과 → "✅ 안전 머지 가능", 의심 → "⚠️ 수동 리뷰 권장"
+
 ### 2. 웹 검색 (병렬 가능, 실패는 섹션별 격리)
 
 최소 4개 쿼리:
@@ -98,6 +132,13 @@ todos.md 미완료와 합쳐 중복 제거.
 
 ⚠️ 블로커 (있을 때만 섹션 생성)
   • [대기/심사중 항목]
+
+🤖 야간 러너 PR (있을 때만 섹션 생성)
+  • [repo] #N — [제목 핵심만] (+X/-Y줄)
+    ✅ 안전 머지 가능 · 🔗 [URL]
+  • [repo] #N — [제목] (+X/-Y줄)
+    ⚠️ 대형 변경, 수동 리뷰 권장 · 🔗 [URL]
+  👉 답장 "PR #N 머지" 또는 "PR #N 닫아" 로 처리 가능
 
 📰 주요 뉴스
   1. [제목] — [한 줄]
