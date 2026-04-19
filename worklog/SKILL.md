@@ -15,11 +15,24 @@ allowed-tools: Bash, Write, Edit, Read, Glob, Grep
    - 없으면 오늘 날짜 (KST): `date +%Y-%m-%d`
    - 이후 단계에서 이 날짜를 `TARGET_DATE` 로 지칭
 
-2. **해당 날짜의 모든 Claude Code 세션 수집 (크로스 세션)**
-   - 세션 저장 루트: `~/.claude/projects/*/` (각 프로젝트 폴더마다 세션 `.jsonl` 파일들이 있음)
-   - `TARGET_DATE` 에 **활동이 있었던** 세션 파일 찾기:
+1b. **데스크탑 세션 동기화 (Tailscale rsync, 소프트 페일)**
+
+   멀티 기기 운영 구조상 윈도우 데스크탑 WSL 에서도 Claude Code 세션이 생성된다. /worklog 는 맥에서 주로 실행하므로, 데스크탑 세션 로그를 맥으로 미리 당겨와야 통합 일지 작성이 가능하다.
+
+   - 동기화 명령:
      ```
-     find ~/.claude/projects -maxdepth 2 -name "*.jsonl" -newermt "TARGET_DATE 00:00" ! -newermt "TARGET_DATE 23:59:59"
+     mkdir -p ~/.claude/projects-desktop
+     rsync -az --timeout=15 ssamssae@100.80.253.65:~/.claude/projects/ ~/.claude/projects-desktop/ 2>&1
+     ```
+   - **소프트 페일 원칙**: 데스크탑이 꺼져 있거나 Tailscale 단절이면 rsync 실패 → 에러 메시지 한 줄만 출력하고 **절대 실패로 중단하지 말 것**. 맥 세션만으로 일지 작성 계속 진행.
+   - 데스크탑에서 맥 방향으로 /worklog 를 돌릴 때(역방향 드물지만)는 출발지를 맥(user@100.74.85.37) 으로 바꿔 실행. 호스트 판별은 `hostname` 으로.
+   - **충돌 방지**: 데스크탑 세션 폴더명이 `-home-ssamssae-...` 형태로 맥의 `-Users-user-...` 와 달라 세션 ID 충돌 없음. 혹시 동명 폴더가 있으면 `--ignore-existing` 대신 mtime 기준 최신 우선인 `-az` 기본 동작이 자연스럽게 처리.
+
+2. **해당 날짜의 모든 Claude Code 세션 수집 (크로스 세션, 맥+데스크탑)**
+   - 세션 저장 루트: `~/.claude/projects/*/` (맥 본진 세션) + `~/.claude/projects-desktop/*/` (1b 에서 동기화한 데스크탑 세션)
+   - `TARGET_DATE` 에 **활동이 있었던** 세션 파일 찾기 (두 경로 모두 탐색):
+     ```
+     find ~/.claude/projects ~/.claude/projects-desktop -maxdepth 2 -name "*.jsonl" -newermt "TARGET_DATE 00:00" ! -newermt "TARGET_DATE 23:59:59" 2>/dev/null
      ```
      또는 파일 내부 `timestamp` 필드(UTC ISO)가 TARGET_DATE(KST) 에 해당하는 라인만 골라도 됨. mtime 과 실제 대화 시간이 어긋날 수 있으면 후자가 더 정확.
    - 각 `.jsonl` 은 한 줄당 하나의 이벤트(JSON). 주요 타입: `user`, `assistant`, `tool_use`, `tool_result`, `file-history-snapshot` 등.
