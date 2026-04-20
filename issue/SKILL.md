@@ -144,7 +144,25 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
        git commit -m "issue: <제목 한 줄>"
        git push origin HEAD
        ```
-15. 푸시 URL (예: `https://github.com/ssamssae/claude-skills/blob/main/issues/<파일>`) 텔레그램 최종 보고.
+    d. **daejong-page 공개본 동기화** (2026-04-20 추가 — 맥/데스크탑 공통):
+       ```
+       cp ~/.claude/skills/issues/<파일> ~/daejong-page/issues/
+       # ~/daejong-page/issues/index.json 의 entries 배열에 해당 파일
+       # entry 를 추가 또는 갱신. 필드:
+       #   file, date, slug, title, severity, recurrence, scope,
+       #   occurred_at, resolved_at, updated(ISO KST)
+       # 같은 file 있으면 갱신(중복 추가 금지), 없으면 최상단 삽입.
+       cd ~/daejong-page
+       git pull --rebase origin main
+       git add issues/<파일> issues/index.json
+       git commit -m "issue: <제목 한 줄> 공개본 동기화"
+       git push origin main
+       ```
+       - 본문에 민감 정보(개인키·토큰·내부 호스트명·사적 이름 등) 가 있으면 공개본에서는 해당 라인을 `(비공개)` 로 마스킹해서 복사. 원본(claude-skills) 은 그대로 유지.
+       - daejong-page 동기화 실패는 **소프트 페일** — claude-skills push 는 이미 됐으므로 경고만 남기고 계속 진행.
+15. 푸시 URL 두 개 텔레그램 최종 보고:
+    - 내부: `https://github.com/ssamssae/claude-skills/blob/main/issues/<파일>`
+    - 공개: `https://ssamssae.github.io/daejong-page/issues.html`
 
 ## 금지
 
@@ -152,7 +170,7 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
 - feedback_* 메모리로 이미 저장된 패턴을 중복 생성하지 말 것. 있으면 issue 에서 해당 메모리 링크만 걸고 넘어가.
 - **예방 섹션 비어있는데 `prevention_deferred` 플래그 없이 저장 절대 금지.**
 - **INDEX.md 수동 편집 금지.** 반드시 regen 스크립트 통해서만 갱신.
-- 이슈 내용을 외부(blog, public site)로 자동 발행 금지 — 이 repo 는 private. (daejong-page sync 는 강대종님 승인 후 별도 경로.)
+- 이슈 내용을 외부(blog, public site)로 자동 발행 금지 — claude-skills repo 는 private. daejong-page 공개본 동기화는 14-d 경로로만(민감정보 마스킹 필수).
 
 ## 메모리 연계
 
