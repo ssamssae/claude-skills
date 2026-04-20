@@ -10,6 +10,31 @@ allowed-tools: Bash, Write, Edit, Read, Glob, Grep
 
 ## 절차
 
+### 0. 기기 라우팅 (맥 본진 집중 실행, 텔레그램 트리거 방식)
+
+맥이 이 파이프라인의 SoT 다 (launchd·iOS·daejong-page 편집 전부 맥). /worklog 는 맥에서 실행해야 양쪽 세션 데이터가 통합되므로, **맥이 아닌 기기에서 호출되면 텔레그램 트리거로 맥에 위임한다.** (/to-iphone → /land 와 동일 패턴 — SSH 자동 실행 아님, 강대종님이 맥 창에 한 줄 복붙하는 명시적 승인 단계가 들어감.)
+
+판별 + 트리거:
+
+```bash
+host=$(hostname)
+if [[ "$host" != *MacBook* && "$host" != *MBP* ]]; then
+  # 맥이 아님 → 텔레그램으로 트리거 1줄 전송 후 여기서 종료
+  # reply 툴을 통해 chat_id 538806975 에 아래 본문 전송:
+  #
+  #   📋 /worklog 트리거
+  #   날짜: ${ARGS:-오늘}
+  #   Mac Claude 창에 아래 한 줄 복붙:
+  #   /worklog ${ARGS:-}
+  #   (맥에서 실행 완료되면 이 기기는 다음 /sync 또는 06:45 자동 sync 때 git 으로 내려받음)
+  exit 0
+fi
+```
+
+**라우팅 실패 fallback**: 텔레그램이 끊긴 상태거나 전송 실패면 아래 1번부터 로컬에서라도 계속 돌린다 (기존 동작 유지, 소프트 페일).
+
+맥 본진이면 라우팅 건너뛰고 바로 1번부터 실행.
+
 1. **날짜 결정**
    - `$ARGUMENTS`로 날짜(`YYYY-MM-DD`)가 주어졌으면 그 날짜 사용
    - 없으면 오늘 날짜 (KST): `date +%Y-%m-%d`

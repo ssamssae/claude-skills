@@ -14,6 +14,25 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ## 실행 흐름
 
+### 0. 기기 라우팅 (맥 본진 집중 실행, 텔레그램 트리거 방식)
+
+/done 도 /worklog 와 같이 맥이 SoT. 맥 아닌 기기에서 호출되면 텔레그램으로 트리거 1줄 전송하고 여기서 끝난다 (/to-iphone → /land 패턴).
+
+```bash
+host=$(hostname)
+if [[ "$host" != *MacBook* && "$host" != *MBP* ]]; then
+  # 텔레그램 reply 로 chat_id 538806975 에 아래 본문 전송 후 종료:
+  #
+  #   ✅ /done 트리거
+  #   날짜: ${ARGS:-오늘}
+  #   Mac Claude 창에 아래 한 줄 복붙:
+  #   /done ${ARGS:-}
+  exit 0
+fi
+```
+
+텔레그램 전송 실패 시엔 아래 1번부터 로컬 실행으로 fallback.
+
 ### 1. 날짜 결정
 - 인자로 `YYYY-MM-DD` 가 주어지면 그 날짜
 - 없으면 오늘 KST: `date +%Y-%m-%d`
