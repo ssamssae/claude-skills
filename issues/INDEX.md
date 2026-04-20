@@ -1,12 +1,14 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-20 11:55 KST_
+_마지막 생성: 2026-04-20 21:16 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-04-20 | [terminal-only-reply-missed-telegram](2026-04-20-terminal-only-reply-missed-telegram.md) | Telegram-origin 질문에 터미널로만 답하고 reply 툴 호출 누락 | high (사용자 의사소통 차단) | high (같은 세션에서 여러 번 반복 확인됨) | — | — |
+| 2026-04-20 | [terminal-only-reply-missed-telegram](2026-04-20-terminal-only-reply-missed-telegram.md) | Telegram-origin 질문에 터미널로만 답하고 reply 툴 호출 누락 | high (사용자 의사소통 차단) | high (같은 세션에서 여러 번 반복 확인됨) | 6회 | — |
 | 2026-04-20 | [telegram-client-delivery-lag](2026-04-20-telegram-client-delivery-lag.md) | 텔레그램 답변이 "안 오는 것처럼" 보인 지연 현상 | medium | medium | — | — |
+| 2026-04-20 | [irun-locked-iphone](2026-04-20-irun-locked-iphone.md) | /irun 재배포 시 "Could not run Runner.app" 반복 — 실제 원인은 아이폰 잠금 | medium | high | — | — |
+| 2026-04-20 | [flutter-not-in-path](2026-04-20-flutter-not-in-path.md) | flutter 명령 PATH 누락으로 APK 빌드 초기 실패 | medium | high | — | — |
 | 2026-04-19 | [ipa-x86-64-slice-rejection](2026-04-19-ipa-x86-64-slice-rejection.md) | 약먹자 IPA 에 x86_64 슬라이스가 섞여 App Store 검증 실패 | high (App Store 제출 블로킹) | medium (Flutter + Pods 빌드 설정 회귀 가능) | — | — |
 | 2026-04-19 | [android-text-selection-twotone](2026-04-19-android-text-selection-twotone.md) | Android 텍스트 선택 블록이 2가지 톤으로 표시됨 | low (시각적 문제, 기능 정상) | low (Flutter TextField BoxHeightStyle 정책 이슈로 고정) | — | — |
 | 2026-04-17 | [simulator-tap-coordinate-drift](2026-04-17-simulator-tap-coordinate-drift.md) | iOS 시뮬레이터에서 메모 탭 좌표가 한 칸씩 어긋남 | low (스크린샷 자동화 흐름 지연) | medium (시뮬레이터 해상도/스케일 변경 시 재현 가능) | — | — |
