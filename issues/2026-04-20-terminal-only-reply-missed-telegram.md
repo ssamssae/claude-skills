@@ -1,3 +1,7 @@
+---
+prevention_deferred: null
+---
+
 # Telegram-origin 질문에 터미널로만 답하고 reply 툴 호출 누락
 
 - **발생 일자:** 2026-04-20 09:10 KST (추정)
@@ -27,6 +31,10 @@
 - **Forcing function 설치 완료.** 다음 세션부터 동일 실수 시 Stop 훅이 자동 감지 → 모델이 다시 깨어나서 reply 툴 호출하게 함.
 - 훅은 `exit 0` 기본값이라 오작동해도 세션 안 깨짐.
 - 훅 로그: `/tmp/claude-telegram-reply-check.log` — 여기서 재발 여부 관찰 가능.
+- **추가 검증(Mac 피드백, 2026-04-20):** 기존 `telegram-stop-ping.sh` 의 race retry 루프(0.5s × 6회)가 유지되는지, Stop 훅 exit 감지 로직에 failure path 로그가 제대로 찍히고 있는지 한 번 점검. 새 훅이 충돌하거나 막지 않도록.
+
+## 재발 이력
+_(없음)_
 
 ## 관련 링크
 - 훅 파일: `~/.claude/hooks/telegram-reply-check.sh`
