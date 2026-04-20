@@ -70,6 +70,24 @@ fi
 - org 는 `com.ssamssae` 고정 → Bundle ID 는 `com.ssamssae.<name>` 로 결정됨
 - 최초 실행 시에만 동작. 이후엔 스킵.
 
+### 4-1. Bundle ID 자동 교정 (com.example → com.ssamssae)
+
+repo 가 다른 기기에서 `--org com.example` 로 create 된 경우 `com.example.<name>` 으로 박혀 있다.
+pbxproj 에서 찾아서 `com.ssamssae.<name>` 으로 치환:
+
+```bash
+PBXPROJ="ios/Runner.xcodeproj/project.pbxproj"
+if [ -f "$PBXPROJ" ] && grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com\.example\.' "$PBXPROJ"; then
+  # com.example.<anything> → com.ssamssae.<name> 로 통일
+  sed -i '' "s|PRODUCT_BUNDLE_IDENTIFIER = com\\.example\\.[A-Za-z0-9_]*|PRODUCT_BUNDLE_IDENTIFIER = com.ssamssae.<name>|g" "$PBXPROJ"
+  echo "🔧 Bundle ID 교정: com.example.* → com.ssamssae.<name>"
+fi
+```
+
+- `com.ssamssae.*` 이미 박혀 있으면 그대로 두고 스킵
+- `com.example.*` 패턴만 매칭 → 의도적으로 다른 org 쓰는 앱에는 영향 없음
+- Test / RunnerTests 타겟까지 세 블록 전부 일괄 치환됨
+
 ### 5. 의존성
 
 ```bash
@@ -79,24 +97,34 @@ cd ios && pod install --repo-update 2>&1 | tail -30; cd ..
 
 pod install 실패 (CocoaPods 레포 문제) 시 `pod repo update && pod install` 한 번 더 시도. 그래도 실패면 에러 요약 후 중단.
 
-### 6. 첫 실행 시그널 전송 (signing 체크)
+### 6. signing team 자동 주입
 
-`ios/Runner.xcworkspace` 를 한 번도 열지 않은 상태면 signing team 이 비어 있어 `/irun` 이 실패한다. 판정 기준:
+강대종님 Apple Developer 팀 ID `46UH85U2B8` 를 pbxproj 에 자동 삽입한다. Flutter 가 create 단계에서 만드는 기본 pbxproj 는 `DEVELOPMENT_TEAM` 라인 자체가 없거나 `""` 로 비어 있어, 그대로 두면 `/irun` 의 release 빌드가 signing 오류로 죽는다.
+
+판정 & 치환 전략:
 
 ```bash
-grep -q 'DEVELOPMENT_TEAM = ""' ios/Runner.xcodeproj/project.pbxproj 2>/dev/null
+PBXPROJ="ios/Runner.xcodeproj/project.pbxproj"
+TEAM_ID="46UH85U2B8"
+
+if [ -f "$PBXPROJ" ]; then
+  # 케이스 A: DEVELOPMENT_TEAM = ""  → TEAM_ID 로 치환
+  sed -i '' "s|DEVELOPMENT_TEAM = \"\";|DEVELOPMENT_TEAM = ${TEAM_ID};|g" "$PBXPROJ"
+
+  # 케이스 B: DEVELOPMENT_TEAM 라인이 아예 없음 → CODE_SIGN_STYLE = Automatic; 바로 뒤에 추가
+  if ! grep -q 'DEVELOPMENT_TEAM = ' "$PBXPROJ"; then
+    sed -i '' "s|CODE_SIGN_STYLE = Automatic;|CODE_SIGN_STYLE = Automatic;\\
+				DEVELOPMENT_TEAM = ${TEAM_ID};|g" "$PBXPROJ"
+  fi
+
+  echo "🔏 signing team 주입: ${TEAM_ID}"
+fi
 ```
 
-비어 있으면 한 번만 Xcode 를 열어 signing 설정이 필요하다는 안내 후 중단:
-
-```
-⚠️ iOS signing team 미설정
-  최초 1회: open ios/Runner.xcworkspace → Runner 타겟 → Signing & Capabilities 에서
-           "Automatically manage signing" 체크 + Team 선택
-  완료 후 /land 재호출하세요.
-```
-
-이미 team 이 박혀 있으면 통과.
+- `CODE_SIGN_STYLE = Automatic;` 은 Flutter 기본값이라 모든 타겟(Runner / RunnerTests) 블록에 존재
+- sed 의 개행 삽입은 macOS BSD sed 문법(`\` + 실제 개행)을 사용
+- 이미 다른 team ID 가 박혀있으면 덮어쓰지 않는다 (케이스 B 조건이 막아줌) — 다른 Apple 계정으로 사이닝하는 앱에는 영향 없음
+- 기존 `46UH85U2B8` 이 이미 박힌 repo 는 케이스 A/B 모두 no-op
 
 ### 7. /irun 호출
 
@@ -125,8 +153,8 @@ Skill(irun, args="")  # 기본 device id 사용
 
 - 맥 로컬 변경과 원격 충돌 시 강제 덮어쓰기 금지 (`git pull --ff-only` 만 사용, `git reset --hard` 금지)
 - `sudo` 사용 금지
-- Bundle ID / 번들 org 변경 금지 — 한 번 정해진 `com.ssamssae.<name>` 고정
-- signing team 자동 설정 금지 (사용자 수동 1회 요구)
+- Bundle ID 는 `com.ssamssae.<name>` 규약 고정. 자동 교정은 `com.example.*` 패턴에만 적용 — 의도적으로 다른 org 쓰는 앱은 건드리지 않는다
+- signing team 자동 주입은 `46UH85U2B8` 기본값 + `DEVELOPMENT_TEAM` 이 비어있거나 없는 경우만 동작. 이미 다른 team ID 박혀 있으면 덮어쓰지 않는다
 - `--force` / `--no-verify` 금지
 - 로그에 tokens/secrets 찍히지 않도록 환경 변수 노출 자제
 
@@ -136,14 +164,14 @@ Skill(irun, args="")  # 기본 device id 사용
 2. Mac: `/land https://github.com/ssamssae/hankeup.git` 자동 수신
 3. `~/apps/hankeup` 에 clone
 4. iOS 폴더 없으므로 `flutter create --platforms=ios --org com.ssamssae --project-name hankeup .`
+4-1. Bundle ID `com.example.*` 흔적이 남아있으면 `com.ssamssae.hankeup` 으로 자동 교정
 5. pub get + pod install
-6. signing team 비어있음 → 사용자에게 Xcode 1회 여는 안내 후 중단
-7. 사용자가 Xcode 에서 team 선택 후 `/land hankeup` 재호출
-8. team 통과 → `/irun` → 아이폰에 hankeup 설치
+6. signing team 자동 주입 (`DEVELOPMENT_TEAM = 46UH85U2B8`)
+7. `/irun` → 아이폰에 hankeup 설치
 
-두 번째 앱부터는 team 가 이미 선택된 경우가 많아 1회 중단 없이 곧바로 /irun 까지 이어진다 (Automatically manage signing 이면 `com.ssamssae.<새이름>` 프로비저닝 프로파일도 자동 생성).
+세 번째 앱부터는 중단 없이 `/to-iphone` 한 줄로 아이폰까지 완전 무인 배달된다 (Automatically manage signing + team ID 박혀 있음 → `com.ssamssae.<새이름>` 프로비저닝 프로파일 Apple 이 자동 생성).
 
 ## 기기 제약
 
 - 맥 본진 전용. WSL·아이폰에서는 동작 불가.
-- iOS signing 관련 수동 1회 액션은 자동화하지 않는다 — Apple 계정 보안상 명시 허용.
+- signing team 자동 주입은 `46UH85U2B8` (강대종님 개인 Apple Developer 계정) 기본값 기준. 다른 계정으로 사이닝하려면 해당 repo pbxproj 를 수동 선점 편집해둘 것 — 이 스킬은 이미 박힌 team ID 를 덮어쓰지 않는다.
