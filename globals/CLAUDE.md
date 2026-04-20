@@ -22,7 +22,7 @@
 
 ## 빠른 자동 트리거 (상세는 AGENT.md)
 
-- 할일: "OO 해야 해 / 끝났어 / 완료 / 취소 / 아이디어" → `~/todo/todos.md` + 미리알림 "Claude" 목록 + daejong-page 동기화
+- 할일: "OO 해야 해 / 끝났어 / 완료 / 취소 / 아이디어" → **WSL 에선 Mac 로 라우팅** (todo SKILL.md 0단계). 조회는 `~/daejong-page/todos/YYYY-MM-DD.md` 스냅샷으로 가능, 쓰기는 텔레그램 트리거로 Mac 에 위임.
 - PR: "PR #N 머지/닫아" → `/merge-janitor N [close]` 자동 호출
 
 ## 현재 기기 빠른 식별
