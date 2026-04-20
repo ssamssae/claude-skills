@@ -154,16 +154,27 @@ for m, c in sorted(model_cost.items(), key=lambda x:-x[1]):
     print(f"   {short:<18} {bar(pct)} {pct:5.1f}%  (~${c:.2f})")
 
 # (E) 플랜 한도 — claude.ai/settings/usage 스크레이핑
-import subprocess
+import subprocess, socket
+host = socket.gethostname()
+is_wsl = host.startswith("DESKTOP-") or host.startswith("WSL-")
 try:
-    plan_raw = subprocess.run(
-        ["bun", "run", "/Users/user/.claude/scripts/claude-usage-scraper/scrape.ts"],
-        capture_output=True, text=True, timeout=60,
-        cwd="/Users/user/.claude/scripts/claude-usage-scraper",
-    )
+    if is_wsl:
+        # WSL: SSH to Mac 본진 (Tailscale) — Mac 쪽 scrape.ts 가 profile/ 에 저장된 세션으로 실행
+        plan_raw = subprocess.run(
+            ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
+             "user@100.74.85.37",
+             "cd ~/.claude/scripts/claude-usage-scraper && ~/.bun/bin/bun run scrape.ts"],
+            capture_output=True, text=True, timeout=90,
+        )
+    else:
+        plan_raw = subprocess.run(
+            ["/Users/user/.bun/bin/bun", "run", "/Users/user/.claude/scripts/claude-usage-scraper/scrape.ts"],
+            capture_output=True, text=True, timeout=60,
+            cwd="/Users/user/.claude/scripts/claude-usage-scraper",
+        )
     if plan_raw.returncode == 0 and plan_raw.stdout.strip():
         plan_data = json.loads(plan_raw.stdout.strip())
-        print(f"\n🎯 플랜 한도 ({plan_data.get('plan','?')})")
+        print(f"\n🎯 플랜 한도 ({plan_data.get('plan','?')})" + (" [via Mac SSH]" if is_wsl else ""))
         sess = plan_data.get("session") or {}
         wa = plan_data.get("week_all") or {}
         ws = plan_data.get("week_sonnet") or {}
@@ -177,12 +188,17 @@ try:
             p = ws["pct"]
             print(f"   주간 Sonnet {color(p)}{bar(p)}{RESET} {p:>3}%   ({ws.get('reset','')})")
     elif plan_raw.returncode == 2:
-        print(f"\n🎯 플랜 한도: 스크레이퍼 미로그인. 한 번 수동 로그인 필요:")
+        print(f"\n🎯 플랜 한도: 스크레이퍼 미로그인. 한 번 수동 로그인 필요 (Mac):")
         print(f"   cd ~/.claude/scripts/claude-usage-scraper && HEADFUL=1 bun run scrape.ts")
     else:
         print(f"\n🎯 플랜 한도: 스크레이퍼 실패 (exit={plan_raw.returncode}). 상세: {plan_raw.stderr[:200]}")
 except FileNotFoundError:
-    print(f"\n🎯 플랜 한도: bun 미설치 — claude.ai Settings → Usage 수동 확인")
+    if is_wsl:
+        print(f"\n🎯 플랜 한도: ssh 미설치/경로 실패 — WSL 에서 'ssh user@100.74.85.37' 확인")
+    else:
+        print(f"\n🎯 플랜 한도: bun 미설치 — claude.ai Settings → Usage 수동 확인")
+except subprocess.TimeoutExpired:
+    print(f"\n🎯 플랜 한도: 타임아웃 (Mac 잠자는 중?) — Mac 깨우고 재시도")
 except Exception as e:
     print(f"\n🎯 플랜 한도: 스크레이퍼 예외 {type(e).__name__}: {str(e)[:100]}")
 
