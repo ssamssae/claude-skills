@@ -14,6 +14,33 @@ allowed-tools: Bash, Write, Edit, Read
 
 ## 호출 시 항상 먼저 할 일
 
+### 0. 기기 라우팅 (맥 본진 집중 실행)
+
+/todo 는 `~/todo/todos.md` (Mac 로컬) + macOS Reminders AppleScript + `/Users/user/daejong-page/...` 하드코딩 경로를 쓰므로 **맥 전용**.  맥 아닌 기기(WSL/iPhone)에서 호출되면 아래 규칙 적용:
+
+1. **조회 (read-only)** — `~/daejong-page/todos/YYYY-MM-DD.md` 스냅샷이 git 으로 동기화돼 있음. WSL 에서도 Read 해서 응답 가능. 마감일/오늘 진행중 조회까지는 여기서 끝.
+2. **쓰기 (추가/완료/취소/이동/수정)** — 맥에서만 가능. 텔레그램 reply 로 chat_id 538806975 에 아래 본문 전송하고 종료 (/to-iphone → /land 패턴):
+
+```
+✅ /todo 트리거
+액션: <추가|완료|취소|이동|수정>
+항목: <제목>
+Mac Claude 창에 아래 한 줄 복붙:
+/todo <액션> <제목>
+```
+
+```bash
+host=$(hostname)
+if [[ "$host" != *MacBook* && "$host" != *MBP* ]]; then
+  # 조회면 daejong-page 스냅샷 읽고 답변, 쓰기면 위 트리거 전송 후 종료
+  :
+fi
+```
+
+텔레그램 전송 실패 시엔 "Mac 세션 깨어있으면 Mac 에서 /todo 로 처리해달라" 안내로 fallback.
+
+### 1. 로컬 실행 (맥 본진)
+
 1. `Read ~/todo/todos.md` 로 현재 상태 파악 (이전 커밋 의존 X, 항상 파일 재읽기)
 2. 사용자 요청 분류: 추가 / 완료 / 삭제 / 조회 / 이동 / 수정 / 사이드프로젝트
 

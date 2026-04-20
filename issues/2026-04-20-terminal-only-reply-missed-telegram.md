@@ -34,7 +34,12 @@ prevention_deferred: null
 - **추가 검증(Mac 피드백, 2026-04-20):** 기존 `telegram-stop-ping.sh` 의 race retry 루프(0.5s × 6회)가 유지되는지, Stop 훅 exit 감지 로직에 failure path 로그가 제대로 찍히고 있는지 한 번 점검. 새 훅이 충돌하거나 막지 않도록.
 
 ## 재발 이력
-_(없음)_
+- **2026-04-20 13:10 KST 사후점검:** 훅 설치 후 3시간 운영 결과
+  - `/tmp/claude-telegram-reply-check.log` 37건: `BLOCK` 1건(09:12:08 — 설치 직후 자체 트리거로 forcing function 작동 확인), 나머지 `ok` 또는 무한루프 방지 `skip`
+  - BLOCK 직후 곧바로 `ok: reply tool called 1 time(s)` — 차단→재호출 플로우 정상
+  - **실전 재발 0건** (동일 사고 발생하지 않음)
+  - `telegram-stop-ping.sh` race retry 루프(0.5s×6회) 코드에 유지 확인, failure path 로그 `skip: no assistant text ... after retry` 코드 존재 (최근 0건 기록 = retry 로 대부분 해결됨)
+  - 새 훅 `telegram-reply-check.sh` 는 retry 루프 없음 → transcript flush race 시 `skip: no transcript ()` 1건(초기 09:11:52)만 관찰, 이후 정상. 필요시 retry 추가 고려하되 현재는 실무 영향 없음.
 
 ## 관련 링크
 - 훅 파일: `~/.claude/hooks/telegram-reply-check.sh`
