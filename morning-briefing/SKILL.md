@@ -1,6 +1,6 @@
 ---
 name: morning-briefing
-description: 매일 아침 07:15 통합 브리핑. 날씨·미세먼지 + 어제 커밋·오늘 할일·블로커 + 뉴스·주식 + 사이드 프로젝트 픽을 한 번에 조사해 텔레그램으로 단일 메시지 전송. 기존 morning-reporter·weather-dust·side-project-briefing 3개 스킬을 통합·대체(2026-04-21 기존 3개 삭제). 저녁 todo-reminder(22:00)는 별도 운영.
+description: 매일 아침 07:15 통합 브리핑. 날씨·미세먼지 + 어제 커밋·오늘 할일·블로커 + 뉴스·주식 + 사이드 프로젝트 픽을 한 번에 조사해 텔레그램으로 단일 메시지 전송. 기존 morning-reporter·weather-dust·side-project-briefing 3개 스킬을 통합·대체(2026-04-21 기존 3개 삭제). 저녁 마무리는 /evening-wrap(22:30)로 별도 운영.
 allowed-tools: WebSearch, WebFetch, Bash, Read, Write, Glob, Grep
 ---
 
