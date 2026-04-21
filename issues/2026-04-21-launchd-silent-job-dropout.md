@@ -41,17 +41,20 @@ v1.0.2 토큰 절약 작업 중 새 `/evening-wrap` 잡을 load 하면서 `launc
 
 ## 예방 (Forcing function 우선)
 
-- **launchd 헬스체크 스크립트 + 데일리 실행**: `~/.claude/automations/scripts/launchd-health-check.sh` 신설해서
-  1. `~/Library/LaunchAgents/com.claude.*.plist` 파일 목록 수집
-  2. `launchctl list | grep com.claude` 등록 목록 수집
-  3. 두 집합의 차이(파일 존재 but 미등록) 를 찾아 텔레그램 알림
-  4. `daily-sync-and-learn` Python 스크립트 안에 이 체크를 inline 으로 태우면 매일 06:45 자동 실행되므로 별도 cron 필요 없음
-- **launchd 수동 편집 전/후 스냅샷 규칙**: 어떤 `load`/`unload` 작업 전에 `launchctl list | grep com.claude > /tmp/launchd-before` 로 저장, 작업 후 `> /tmp/launchd-after` 로 저장, `diff` 로 의도한 잡만 변경됐는지 확인. 이 규칙을 `feedback_launchd_snapshot_before_edit.md` 메모리로 박기.
-- **plist 설치 시 RunAtLoad 외에 KeepAlive 고려**: 주기 실행 타입 잡에 `KeepAlive` 설정이 맞는지 재검토. (단, `StartCalendarInterval` 잡은 KeepAlive 적용 부적합 — 타입별 판단 필요.)
+### 구현됨 (2026-04-22 재발 후 강화)
+
+- **install.sh 를 bootstrap API + 등록 검증으로 교체** — `launchctl unload/load` 가 silent-fail 하는 문제를 `launchctl bootout/bootstrap` 으로 교체. bootstrap 성공 후에도 `launchctl list` 로 재확인해서 drop 감지. 실패 시 stderr 에 명시적 에러 + exit 1. commit: automations `85d7af9`.
+- **Stop 훅 LaunchAgent 로드 감지** — `~/.claude/hooks/stop-check-repos-dirty.sh` 가 매 세션 종료 시 `~/Library/LaunchAgents/com.claude.*.plist` 파일 목록과 `launchctl list` 등록 목록을 대조. 미등록 항목 있으면 텔레그램으로 "launchd NOT LOADED" 섹션과 함께 경고. commit: automations `85d7af9`.
+
+### 미구현 — 어제 계획 중 아직 안 한 것
+
+- **launchd 헬스체크 데일리 스크립트** — Stop 훅이 "세션이 한 번이라도 돌면" 감지하는 구조라, 며칠간 세션 없이 지나가는 상황은 여전히 침묵 가능. 추가 필요.
+- **수동 편집 전/후 스냅샷 규칙 + feedback_launchd_snapshot_before_edit 메모리** — bootstrap 전환으로 동일 문제 대부분 예방되지만, 사람 손 편집 시 스냅샷은 여전히 가치 있음.
+- ~~KeepAlive 재검토~~ — `StartCalendarInterval` 타입엔 부적합 확인돼 드롭.
 
 ## 재발 이력
 
-_(없음)_
+- **2026-04-22 07:02 KST**: `com.claude.daily-sync-and-learn` 등록 누락 재발. 어제 예방 3개가 모두 미이행 상태에서 06:45 자동 발동 실패. 원인 심층 분석 결과 install.sh 의 `launchctl load` 가 silent fail 해서 plist symlink 만 갱신되고 등록은 빠진 상태가 유지됨. 조치: (1) 수동 bootstrap 재등록, (2) 오늘치 동기화 수동 보충 (`2026-04-22-mac.json` 07:02 갱신), (3) install.sh bootout/bootstrap + list 검증으로 교체, (4) Stop 훅 LaunchAgent 로드 감지 추가. commit: automations `85d7af9`.
 
 ## 관련 링크
 
