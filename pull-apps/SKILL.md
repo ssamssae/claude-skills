@@ -1,12 +1,12 @@
 ---
 name: pull-apps
-description: ~/apps/ 하위 모든 Flutter 앱 repo 를 git pull --rebase --autostash 로 일괄 최신화. 다른 기기(주로 Mac)에서 push 한 앱 코드 변경을 이 기기(주로 WSL)에서 받아올 때 호출. /sync 는 스킬·자동화·이슈만 다루지만 이 스킬은 앱 코드 전용. 강대종님이 "앱 당겨줘", "앱 pull", "/pull-apps", "WSL 에 앱 받아", "맥에서 넘긴 앱 받아" 라고 하면 실행.
+description: 모든 Flutter 앱 repo(~/ 최상위 + ~/apps/*/) 를 git pull --rebase --autostash 로 일괄 최신화. 다른 기기(주로 Mac)에서 push 한 앱 코드 변경을 이 기기(주로 WSL)에서 받아올 때 호출. /sync 는 스킬·자동화·이슈만 다루지만 이 스킬은 앱 코드 전용. 강대종님이 "앱 당겨줘", "앱 pull", "/pull-apps", "WSL 에 앱 받아", "맥에서 넘긴 앱 받아" 라고 하면 실행.
 allowed-tools: Bash
 ---
 
 # /pull-apps — 앱 repo 일괄 pull
 
-`~/apps/*/` 아래의 모든 git repo 를 한 번에 `git pull --rebase --autostash` 한다. Mac ↔ WSL 기기 간 앱 코드 동기화 gap 을 즉시 메우는 게 목적.
+`~/` 최상위(메모요/약먹자/더치페이 등) + `~/apps/*/` (한줄일기/한컵/가계부/포모도로 등) 의 모든 Flutter 앱 repo 를 한 번에 `git pull --rebase --autostash` 한다. 기준: `.git` 디렉터리 + `pubspec.yaml` 존재. Mac ↔ WSL 기기 간 앱 코드 동기화 gap 을 즉시 메우는 게 목적.
 
 ## 언제 호출되는가
 
@@ -19,20 +19,22 @@ allowed-tools: Bash
 
 | 스킬 | 커버 범위 | 용도 |
 | --- | --- | --- |
-| `/sync` | `~/.claude/skills` + `~/.claude/automations` + `~/daejong-page` + 이슈 메모리 재생성 | 자동화·스킬·이슈 히스토리 동기화 |
-| `/pull-apps` | `~/apps/*/` 전수 | Flutter 앱 코드 동기화 |
+| `/sync` | `~/.claude/skills` + `~/.claude/automations` + `~/daejong-page` + **모든 앱 repo** + 이슈 메모리 재생성 | 풀 크로스 기기 동기화 |
+| `/pull-apps` | 모든 앱 repo 만 (~/ 최상위 + ~/apps/*/) | 앱 코드만 빠르게 |
 
-둘 다 필요하면 순서대로 호출.
+둘 다 가능하면 `/sync` 한 번이면 충분. 앱만 따로 빨리 돌리고 싶으면 `/pull-apps`.
 
 ## 절차
 
 ```bash
-for app in ~/apps/*/; do
-  [ -d "$app/.git" ] || continue
-  name=$(basename "$app")
-  cd "$app"
+# $HOME 최상위 + ~/apps/ 두 경로에서 .git + pubspec.yaml 가진 폴더를 전수 스캔
+for dir in ~/*/ ~/apps/*/; do
+  [ -d "${dir}.git" ] || continue
+  [ -f "${dir}pubspec.yaml" ] || continue
+  name=$(basename "${dir%/}")
+  cd "${dir%/}"
   before=$(git rev-parse HEAD)
-  out=$(git pull --rebase --autostash 2>&1)
+  git pull --rebase --autostash --quiet 2>&1
   after=$(git rev-parse HEAD)
   if [ "$before" = "$after" ]; then
     echo "✓ $name: up to date"
@@ -44,20 +46,30 @@ for app in ~/apps/*/; do
 done
 ```
 
+## 커버 대상 예시 (7개)
+
+| 앱 | 경로 |
+| --- | --- |
+| 메모요 | `~/simple_memo_app` |
+| 약먹자 | `~/yakmukja` |
+| 더치페이 | `~/dutch_pay_calculator` |
+| 한줄일기 | `~/apps/hanjul` |
+| 한컵 | `~/apps/hankeup` |
+| 가계부 | `~/apps/mini_expense` |
+| 포모도로 | `~/apps/pomodoro` |
+
+새 앱을 ~/ 혹은 ~/apps/ 어디에 두든 `.git + pubspec.yaml` 조합만 맞으면 자동 픽업.
+
 ## 출력 예시
 
 ```
 ✓ hankeup: up to date
 ✅ hanjul: 4 커밋 수신
-    8cca07f feat(hanjul): toss blue rebrand + diary-notebook icon
-    3d65f80 feat(hanjul): toss-tone polish + new app icon
-    797786a chore: set display name to 한줄일기 (ko)
-    86f4a4a feat(hanjul): add edit/delete actions
-✅ pomodoro: 1 커밋 수신
-    239a4b7 chore(android): release signing config + store metadata
-✅ mini_expense: 2 커밋 수신
-    63c522c chore(android): release signing config + store metadata
-    a2aedf5 ...
+    b861770 feat(hanjul): toss blue rebrand + diary-notebook icon
+    133f177 feat(hanjul): toss-tone polish + new app icon
+    ...
+✓ simple_memo_app: up to date
+✓ yakmukja: up to date
 ```
 
 실행 후 텔레그램으로도 한 줄 요약을 보낸다 (chat_id=538806975):
