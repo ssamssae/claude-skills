@@ -1,17 +1,17 @@
 ---
 name: sync
-description: 맥과 WSL 의 자동화·이슈 히스토리를 즉시 최신 상태로 끌어오는 수동 스킬. 강대종님이 "동기화", "최신화", "sync", "/sync", "pull", "복습", "이슈 복기" 이라고 말하거나 데스크탑에서 방금 push 한 내용을 맥에서 바로 받고 싶을 때 호출. 내부적으로 claude-automations/scripts/daily-sync-and-learn.py 를 실행해 06:45 KST 자동 동기화와 동일한 작업을 즉시 수행.
+description: 맥과 WSL 의 자동화·이슈 히스토리·앱 코드를 즉시 최신 상태로 끌어오는 수동 스킬. 강대종님이 "동기화", "최신화", "sync", "/sync", "pull", "복습", "이슈 복기" 이라고 말하거나 데스크탑에서 방금 push 한 내용을 맥에서 바로 받고 싶을 때 호출. 내부적으로 claude-automations/scripts/daily-sync-and-learn.py 를 실행해 06:45 KST 자동 동기화와 동일한 작업을 즉시 수행. 2026-04-22 부터 ~/apps/*/ 앱 repo 도 자동 커버.
 allowed-tools: Bash
 ---
 
-# /sync — 자동화·이슈 히스토리 즉시 최신화
+# /sync — 자동화·이슈 히스토리·앱 repo 즉시 최신화
 
-맥과 WSL 에서 각 기기의 claude-skills + claude-automations repo 를 pull 하고, 이슈 히스토리 메모리를 재생성하고, 과거 이슈 3건을 복기하는 작업을 즉시 실행한다. 자동 실행판(launchd/systemd, 매일 06:45 KST) 과 동일한 스크립트를 공유한다.
+맥과 WSL 에서 각 기기의 claude-skills + claude-automations + daejong-page + `~/apps/*/` 모든 repo 를 pull 하고, 이슈 히스토리 메모리를 재생성하고, 과거 이슈 3건을 복기하는 작업을 즉시 실행한다. 자동 실행판(launchd/systemd, 매일 06:45 KST) 과 동일한 스크립트를 공유한다.
 
 ## 언제 호출되는가
 
 - 강대종님이 "동기화", "최신화", "sync", "/sync", "pull 받아" 라고 말할 때
-- 데스크탑(WSL) 에서 방금 스킬·자동화·이슈를 push 했고 맥에서 바로 반영받고 싶을 때
+- 데스크탑(WSL) 에서 방금 스킬·자동화·이슈·**앱 코드**를 push 했고 맥에서 바로 반영받고 싶을 때 (반대 방향도 동일)
 - 새 세션 시작 직후 현재 시점 기준으로 이슈·스킬 메모리를 최신 상태로 올리고 싶을 때
 - 아침 06:45 자동 실행이 누락됐다는 신호가 있을 때 (맥 잠자기 등)
 
@@ -27,10 +27,12 @@ python3 ~/.claude/automations/scripts/daily-sync-and-learn.py
 
 1. `~/.claude/skills` 를 `git pull --rebase --quiet` — 실패하면 경고만 찍고 계속
 2. `~/.claude/automations` 도 동일하게 pull
-3. `~/.claude/automations/install.sh` 재실행 (idempotent — 새 plist/timer 있으면 자동 설치)
-4. `~/.claude/skills/issues/*.md` 를 스캔해 `~/.claude/projects/-Users-user/memory/reference_issue_history.md` 메모리 파일 재생성 + MEMORY.md 인덱스 링크 보장
-5. 최근 30일 이슈 중 랜덤 3건을 "오늘의 복기" 로 선정
-6. 변경 요약 + 복기 3건을 묶어 텔레그램 chat 538806975 에 단일 메시지 전송
+3. `~/daejong-page` 가 있으면 pull
+4. **`~/apps/*/` 전수 순회 → `git pull --rebase --autostash --quiet`** (2026-04-22 추가). 한 앱 실패해도 다른 앱은 계속. 로컬 dirty 는 autostash 로 보존.
+5. `~/.claude/automations/install.sh` 재실행 (idempotent — 새 plist/timer 있으면 자동 설치)
+6. `~/.claude/skills/issues/*.md` 를 스캔해 `~/.claude/projects/-Users-user/memory/reference_issue_history.md` 메모리 파일 재생성 + MEMORY.md 인덱스 링크 보장
+7. 최근 30일 이슈 중 랜덤 3건을 "오늘의 복기" 로 선정
+8. 변경 요약(📚 skills / ⚙️ automations / 🌐 daejong-page / **📱 apps**) + 복기 3건을 묶어 텔레그램 chat 538806975 에 단일 메시지 전송
 
 ## 실행 결과 보고
 
