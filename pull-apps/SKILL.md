@@ -1,0 +1,90 @@
+---
+name: pull-apps
+description: ~/apps/ 하위 모든 Flutter 앱 repo 를 git pull --rebase --autostash 로 일괄 최신화. 다른 기기(주로 Mac)에서 push 한 앱 코드 변경을 이 기기(주로 WSL)에서 받아올 때 호출. /sync 는 스킬·자동화·이슈만 다루지만 이 스킬은 앱 코드 전용. 강대종님이 "앱 당겨줘", "앱 pull", "/pull-apps", "WSL 에 앱 받아", "맥에서 넘긴 앱 받아" 라고 하면 실행.
+allowed-tools: Bash
+---
+
+# /pull-apps — 앱 repo 일괄 pull
+
+`~/apps/*/` 아래의 모든 git repo 를 한 번에 `git pull --rebase --autostash` 한다. Mac ↔ WSL 기기 간 앱 코드 동기화 gap 을 즉시 메우는 게 목적.
+
+## 언제 호출되는가
+
+- 다른 기기(주로 Mac) 에서 앱 코드를 push 했고 이 기기(주로 WSL) 에서 바로 받고 싶을 때
+- "맥에서 한줄일기 만졌는데 WSL 에서 최신화 안 돼" 류 상황
+- WSL 에서 아침 `daily-sync` 이후 Mac 이 새로 push 한 게 있을 때 즉시 수령
+- 새 세션 시작 직후 앱 repo 가 동기 상태인지 확보하고 싶을 때
+
+## /sync 와의 차이
+
+| 스킬 | 커버 범위 | 용도 |
+| --- | --- | --- |
+| `/sync` | `~/.claude/skills` + `~/.claude/automations` + `~/daejong-page` + 이슈 메모리 재생성 | 자동화·스킬·이슈 히스토리 동기화 |
+| `/pull-apps` | `~/apps/*/` 전수 | Flutter 앱 코드 동기화 |
+
+둘 다 필요하면 순서대로 호출.
+
+## 절차
+
+```bash
+for app in ~/apps/*/; do
+  [ -d "$app/.git" ] || continue
+  name=$(basename "$app")
+  cd "$app"
+  before=$(git rev-parse HEAD)
+  out=$(git pull --rebase --autostash 2>&1)
+  after=$(git rev-parse HEAD)
+  if [ "$before" = "$after" ]; then
+    echo "✓ $name: up to date"
+  else
+    count=$(git log --oneline "${before}..${after}" | wc -l | tr -d ' ')
+    echo "✅ $name: $count 커밋 수신"
+    git log --oneline "${before}..${after}" | sed 's/^/    /'
+  fi
+done
+```
+
+## 출력 예시
+
+```
+✓ hankeup: up to date
+✅ hanjul: 4 커밋 수신
+    8cca07f feat(hanjul): toss blue rebrand + diary-notebook icon
+    3d65f80 feat(hanjul): toss-tone polish + new app icon
+    797786a chore: set display name to 한줄일기 (ko)
+    86f4a4a feat(hanjul): add edit/delete actions
+✅ pomodoro: 1 커밋 수신
+    239a4b7 chore(android): release signing config + store metadata
+✅ mini_expense: 2 커밋 수신
+    63c522c chore(android): release signing config + store metadata
+    a2aedf5 ...
+```
+
+실행 후 텔레그램으로도 한 줄 요약을 보낸다 (chat_id=538806975):
+
+```
+📥 /pull-apps 완료
+  수신: hanjul 4 · pomodoro 1 · mini_expense 2
+  up-to-date: hankeup
+```
+
+## 충돌 처리
+
+`--autostash` 가 로컬 dirty 를 자동 stash/복원 하지만, rebase 충돌은 여전히 사람이 풀어야 함. 어느 앱에서 충돌 났는지만 명확히 보고하고 나머지 앱은 계속 pull 한다:
+
+```
+❌ hanjul: rebase conflict — 수동 해결 필요
+   CONFLICT (content): lib/screens/write_screen.dart
+✓ hankeup: up to date
+...
+```
+
+## 안전
+
+- `git pull --rebase --autostash` 은 기본적으로 가역. 로컬 커밋은 rebase 로 재적용, 로컬 dirty 는 stash 로 보존
+- `git reset --hard` 등 destructive 명령은 절대 쓰지 않음
+- 네트워크 실패는 무시하고 다음 앱으로 (원격 unreachable 을 pull 실패로 혼동하지 않음)
+
+## 짝 스킬 (Mac 쪽)
+
+Mac 에서 작업을 모두 push 하면 Stop 훅 `stop-check-repos-dirty.sh` 가 앱별 `ahead` 커밋 수와 dirty 파일을 텔레그램 경보로 알림. 즉 Mac 쪽에서 "push 안 됐어요" → WSL 쪽에서 `/pull-apps` 로 받기 = 쌍.
