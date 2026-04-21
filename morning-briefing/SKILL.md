@@ -1,6 +1,6 @@
 ---
 name: morning-briefing
-description: 매일 아침 07:15 통합 브리핑. 날씨·미세먼지 + 어제 커밋·오늘 할일·블로커 + 뉴스·주식 + 사이드 프로젝트 픽을 한 번에 조사해 텔레그램으로 단일 메시지 전송. 기존 morning-reporter·weather-dust·side-project-briefing 3개 스킬을 통합·대체(2026-04-21 기존 3개 삭제). 저녁 마무리는 /evening-wrap(22:30)로 별도 운영.
+description: 매일 아침 07:15 통합 브리핑. 날씨·미세먼지 + 어제 커밋·오늘 할일·블로커 + 뉴스·주식 + 사이드 프로젝트 픽을 한 번에 조사해 텔레그램으로 단일 메시지 전송. 기존 morning-reporter·weather-dust·side-project-briefing 3개 스킬을 통합·대체(2026-04-21 기존 3개 삭제). 2026-04-21 Python 프리페처 분리로 토큰 절감. 저녁 마무리는 /evening-wrap(22:30)로 별도 운영.
 allowed-tools: WebSearch, WebFetch, Bash, Read, Write, Glob, Grep
 ---
 
@@ -9,134 +9,75 @@ allowed-tools: WebSearch, WebFetch, Bash, Read, Write, Glob, Grep
 하루 시작 시 필요한 모든 정보를 **단일 Claude 세션 + 단일 텔레그램 메시지** 로 전달.
 세션 3회 → 1회, 알림 3건 → 1건으로 축약되어 토큰 절약 + 알림 피로도 감소.
 
+> **2026-04-21 업데이트**: 기계적 데이터 수집(git/todos/Reminders/PR/날씨/시장) 을 Python 프리페처로 분리. Claude 는 미세먼지·뉴스·사이드 픽·합성만 담당 → 토큰 약 70% 절감.
+
 > 저녁 `todo-reminder` (22:00 KST) 는 별도 운영. 이 스킬에 포함하지 말 것.
 
 ## 실행 흐름
 
-### 1. 로컬 데이터 수집 (네트워크 전 먼저 실행)
-
-**1-A. 어제 git 커밋 요약 (KST 기준)**
+### 1. Python 프리페처 실행 (네트워크·로컬 데이터 모두)
 
 ```bash
-for repo in ~/simple_memo_app ~/daejong-page ~/todo; do
-  echo "=== $(basename $repo) ==="
-  git -C "$repo" log --since="yesterday 00:00" --until="today 00:00" --oneline --no-merges 2>/dev/null || echo "(no commits)"
-done
+~/.claude/automations/scripts/morning-prefetch.py
 ```
 
-프로젝트별로 제목만 한 줄씩. 커밋 없으면 "작업 없음".
+출력: `/tmp/morning-briefing-prefetch-YYYY-MM-DD.json`
 
-**1-B. 오늘 할일 (todos.md)**
+수집 내용:
+- `git_commits`: simple_memo_app · daejong-page · todo 3개 repo 의 어제 커밋 제목
+- `todos`: `~/todo/todos.md` 진행중 섹션 미완료 TOP 5 + 블로커 후보
+- `reminders`: macOS Reminders "Claude" 리스트 미완료
+- `janitor_prs`: 야간 러너 janitor PR + diff·민감파일 안전 체크 (별칭 포함)
+- `weather`: 서울 기온·최저·최고·하늘·강수%·습도 (wttr.in 무료)
+- `market`: 코스피·코스닥·나스닥·S&P500 종가·등락률 (Yahoo Finance)
 
-`~/todo/todos.md` 의 `## 진행중` 섹션에서 미완료(`- [ ]`) 항목 중 **상위 5개** 만 추출.
-선정 기준: ⭐ 최우선순위 먼저, 다음은 마감 임박, 최근 추가 순.
+섹션별 실패 격리. 한쪽 실패해도 나머지는 JSON 에 저장됨.
+프리페처 전체 실패 시 Claude 가 기존 방식으로 fallback 하지 말고 **"데이터 수집 실패" 메시지**만 전송.
 
-**1-C. 미리알림 앱 "Claude" 목록 미완료**
+### 2. JSON 읽고 합성에 필요한 항목만 꺼내기
 
-```bash
-osascript -e 'tell application "Reminders"
-  set targetList to list "Claude"
-  set output to ""
-  repeat with r in (every reminder in targetList whose completed is false)
-    set output to output & "- " & name of r & "\n"
-  end repeat
-  return output
-end tell'
+```
+Read /tmp/morning-briefing-prefetch-YYYY-MM-DD.json
 ```
 
-todos.md 미완료와 합쳐 중복 제거.
+todos 중복 제거: `todos.top5` 와 `reminders` 합쳐서 중복 제거 후 상위 5개.
 
-**1-D. 블로커 탐지**
+### 3. Claude 가 직접 해야 할 것 (웹 검색·합성만)
 
-진행중 항목 중 `블로커`·`대기`·`심사` 키워드 포함 항목 별도 리스트.
+**3-A. 미세먼지·초미세먼지** (Python 으로 무료 수집 어려움)
 
-**1-E. 야간 러너 PR 검토 대기열**
-
-WSL 의 `/night-runner` 가 밤사이 만든 janitor PR 목록 조회. 본진(Mac) 에서 리뷰·머지 판단.
-
-```bash
-gh search prs author:@me is:open is:pr janitor \
-  --json url,title,repository,number,createdAt \
-  --limit 20 2>/dev/null | \
-  python3 -c "
-import json, sys
-try:
-    prs = json.load(sys.stdin)
-except Exception:
-    prs = []
-# 제목이 '[janitor]' 로 시작하는 것만
-filtered = [p for p in prs if p.get('title','').startswith('[janitor]')]
-for p in filtered:
-    repo = p.get('repository',{}).get('nameWithOwner','?')
-    print(f\"{p['createdAt'][:10]}|{repo}|#{p['number']}|{p['title']}|{p['url']}\")
-"
+```
+WebSearch: "서울 미세먼지 초미세먼지 오늘 YYYY-MM-DD"
 ```
 
-각 PR 마다 diff 요약:
-```bash
-gh pr view <URL> --json additions,deletions,files,body --jq \
-  '{adds: .additions, dels: .deletions, file_count: (.files|length), first_3: (.files[0:3]|map(.path))}'
+결과에서 PM10·PM2.5 수치·등급 추출. 실패 시 `— (정보 없음)`.
+
+**3-B. 주요 뉴스** (창의적 선별 필요)
+
+```
+WebSearch: "한국 IT 테크 뉴스 오늘" 또는 "오늘 주요뉴스 YYYY-MM-DD"
 ```
 
-**안전 체크** (각 PR 에 대해):
-- 변경 줄 수 ≤ 300 (넘으면 "대형 변경" 경고)
-- 파일 목록에 `pubspec.yaml` 포함 → SDK 버전 diff 확인
-- 파일 목록에 `.env`, `key`, `token`, `secret` 문자열 → 민감 파일 경고
-- 통과 → "✅ 안전 머지 가능", 의심 → "⚠️ 수동 리뷰 권장"
+3개 골라 한 줄 요약.
 
-**repo 별칭 (복붙용 답장 문구 생성)**
-
-텔레그램 메시지는 모바일에서 복붙하기 편하도록 각 PR 마다 `💬 답장: "<별칭> #N 머지"` 한 줄을 덧붙인다. 별칭은 아래 테이블 참조:
-
-| repo nameWithOwner | 별칭 |
-|---|---|
-| `ssamssae/dutch_pay_calculator` | `더치페이` |
-| `ssamssae/simple-memo-app` | `메모요` |
-| `ssamssae/yakmukja` | `약묵자` |
-| `ssamssae/babmeokja` | `밥먹자` |
-| `ssamssae/daejong-page` | `daejong-page` |
-| (그 외) | repo 이름의 `/` 뒤 부분 그대로 |
-
-파이썬으로 변환:
-```python
-ALIASES = {
-    'ssamssae/dutch_pay_calculator': '더치페이',
-    'ssamssae/simple-memo-app': '메모요',
-    'ssamssae/yakmukja': '약묵자',
-    'ssamssae/babmeokja': '밥먹자',
-    'ssamssae/daejong-page': 'daejong-page',
-}
-alias = ALIASES.get(repo_full, repo_full.split('/')[-1])
-```
-
-/merge-janitor 가 자연어로 `<별칭> #N 머지` 를 받으면 repo 매칭해 해당 PR 을 처리한다. (매칭 실패 시 /merge-janitor 가 되묻기)
-
-### 2. 웹 검색 (병렬 가능, 실패는 섹션별 격리)
-
-최소 4개 쿼리:
-- `"서울 오늘 날씨 YYYY-MM-DD"` + `"서울 미세먼지 초미세먼지 오늘"` (2개로 분리 OK)
-- `"한국 IT 테크 뉴스 오늘"` / `"오늘 주요뉴스 YYYY-MM-DD"`
-- `"코스피 코스닥 오늘"` + `"나스닥 S&P500 어제 종가"` (합쳐도 OK)
-- `"trending side project ideas YEAR MONTH"` + `"indie hacker profitable apps YEAR"` (2~3개)
-
-### 3. 사이드 프로젝트 파일 저장
+**3-C. 사이드 프로젝트 픽** (창의·분석 필요)
 
 기존 형식 유지: `~/Documents/side-project-briefings/YYYY-MM-DD.md`
-- 마크다운, 한국어
-- 3~5개 아이디어 상세 + 오늘의 픽 1개 분석
-- 포맷은 기존 `/side-project-briefing` 스킬과 동일
+- 마크다운, 한국어, 3~5개 아이디어 상세 + 오늘의 픽 1개 분석
+- 텔레그램 메시지에는 **오늘의 픽 1개만** 한 줄로
 
-텔레그램 메시지에는 **오늘의 픽 1개만** 한 줄로.
+간단히 가고 싶으면 WebSearch 1회 (`"trending side project ideas YEAR MONTH"`) 만 하고 1개 픽. 최근 아이디어와 중복 피하기.
 
-### 4. 외출·날씨 판단
+**3-D. 외출·날씨 한줄평**
 
-기준:
-- 미세먼지 "나쁨" 이상 → 😷 마스크
-- 비 확률 50%+ → ☂️ 우산
-- 기온 5°C 이하 → 🧥 두꺼운 옷
-- 기온 30°C 이상 → 🥵 더위 주의
+프리페처 `weather` 값 기반:
+- 미세먼지 "나쁨" 이상 → 😷 마스크 (3-A 결과 사용)
+- 강수% ≥ 50 → ☂️ 우산
+- min_c ≤ 5 → 🧥 두꺼운 옷
+- max_c ≥ 30 → 🥵 더위 주의
+- 그 외 → 가벼운 한 줄
 
-### 5. 통합 텔레그램 메시지 (단일 전송)
+### 4. 통합 텔레그램 메시지 (단일 전송)
 
 ```
 🌅 모닝 브리핑 (YYYY-MM-DD 요일)
@@ -165,7 +106,7 @@ alias = ALIASES.get(repo_full, repo_full.split('/')[-1])
     ✅ 안전 머지 가능 · 🔗 [URL]
     💬 답장: "[별칭] #N 머지"
   • [repo] #N — [제목] (+X/-Y줄)
-    ⚠️ 대형 변경, 수동 리뷰 권장 · 🔗 [URL]
+    ⚠️ [warnings], 수동 리뷰 권장 · 🔗 [URL]
     💬 답장: "[별칭] #N 머지" (확인 후 머지)
   👉 닫으려면 "[별칭] #N 닫아"
 
@@ -185,7 +126,20 @@ alias = ALIASES.get(repo_full, repo_full.split('/')[-1])
   🔗 상세: ~/Documents/side-project-briefings/YYYY-MM-DD.md
 ```
 
-### 6. 전송
+**별칭 테이블** (PR 섹션 복붙용 — 프리페처가 이미 alias 필드에 채워줌):
+
+| repo nameWithOwner | 별칭 |
+|---|---|
+| `ssamssae/dutch_pay_calculator` | `더치페이` |
+| `ssamssae/simple-memo-app` | `메모요` |
+| `ssamssae/yakmukja` | `약묵자` |
+| `ssamssae/babmeokja` | `밥먹자` |
+| `ssamssae/daejong-page` | `daejong-page` |
+| (그 외) | repo 이름의 `/` 뒤 부분 |
+
+/merge-janitor 가 자연어로 `<별칭> #N 머지` 를 받으면 repo 매칭해 해당 PR 을 처리한다. (매칭 실패 시 /merge-janitor 가 되묻기)
+
+### 5. 전송
 
 ```bash
 ~/.claude/channels/telegram/send.sh 538806975 "<메시지>"
@@ -197,14 +151,15 @@ send.sh 실패 시 터미널 stdout 에만 출력.
 
 ## 에러 처리
 
-- 웹 검색 하나 실패해도 **나머지는 계속 진행**. 실패 섹션은 `— (정보 없음)` 으로 표기.
-- 로컬 데이터 실패(git, osascript) 는 해당 섹션만 스킵.
-- 전체 실패 시 최소한 `🌅 모닝 브리핑 (YYYY-MM-DD)\n(데이터 수집 실패)` 이라도 전송.
+- 프리페처 비정상 종료 → `🌅 모닝 브리핑 (YYYY-MM-DD)\n(데이터 수집 실패 — morning-prefetch.py 확인 필요)` 만 전송
+- 프리페처 JSON 섹션이 `{}` 또는 `[]` → 해당 섹션만 스킵, 다른 섹션은 정상 표시
+- WebSearch 하나 실패해도 나머지 섹션 계속 진행. 실패 섹션은 `— (정보 없음)`
 
 ## 주의
 
-- **단일 세션·단일 메시지**가 이 스킬의 존재 이유. 여러 번 send.sh 호출 금지.
-- 메시지 길이는 Telegram 한도(4096자) 내. 각 섹션 장황하지 않게.
-- 기존 `/morning-reporter`·`/weather-dust`·`/side-project-briefing` 은 수동 호출용으로 유지. 자동 실행은 이 스킬로 단일화.
-- 날짜는 KST 기준. bash `TZ=Asia/Seoul date +%Y-%m-%d` 로 계산.
-- "잘했다" 류 멘트 금지 — 팩트·정보 위주.
+- **단일 세션·단일 메시지**가 이 스킬의 존재 이유. 여러 번 send.sh 호출 금지
+- 메시지 길이는 Telegram 한도(4096자) 내. 각 섹션 장황하지 않게
+- 기존 `/morning-reporter`·`/weather-dust`·`/side-project-briefing` 은 수동 호출용으로 유지. 자동 실행은 이 스킬로 단일화
+- 날짜는 KST 기준. 프리페처 파일명이 이미 KST 기준으로 생성됨
+- "잘했다" 류 멘트 금지 — 팩트·정보 위주
+- 프리페처가 실패할 경우 fallback 으로 Claude 가 git/gh/osascript 를 직접 호출하지 말 것 (원래 목표가 토큰 절감이므로 오히려 본말전도). 실패 알림만.
