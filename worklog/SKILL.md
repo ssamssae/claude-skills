@@ -238,6 +238,47 @@ fi
   ```
 - 같은 구조. entries 내림차순.
 
+### 7d. 결정 박제 (✨ 2026-04-24 추가 — 근본해결 핵심)
+
+worklog 는 산문 기록이라 다른 스킬이 안 읽음. 오늘의 **decision-level 사실** 은 반드시 memory 로 박제해야 교차세션 전파됨.
+
+**자동 추출 단계**:
+
+1. 이번 worklog 산출물(`worklog-source/<date>_vX.Y.Z.md`) 의 본문을 스캔하면서 다음 패턴 매칭:
+   - `"<X> 로 확정|채택|선정|결정"`
+   - `"<Y> 제거|삭제|드롭|폐기"`
+   - `"<Z> 신설|추가|도입|진입"`
+   - `"플랫폼 <P> (으)로"`
+   - 표 / 체크리스트에 **새 도메인 개념** 도입 (예: 태그 체계, SoT registry 등)
+
+2. 각 후보에 대해 해당 memory 파일 존재 여부 확인:
+   - 있으면 → Edit 로 frontmatter `decided_date` 갱신 + 본문에 "2026-04-24 업데이트" 섹션 append
+   - 없으면 → 새 파일 Write. 분류 규칙:
+     - 프로젝트 상태/방향 → `project_<slug>.md`
+     - 작업 방식 / 규칙 → `feedback_<slug>.md`
+     - 외부 시스템 좌표 → `reference_<slug>.md`
+   - 모든 새/갱신 파일 frontmatter 에 **반드시 필요**: `decided_date: YYYY-MM-DD`, `decision: <한 줄 요약>`
+
+3. **사용자 확인 단계 (CRITICAL)** — 자동 실행 금지. Memory 쓰기 전에 텔레그램 diff 미리보기:
+
+```
+🧠 오늘 decision-level 추출 N건:
+1. 📄 project_<foo>.md (신규) — <decision 한 줄>
+2. ✏️ feedback_<bar>.md (갱신) — <decision 한 줄>
+...
+확정 → "박제" / 보류 → "스킵" / 개별 수정 → "X번 빼" 같이
+```
+
+사용자 "박제" 응답 받으면 Write/Edit 실행 → memory auto-push hook 이 자동 render_recent_decisions.py 호출해서 MEMORY.md 상단 최근결정 블록 갱신 + commit+push.
+
+4. 결과 보고 (8 단계와 머지 가능):
+   ```
+   🧠 결정 박제 N건 완료 → MEMORY.md 상단 "최근 결정 7일" 블록에 반영됨
+      다른 Claude 세션이 시작 시 자동 인지.
+   ```
+
+**패턴 감지 가이드**: 애매할 땐 사용자에게 "이거 decision 맞아요?" 먼저 물음. false positive 는 노이즈, false negative 는 근본해결 실패 → **false negative 가 더 나쁨**. 의심되면 일단 추출.
+
 ### 7c. 실패 처리
 
 - 원본(6-b) 만 작성되고 공개본(6-c) 에서 에러 나면: 공개본 생성 재시도. 여전히 실패하면 원본 커밋 후 사용자에게 "공개본 생성 실패, 원본은 저장됨" 보고.
