@@ -1,10 +1,11 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-22 07:07 KST_
+_마지막 생성: 2026-04-24 00:15 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-23 | [ios-gidclientid-missing](2026-04-23-ios-gidclientid-missing.md) | iOS GoogleSignIn GIDClientID 누락 크래시 (심사레이더) | high (앱 첫 화면 전 강제 종료) | high (google_sign_in 쓰는 신규 Flutter 앱 iOS 첫 빌드에서 동일하게 재현) | — | — |
 | 2026-04-21 | [orphan-skill-file-after-interrupt](2026-04-21-orphan-skill-file-after-interrupt.md) | 세션 중단 직후 방금 만든 스킬 파일이 커밋/푸시 없이 로컬에만 남음 | medium (데이터 유실 가능성 — Mac 디스크 단일 장애점 의존, 단일 파일 규모) | high (인터럽트/컨텍스트 스위치가 일상적, 현재 가드 없음) | 2회 | — |
 | 2026-04-21 | [memoyo-signup-ghost-form](2026-04-21-memoyo-signup-ghost-form.md) | 메모요 스토어 드롭 후 2주 동안 홈페이지 사전예약 폼이 살아있어서 이메일 계속 수집 | low (개인 데이터 소규모 + 악의적 수집은 아님). 단 사용자 기대 이탈 위험은 있음. | medium (다른 앱/스킬 드롭 시 동일 구조 — 백엔드만 끄고 입력 채널 남김 — 재현 가능) | — | — |
 | 2026-04-21 | [memory-skill-duplication](2026-04-21-memory-skill-duplication.md) | 메모리에 스킬 파일로 유도 가능한 내용을 중복 저장 | low (메모리 오염, 토큰 낭비) | high (가드 없음) | — | — |
