@@ -87,6 +87,22 @@ except Exception as e:
 - API probe 재실행 → 200 이면 success
 - 출력: `new_app_id`, `package_name`, `dashboard_url`
 
+### Step 4.5 — Keystore SoT 기록
+
+등록 직후 `~/.claude/skills/submit-app/keystore-sot.md` 의 "## Registry" 섹션에 현재 기기 기준으로 한 줄 append:
+
+```
+<앱명>: 🍎 Mac (keystore: android/<name>-upload-keystore.jks, created: YYYY-MM-DD)
+```
+(hostname 이 `*MacBook*`/`*MBP*` 면 🍎 Mac, `DESKTOP-*` 면 🪟 WSL)
+
+이어서 커밋:
+```bash
+cd ~/.claude/skills && git add submit-app/keystore-sot.md && git commit -m "keystore-sot: <앱명> 등록 (<🍎 Mac|🪟 WSL>)" && git push
+```
+
+Registry 에 이미 해당 앱이 있으면 skip (중복 등록 방지). SoT 가 다른 기기로 기재돼 있으면 경고 + "이 앱은 이미 OO 에 keystore 가 있습니다" 로 step 1 실패로 처리.
+
 ### Step 5 — 이어서 할 일 제시
 
 ```

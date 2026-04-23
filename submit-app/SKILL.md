@@ -25,7 +25,30 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 
 ## 절차
 
-### Step 0 — Lessons 로드 & 체크리스트 생성
+### Step 0 — Keystore SoT 가드 (Android 만 해당)
+
+`--platform=android` 일 때 **반드시 먼저** 실행. iOS 는 스킵.
+
+1. `~/.claude/skills/submit-app/keystore-sot.md` 의 "## Registry" 섹션에서 해당 앱 라인 찾기
+2. SoT 가 `🍎 Mac` 인데 현재 hostname 이 `*MacBook*`/`*MBP*` 가 아니면 → 즉시 중단:
+   ```
+   🚨 keystore SoT 불일치
+   <앱명> 의 release keystore SoT 는 🍎 Mac 입니다.
+   현재 기기: 🪟 WSL
+   이 기기에서 서명·업로드 시 Play Store 가 "서명 불일치" 로 영구 거부할 수 있어요.
+   → Mac 세션에서 /submit-app <앱명> --platform=android 호출해주세요.
+   ```
+3. SoT 가 `🪟 WSL` 인데 현재 hostname 이 `DESKTOP-*` 가 아니면 → 동일한 방식으로 중단 + WSL 로 안내
+4. registry 에 앱이 없으면 → 경고:
+   ```
+   ⚠️ <앱명> 이 keystore SoT registry 에 없습니다.
+   keystore-sot.md "## Registry" 섹션에 먼저 한 줄 추가해주세요:
+     <앱명>: 🍎 Mac | 🪟 WSL (keystore: android/<file>.jks, created: YYYY-MM-DD)
+   ```
+   사용자가 "일단 진행" 이라고 하면 warning 만 남기고 계속.
+5. 통과하면 Step 0.5 (Lessons) 로.
+
+### Step 0.5 — Lessons 로드 & 체크리스트 생성
 
 **필수**. 이걸 먼저 안 하면 과거 실수 학습 효과가 0.
 
