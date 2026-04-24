@@ -135,6 +135,27 @@ done 스킬이 알아서:
 - `~/daejong-page/done/$(date +%F).md` 저장/갱신
 - daejong-page push
 
+### 4.5. insta-post 실행 (2026-04-24 추가)
+
+worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드:
+
+```
+Skill tool → insta-post 호출 (인자 없음, 오늘 날짜 사용)
+```
+
+insta-post 스킬이 알아서:
+- `~/daejong-page/worklog/$(date +%F)_v*.md` 파싱 → 1080×1350 카드 PNG 렌더
+- `~/insta-autopost/posted.json` dedup 가드로 오늘 이미 올렸으면 즉시 스킵
+- 시크릿 있는 기기(WSL)면 Instagram Graph API 자동 업로드 → permalink 리턴
+- 시크릿 없는 기기(Mac)면 자체 가드로 PNG 텔레그램 첨부(폴백) 또는 `/handoff` 스타일 WSL directive 송신
+
+실패 케이스 처리:
+- worklog 가 없으면 (3단계가 스킵된 경우) insta-post 내부 가드가 "worklog 없음" 으로 중단 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
+- 이미 올렸으면 insta-post 가 "중복" 으로 중단 → 기존 permalink 를 최종 보고에 넣음
+- API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속 (치명적이지 않음)
+
+**중요**: 인스타 업로드가 실패해도 goodnight 전체를 중단하지 말 것. worklog/done 이 홈페이지에 올라갔으면 하루 마감은 이미 성공.
+
 ### 5. 3 repo 상태 점검
 
 ```bash
@@ -161,6 +182,7 @@ chat_id 538806975 로 한 메시지:
 - done: <체크리스트 N개 항목>
 - 이슈: <신규/갱신 M건> or "없음"
 - 코드 커밋: <repo별 개수>
+- 인스타: <permalink> or "⚠️ 스킵/실패: 사유"
 
 **홈페이지 반영**
 - https://ssamssae.github.io/daejong-page/worklog.html
