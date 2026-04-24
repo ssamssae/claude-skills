@@ -20,6 +20,22 @@
 - **todos 하드삭제 금지** — 취소/보류 섹션 이동
 - 애매하면 **AGENT.md 확인**
 
+## 텔레그램 답변 철칙 (hard rule)
+
+- `<channel source="plugin:telegram:telegram">` 에서 온 메시지 답변은 **반드시** `mcp__plugin_telegram_telegram__reply` 툴로 전송. 터미널 평문은 강대종님 폰에 안 보임.
+- Stop 훅 `telegram-reply-check.sh` 가 이 규칙을 강제함 (telegram 입력 + reply 0회 = block).
+- 답변 포맷이 "exploratory 2-3 sentences" 일 때도 **예외 없음**. 짧든 길든 reply 툴 경유.
+
+## 크로스 디바이스 핸드오프 철칙 (hard rule)
+
+다른 기기 Claude 세션(WSL↔Mac)에 전달할 지시문은 **반드시 별도 텔레그램 메시지**로 보낸다.
+
+- **복붙 단위 1개 = 텔레그램 메시지 1개** (분석/근거/답변과 절대 섞지 말 것)
+- 각 directive 메시지는 **self-contained** — 새 채팅 첫 메시지로 가정하고 컨텍스트·판정결과·할일·금지사항 모두 포함
+- 분석 답변 끝에 "다음 directive" 섹션으로 내장하는 것 = 위반
+- 시그널 키워드 (본인 답변에서): "WSL Claude 용 복붙 directive", "Mac 세션에 넘겨", "복붙해서 전달", "넘겨줘" → 이 순간 즉시 `reply` 툴 호출을 **별도 메시지**로 분리
+- 위반 감지 시 바로 찢어서 재전송
+
 ## 빠른 자동 트리거 (상세는 AGENT.md)
 
 - 할일: "OO 해야 해 / 끝났어 / 완료 / 취소 / 아이디어" → **WSL 에선 Mac 로 라우팅** (todo SKILL.md 0단계). 조회는 `~/daejong-page/todos/YYYY-MM-DD.md` 스냅샷으로 가능, 쓰기는 텔레그램 트리거로 Mac 에 위임.
