@@ -29,22 +29,41 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 **Primary — `handoffs/` git 운반 + SSH+send-keys ping**
 
 1. `ssamssae/claude-skills/handoffs/YYYY-MM-DD-HHMM-{from}-{to}-{slug}.md` 작성 + commit + push. 본문 스키마는 `handoffs/README.md` (frontmatter from/to/sent_at/status, 본문 5섹션 컨텍스트/목표흐름/할일/금지/종료조건).
-2. SSH 로 상대 tmux 안 Claude 프롬프트에 짧은 1줄 핑:
+2. **활성 Claude 세션 동적 탐색** (2026-04-26 추가 — 이슈 `issues/2026-04-26-handoff-claude-main-empty-shell.md` 후 도입). `claude-main` 세션이 살아있어도 안에서 Claude Code 가 안 돌고 빈 bash 일 수 있음 (강대종님이 다른 터미널에서 `cc` 띄우면 새 세션이 활성, claude-main 은 빈 셸로 잔존). 송신 전 SSH 로 모든 tmux 세션 capture-pane 을 grep 해 Claude Code TUI 마커가 보이는 세션을 잡는다:
 
 ```bash
-# WSL→Mac (보낸 기기 = WSL = 🪟). Mac 계정명 user 주의 (ssamssae 아님).
-ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t claude-main '🪟 [WSL→MAC HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; /opt/homebrew/bin/tmux send-keys -t claude-main Enter"
+peer_session=$(ssh "$peer_user@$peer_host" '
+  for s in $(tmux list-sessions -F "#{session_name}" 2>/dev/null); do
+    tmux capture-pane -t "$s" -p 2>/dev/null \
+      | grep -qE "auto mode \(shift|Bypass Permissions|Claude (Opus|Sonnet|Haiku|Code)" \
+      && echo "$s" && break
+  done
+')
+if [ -z "$peer_session" ]; then
+  # 활성 Claude Code 세션 0개 → 텔레그램 Fallback 으로 우회 (강대종님 수동 paste).
+  exit 1
+fi
+```
 
+검사 마커: `auto mode \(shift` (footer mode 라인) | `Bypass Permissions` (footer) | `Claude (Opus|Sonnet|Haiku|Code)` (header). 셋 중 하나는 항상 떠있음.
+
+3. SSH 로 그 세션 안 Claude 프롬프트에 짧은 1줄 핑 (sender 이모지 prefix 필수):
+
+```bash
 # Mac→WSL (보낸 기기 = Mac = 🍎)
-ssh ssamssae@desktop-i4tr99i-1 "tmux send-keys -t claude-main '🍎 [MAC→WSL HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t claude-main Enter"
+ssh ssamssae@desktop-i4tr99i-1 "tmux send-keys -t '$peer_session' '🍎 [MAC→WSL HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t '$peer_session' Enter"
+
+# WSL→Mac (보낸 기기 = WSL = 🪟). Mac 계정명 user 주의 (ssamssae 아님), tmux 절대경로 필수.
+ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t '$peer_session' '🪟 [WSL→MAC HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; /opt/homebrew/bin/tmux send-keys -t '$peer_session' Enter"
 ```
 
 - **핑 첫 글자는 보낸 기기 이모지 필수** (WSL=🪟, Mac=🍎). 강대종님이 본인이 친 게 아님을 즉시 식별. 이 이모지는 §3 의 "이모지 금지" 규칙 예외 — §3 는 handoffs/ 파일 안 directive 본문 한정, 핑은 ephemeral chat injection 이라 별도.
 - text 와 Enter 를 **별도 send-keys 호출**로 분리 + 사이에 `sleep 0.5` (2026-04-25 검증 완료, METHOD A PASS).
 - 한 burst 로 보내면 (`'text' Enter` 또는 `'text' S-Enter`) 터미널이 통째로 bracketed paste 마커 (`\e[200~...\e[201~`) 로 감싸서, 안의 Enter 가 paste 콘텐츠 (= 줄바꿈) 로 흡수돼 submit 트리거 안 됨.
 - sleep 끼우면 paste 종료 후 Enter 가 별도 keystroke 으로 도착해서 submit 됨.
-- Mac→WSL: peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것), 세션=`claude-main` (WSL `~/.bashrc` 가드로 부팅 시 자동 생성, 2026-04-25).
-- WSL→Mac: peer-user=`user` (macOS 계정명. Apple ID 표시이름인 ssamssae 아님 — 2026-04-25 검증), peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. 세션=`claude-main` (Mac `~/.zshrc` 가드로 인터랙티브 셸 시 자동 생성, 2026-04-25). 양방향 대칭 셋업.
+- Mac→WSL: peer-user=`ssamssae`, peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것). 세션은 동적 탐색 (claude-main / claude / claude-NNNNN 등 어디든 활성 인스턴스).
+- WSL→Mac: peer-user=`user` (macOS 계정명. Apple ID 표시이름인 ssamssae 아님 — 2026-04-25 검증), peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. 세션은 동적 탐색.
+- WSL→Mac 방향 PATH 함정: Mac 비인터랙티브 SSH 셸은 `~/.zshrc` 안 로드 → tmux/grep 다 절대경로(`/opt/homebrew/bin/tmux`, `/usr/bin/grep`) 또는 `bash -lc 'tmux ...'` 로 인터랙티브 셸 강제.
 - exit 0 + Claude 답변 도착 = end-to-end PASS. 핑 자체는 영구 기록 불필요 (handoffs/ 파일이 진짜 directive 운반체).
 
 **Secondary — peer-bot `send.sh --peer` (짧은 인라인 directive)**
@@ -140,6 +159,7 @@ reply 1: "분석 결과 이건 Mac 이 해야 합니다. 아래 내용을 @MyCla
 ## 알려진 한계
 
 - Primary 흐름은 Claude Code 가 핑 도착 시점에 mid-task 인 경우 핑 본문이 user input 으로 끼어들 수 있음. 짧은 1줄(파일 경로 핑) 이라 본문 자체는 안 깨지지만, 세션 컨텍스트가 흐려질 수 있음. 발신측은 가능하면 수신측이 idle 일 때 핑.
+- **claude-main 빈 셸 함정 (2026-04-26 검증, issues/2026-04-26-handoff-claude-main-empty-shell.md)**: ~/.bashrc / ~/.zshrc 가드는 `claude-main` 세션을 만들 뿐 안에서 cc 자동 실행은 안 시킴. 강대종님이 다른 터미널에서 cc 띄우면 새 세션 (claude-NNNNN) 이 활성, claude-main 은 빈 bash 로 잔존. 송신측이 claude-main 하드코딩하면 빈 셸이 받아 "command not found". → §2 Primary 의 동적 세션 탐색 패턴 필수 사용.
 - tmux send-keys 의 `Enter` 또는 `S-Enter` 를 텍스트와 한 burst 로 보내면 Claude Code 가 submit 트리거 안 함. 원인: 빠른 burst 가 통째로 bracketed paste 마커 (`\e[200~ ... \e[201~`) 안에 감싸져서 안의 Enter/S-Enter 도 paste 콘텐츠 (= 줄바꿈) 로 흡수됨. 직접 손가락 Enter 는 paste 마커 밖에서 와서 submit 됨.
 - **정답 (2026-04-25 검증 완료, METHOD A PASS, 양방향)**: 텍스트 send-keys → `sleep 0.5` → Enter send-keys (별도 호출) 로 분리 발사. sleep 동안 paste 모드 종료 → Enter 가 진짜 keystroke 으로 도착 → submit. 명령 형태는 §2 Primary 참조.
 - **WSL→Mac 방향 PATH 함정**: Mac 비인터랙티브 SSH 셸은 `~/.zshrc` 안 로드해서 `/opt/homebrew/bin` PATH 빠짐 → `tmux: command not found` (exit=127). WSL→Mac SSH 명령에서는 `tmux` 를 `/opt/homebrew/bin/tmux` 절대경로로 사용 (memory `reference_ssh_mac_tools.md` 와 동일 함정). Mac→WSL 방향은 WSL 셸이 PATH 정상이라 영향 없음.
