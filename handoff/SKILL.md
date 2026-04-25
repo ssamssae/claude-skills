@@ -32,9 +32,14 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 2. SSH 로 상대 tmux 안 Claude 프롬프트에 짧은 1줄 핑:
 
 ```bash
-ssh <peer-user>@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t <세션> Enter"
+# WSL→Mac (보낸 기기 = WSL = 🪟). Mac 계정명 user 주의 (ssamssae 아님).
+ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t claude-main '🪟 [WSL→MAC HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; /opt/homebrew/bin/tmux send-keys -t claude-main Enter"
+
+# Mac→WSL (보낸 기기 = Mac = 🍎)
+ssh ssamssae@desktop-i4tr99i-1 "tmux send-keys -t claude-main '🍎 [MAC→WSL HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t claude-main Enter"
 ```
 
+- **핑 첫 글자는 보낸 기기 이모지 필수** (WSL=🪟, Mac=🍎). 강대종님이 본인이 친 게 아님을 즉시 식별. 이 이모지는 §3 의 "이모지 금지" 규칙 예외 — §3 는 handoffs/ 파일 안 directive 본문 한정, 핑은 ephemeral chat injection 이라 별도.
 - text 와 Enter 를 **별도 send-keys 호출**로 분리 + 사이에 `sleep 0.5` (2026-04-25 검증 완료, METHOD A PASS).
 - 한 burst 로 보내면 (`'text' Enter` 또는 `'text' S-Enter`) 터미널이 통째로 bracketed paste 마커 (`\e[200~...\e[201~`) 로 감싸서, 안의 Enter 가 paste 콘텐츠 (= 줄바꿈) 로 흡수돼 submit 트리거 안 됨.
 - sleep 끼우면 paste 종료 후 Enter 가 별도 keystroke 으로 도착해서 submit 됨.
@@ -58,8 +63,10 @@ ssh <peer-user>@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 
 
 ### 3. 디렉티브 메시지 포맷 규칙
 
+(handoffs/ 파일 본문 + secondary peer-bot Telegram directive 본문에 적용. Primary 핑은 §2 별도 규칙 — 보낸 기기 이모지 첫 글자 필수.)
+
 - 인용 박스 (`>`) 사용 금지 — long-press 복사 영역 오염
-- 이모지 사용 금지
+- 이모지 사용 금지 (Primary 핑의 sender 이모지는 예외)
 - "다음은 디렉티브입니다" 류 프리픽스 금지 — 상대 Claude 가 명령 일부로 오해
 - 코드 펜스 (```) 금지 — 동일 이유
 - **자족적 (self-contained)**. 상대 Claude 가 새 세션 첫 입력으로 가정. 컨텍스트·repo URL·파일경로·제약·금지사항 전부 인라인. "아까 말한 그거" 금지
