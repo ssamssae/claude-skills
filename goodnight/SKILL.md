@@ -135,24 +135,45 @@ done 스킬이 알아서:
 - `~/daejong-page/done/$(date +%F).md` 저장/갱신
 - daejong-page push
 
-### 4.5. insta-post 실행 (2026-04-24 추가)
+### 4.5. insta-post 실행 (2026-04-24 추가, 2026-04-25 hostname 분기 추가)
 
-worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드:
+worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드. **정책 A** (2026-04-25 결정) 에 따라 hostname 으로 분기:
 
+```bash
+HN=$(hostname)
+case "$HN" in
+  Daejongs-MacBook-Pro*) DEVICE_ROLE=mac ;;
+  DESKTOP-*)             DEVICE_ROLE=wsl ;;
+  *)                     DEVICE_ROLE=other ;;
+esac
+```
+
+**`DEVICE_ROLE=wsl`** — 직접 호출:
 ```
 Skill tool → insta-post 호출 (인자 없음, 오늘 날짜 사용)
 ```
+insta-post 스킬이 worklog 파싱 → 카드 PNG 렌더 → posted.json dedup → Instagram Graph API 자동 업로드 → permalink. 최종 보고에 permalink.
 
-insta-post 스킬이 알아서:
-- `~/daejong-page/worklog/$(date +%F)_v*.md` 파싱 → 1080×1350 카드 PNG 렌더
-- `~/insta-autopost/posted.json` dedup 가드로 오늘 이미 올렸으면 즉시 스킵
-- 시크릿 있는 기기(WSL)면 Instagram Graph API 자동 업로드 → permalink 리턴
-- 시크릿 없는 기기(Mac)면 자체 가드로 PNG 텔레그램 첨부(폴백) 또는 `/handoff` 스타일 WSL directive 송신
+**`DEVICE_ROLE=mac`** — 텔레그램 핸드오프 (Mac→WSL 자동 라우팅, 강대종님 발화 없음):
 
-실패 케이스 처리:
-- worklog 가 없으면 (3단계가 스킵된 경우) insta-post 내부 가드가 "worklog 없음" 으로 중단 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
-- 이미 올렸으면 insta-post 가 "중복" 으로 중단 → 기존 permalink 를 최종 보고에 넣음
-- API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속 (치명적이지 않음)
+mcp__plugin_telegram_telegram__reply 로 chat_id 538806975 에 다음 메시지 송신:
+```
+📸 /insta-post 핸드오프 — Mac /goodnight 자동 송신
+날짜: <오늘 YYYY-MM-DD>
+요청: WSL @Myclaude2 가 /insta-post <오늘 날짜> 호출해주세요. 결과 1줄 답신.
+— Mac (@MyClaude) <KST 시각>
+```
+
+송신 후 답신 기다리지 않음 (fire-and-forget). 최종 보고에 "📸 인스타: WSL 핸드오프 송신됨" 한 줄. WSL Claude 가 텔레그램에서 이 메시지 인식해 자동으로 /insta-post 호출 (트리거 키워드는 insta-post SKILL.md 에 등록됨).
+
+송신 실패해도 /goodnight 전체 중단 금지 — 보고에 "⚠️ 인스타 핸드오프 송신 실패" 만.
+
+**`DEVICE_ROLE=other`** — skip + 보고에 "📸 인스타: 알 수 없는 기기 ($HN), skip"
+
+실패 케이스 처리 (WSL 직접 호출 시):
+- worklog 가 없으면 insta-post 내부 가드가 "worklog 없음" 으로 중단 + 텔레그램 알림 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
+- 이미 올렸으면 dedup 가드로 중단 → 기존 permalink 를 최종 보고에 넣음
+- API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속
 
 **중요**: 인스타 업로드가 실패해도 goodnight 전체를 중단하지 말 것. worklog/done 이 홈페이지에 올라갔으면 하루 마감은 이미 성공.
 
