@@ -8,7 +8,7 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 
 강대종님이 두 Claude 세션(Mac=`@MyClaude`, WSL=`@Myclaude2`) 을 운영한다. 디렉티브를 상대 기기로 넘기는 채널은 **3단 사다리**:
 
-1. **Primary — `handoffs/` + SSH+send-keys ping** (2026-04-25 정착): directive 본문은 priv repo `ssamssae/claude-skills/handoffs/` 파일에 git 으로 운반, 짧은 1줄 핑은 SSH 로 상대 tmux 안 Claude 프롬프트에 자동 인젝션. 강대종님 손 0번 (단 `S-Enter` (Shift+Enter) 1회 keysym 으로 submit, Claude Code submit 규칙).
+1. **Primary — `handoffs/` + SSH+send-keys ping** (2026-04-25 정착): directive 본문은 priv repo `ssamssae/claude-skills/handoffs/` 파일에 git 으로 운반, 짧은 1줄 핑은 SSH 로 상대 tmux 안 Claude 프롬프트에 자동 인젝션. 강대종님 손 0번 (단 text 와 Enter 를 `sleep 0.5` 끼워 별도 send-keys 로 분리 발사 필수 — bracketed paste 우회).
 2. **Secondary — peer-bot `send.sh --peer`**: 텔레그램 상대 봇 챗에 directive 직접 POST. 짧은 인라인 directive 또는 `handoffs/` 영구 기록 불필요할 때.
 3. **Fallback — 현재 봇 reply 별도 메시지**: peer 토큰 누락 또는 SSH 다운 시. 강대종님이 챗 전환 + long-press → paste.
 
@@ -32,10 +32,12 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 2. SSH 로 상대 tmux 안 Claude 프롬프트에 짧은 1줄 핑:
 
 ```bash
-ssh ssamssae@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행' S-Enter"
+ssh ssamssae@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t <세션> Enter"
 ```
 
-- `S-Enter` (Shift+Enter) 1회 — Claude Code submit 트리거. 일반 `Enter` 는 줄바꿈만 되고 submit 안 됨 (tmux send-keys 의 Enter 가 bracketed paste 의 일부로 흡수되는 듯). 가설 검증은 진행 중.
+- text 와 Enter 를 **별도 send-keys 호출**로 분리 + 사이에 `sleep 0.5` (2026-04-25 검증 완료, METHOD A PASS).
+- 한 burst 로 보내면 (`'text' Enter` 또는 `'text' S-Enter`) 터미널이 통째로 bracketed paste 마커 (`\e[200~...\e[201~`) 로 감싸서, 안의 Enter 가 paste 콘텐츠 (= 줄바꿈) 로 흡수돼 submit 트리거 안 됨.
+- sleep 끼우면 paste 종료 후 Enter 가 별도 keystroke 으로 도착해서 submit 됨.
 - Mac→WSL: peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것), 세션=현재 `claude-60120` (PID suffix 임시명, 향후 `claude-main` 마이그레이션 예정).
 - WSL→Mac: peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. Mac 측 Claude tmux 세션명 셋업은 별도 결정 필요 (TBD).
 - exit 0 + Claude 답변 도착 = end-to-end PASS. 핑 자체는 영구 기록 불필요 (handoffs/ 파일이 진짜 directive 운반체).
@@ -126,7 +128,8 @@ reply 1: "분석 결과 이건 Mac 이 해야 합니다. 아래 내용을 @MyCla
 ## 알려진 한계
 
 - Primary 흐름은 Claude Code 가 핑 도착 시점에 mid-task 인 경우 핑 본문이 user input 으로 끼어들 수 있음. 짧은 1줄(파일 경로 핑) 이라 본문 자체는 안 깨지지만, 세션 컨텍스트가 흐려질 수 있음. 발신측은 가능하면 수신측이 idle 일 때 핑.
-- tmux send-keys 의 `Enter` 는 Claude Code 에서 submit 안 됨 (모두 줄바꿈으로 흡수, 추정 원인: bracketed paste 모드). 직접 손가락 Enter 는 submit 정상 동작. 우회: send-keys 끝에 `S-Enter` (Shift+Enter) 1회로 submit 트리거 (2026-04-25 강대종님 제안, 검증 진행 중). 만약 S-Enter 도 실패하면 후보: `C-j` (Ctrl+J), `Esc Enter`, 또는 텍스트와 Enter 를 sleep 끼워 별도 send-keys 호출로 분리.
+- tmux send-keys 의 `Enter` 또는 `S-Enter` 를 텍스트와 한 burst 로 보내면 Claude Code 가 submit 트리거 안 함. 원인: 빠른 burst 가 통째로 bracketed paste 마커 (`\e[200~ ... \e[201~`) 안에 감싸져서 안의 Enter/S-Enter 도 paste 콘텐츠 (= 줄바꿈) 로 흡수됨. 직접 손가락 Enter 는 paste 마커 밖에서 와서 submit 됨.
+- **정답 (2026-04-25 검증 완료, METHOD A PASS)**: 텍스트 send-keys → `sleep 0.5` → Enter send-keys (별도 호출) 로 분리 발사. sleep 동안 paste 모드 종료 → Enter 가 진짜 keystroke 으로 도착 → submit. 명령 형태는 §2 Primary 참조.
 
 ## 관련
 
