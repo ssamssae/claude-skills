@@ -6,9 +6,13 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 
 # handoff — 크로스 디바이스 프롬프트 넘기기
 
-강대종님이 두 Claude 세션(Mac=`@MyClaude`, WSL=`@Myclaude2`) 을 운영한다. **자동 전달은 텔레그램 봇 구조상 안 됨** — getUpdates 는 user→bot 메시지만 inbound 로 잡고 bot→user POST 는 폴링에 안 잡힌다 (2026-04-25 검증, server.ts L903 `handleInbound` 참조). 그래서 디렉티브 자동 처리 같은 건 못 한다.
+강대종님이 두 Claude 세션(Mac=`@MyClaude`, WSL=`@Myclaude2`) 을 운영한다. 디렉티브를 상대 기기로 넘기는 채널은 **3단 사다리**:
 
-이 스킬이 하는 것: **챗 전환 1회 제거**. 디렉티브를 상대 봇 챗에 직접 발송해서, 강대종님이 그 챗만 열면 directive 가 거기 이미 와있게 한다. 상대 봇 챗 안에서 long-press → copy → paste → send 로 끝.
+1. **Primary — `handoffs/` + SSH+send-keys ping** (2026-04-25 정착): directive 본문은 priv repo `ssamssae/claude-skills/handoffs/` 파일에 git 으로 운반, 짧은 1줄 핑은 SSH 로 상대 tmux 안 Claude 프롬프트에 자동 인젝션. 강대종님 손 0번 (단 Enter Enter 두 번 keysym 필수, Claude Code submit 규칙).
+2. **Secondary — peer-bot `send.sh --peer`**: 텔레그램 상대 봇 챗에 directive 직접 POST. 짧은 인라인 directive 또는 `handoffs/` 영구 기록 불필요할 때.
+3. **Fallback — 현재 봇 reply 별도 메시지**: peer 토큰 누락 또는 SSH 다운 시. 강대종님이 챗 전환 + long-press → paste.
+
+텔레그램 봇끼리 자동 메시지 전달은 구조상 막혀있다 (getUpdates 는 user→bot 만 inbound 로 잡고 bot→user POST 는 폴링에 안 잡힘, 2026-04-25 검증, server.ts L903 `handleInbound`). 그래서 Secondary/Fallback 은 강대종님 수동 paste 가 트리거. Primary 만 진짜 무복붙.
 
 ## 호출 순서
 
@@ -20,19 +24,35 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 
 (만약 peer 토큰 미설정이면 fallback 안내: "다음 reply 메시지가 복붙용이에요" — 같은 챗에 디렉티브 별도 reply.)
 
-### 2. 디렉티브 — 상대 봇 챗에 send.sh 로 직접 발송
+### 2. 디렉티브 운반 — 3단 사다리
+
+**Primary — `handoffs/` git 운반 + SSH+send-keys ping**
+
+1. `ssamssae/claude-skills/handoffs/YYYY-MM-DD-HHMM-{from}-{to}-{slug}.md` 작성 + commit + push. 본문 스키마는 `handoffs/README.md` (frontmatter from/to/sent_at/status, 본문 5섹션 컨텍스트/목표흐름/할일/금지/종료조건).
+2. SSH 로 상대 tmux 안 Claude 프롬프트에 짧은 1줄 핑:
+
+```bash
+ssh ssamssae@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행' Enter Enter"
+```
+
+- `Enter Enter` 두 번 (Claude Code submit 트리거; 1회=줄바꿈, 2회=submit). 한 번만 보내면 텍스트만 도착하고 처리 안 시작됨.
+- Mac→WSL: peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것), 세션=현재 `claude-60120` (PID suffix 임시명, 향후 `claude-main` 마이그레이션 예정).
+- WSL→Mac: peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. Mac 측 Claude tmux 세션명 셋업은 별도 결정 필요 (TBD).
+- exit 0 + Claude 답변 도착 = end-to-end PASS. 핑 자체는 영구 기록 불필요 (handoffs/ 파일이 진짜 directive 운반체).
+
+**Secondary — peer-bot `send.sh --peer` (짧은 인라인 directive)**
 
 ```bash
 ~/.claude/channels/telegram/send.sh --peer 538806975 "<디렉티브 본문>"
 ```
 
-- chat_id `538806975` 는 강대종님 user_id (양 봇 같은 DM)
-- send.sh 는 `--peer` 시 `TELEGRAM_PEER_BOT_TOKEN` 사용 → 상대 봇 챗에 도착
-- exit 0 = 도착 OK. 비0 = 토큰 누락 등 → fallback (아래)
-- **이 메시지는 상대 Claude 가 자동 처리하지 않음**. 강대종님 수동 paste 가 트리거.
+- handoffs/ 영구 기록 불필요한 짧은 directive (예: "PR #123 머지해", "포트 3000 죽여").
+- chat_id `538806975` 는 강대종님 user_id (양 봇 같은 DM).
+- send.sh `--peer` 시 `TELEGRAM_PEER_BOT_TOKEN` 사용 → 상대 봇 챗에 도착. 강대종님 수동 paste 가 트리거 (자동 처리 안 됨).
 
-**Fallback (peer 토큰 누락 또는 send.sh 실패):**
-디렉티브를 `mcp__plugin_telegram_telegram__reply` 로 **별도 메시지** 발송 (현재 봇 챗에). 강대종님이 챗 전환해서 paste — 옛날 방식.
+**Fallback — 현재 봇 reply 별도 메시지 (peer 토큰 누락 또는 SSH 다운)**
+
+디렉티브를 `mcp__plugin_telegram_telegram__reply` 로 별도 메시지 발송 (현재 봇 챗에). 강대종님이 챗 전환해서 paste — 옛날 방식.
 
 ### 3. 디렉티브 메시지 포맷 규칙
 
@@ -99,11 +119,14 @@ reply 1: "분석 결과 이건 Mac 이 해야 합니다. 아래 내용을 @MyCla
 - **메시지 길이 4096자 초과**: 분할 금지. Gist/repo commit 후 URL 만 디렉티브에 포함
 - **handoff 의 handoff 금지**: 상대 Claude 가 받자마자 또 다른 기기로 handoff 던지는 무한루프 방지 — 디렉티브에 "이건 너 기기에서 끝내" 명시
 
-## 향후 진화 옵션 (현재 미구현, 메모용)
+## 향후 진화 옵션
 
-옵션 2 — Mac↔WSL SSH + tmux send-keys: WSL Claude 를 약속된 tmux 세션에서 띄우고, Mac 이 SSH 로 send-keys 인젝션. 진짜 무복붙. 비용: SSH 키 양방향 셋업 + tmux 디시플린 + Claude 작업 중 인젝션 충돌 위험.
+옵션 — 플러그인 fork: `~/.claude/plugins/cache/.../telegram/0.0.6/server.ts` 의 `handleInbound` 에 `reply_to_message?.text` 를 meta 에 실어주는 패치. 사용자가 bot 메시지에 1글자 reply 만 해도 directive 컨텍스트 전달됨. 비용: 플러그인 버전업 시 fork 재적용. (Primary 정착 후 우선순위 낮음.)
 
-옵션 3 — 플러그인 fork: `~/.claude/plugins/cache/.../telegram/0.0.6/server.ts` 의 `handleInbound` 에 `reply_to_message?.text` 를 meta 에 실어주는 패치. 사용자가 bot 메시지에 1글자 reply 만 해도 directive 컨텍스트 전달됨. 비용: 플러그인 버전업 시 fork 재적용.
+## 알려진 한계
+
+- Primary 흐름은 Claude Code 가 핑 도착 시점에 mid-task 인 경우 핑 본문이 user input 으로 끼어들 수 있음. 짧은 1줄(파일 경로 핑) 이라 본문 자체는 안 깨지지만, 세션 컨텍스트가 흐려질 수 있음. 발신측은 가능하면 수신측이 idle 일 때 핑.
+- `tmux send-keys ... Enter` 한 번은 Claude Code submit 트리거 안 됨 (1회 = 줄바꿈). `Enter Enter` 두 번이 정답 (2026-04-25 검증).
 
 ## 관련
 
