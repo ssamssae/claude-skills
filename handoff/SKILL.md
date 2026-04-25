@@ -38,8 +38,8 @@ ssh ssamssae@<peer-host> "tmux send-keys -t <세션> '[XXX HANDOFF] git pull 후
 - text 와 Enter 를 **별도 send-keys 호출**로 분리 + 사이에 `sleep 0.5` (2026-04-25 검증 완료, METHOD A PASS).
 - 한 burst 로 보내면 (`'text' Enter` 또는 `'text' S-Enter`) 터미널이 통째로 bracketed paste 마커 (`\e[200~...\e[201~`) 로 감싸서, 안의 Enter 가 paste 콘텐츠 (= 줄바꿈) 로 흡수돼 submit 트리거 안 됨.
 - sleep 끼우면 paste 종료 후 Enter 가 별도 keystroke 으로 도착해서 submit 됨.
-- Mac→WSL: peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것), 세션=현재 `claude-60120` (PID suffix 임시명, 향후 `claude-main` 마이그레이션 예정).
-- WSL→Mac: peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. Mac 측 Claude tmux 세션명 셋업은 별도 결정 필요 (TBD).
+- Mac→WSL: peer-host=`desktop-i4tr99i-1` (Tailscale linux 노드 — windows 노드 `desktop-i4tr99i` 와 헷갈리지 말 것), 세션=`claude-main` (WSL `~/.bashrc` 가드로 부팅 시 자동 생성, 2026-04-25).
+- WSL→Mac: peer-host=`user-macbookpro-1`, IPv4 `100.74.85.37`, Mac sshd 활성·`authorized_keys` 에 WSL 키 "windows-wsl" 등록됨. 세션=`claude-main` (Mac `~/.zshrc` 가드로 인터랙티브 셸 시 자동 생성, 2026-04-25). 양방향 대칭 셋업.
 - exit 0 + Claude 답변 도착 = end-to-end PASS. 핑 자체는 영구 기록 불필요 (handoffs/ 파일이 진짜 directive 운반체).
 
 **Secondary — peer-bot `send.sh --peer` (짧은 인라인 directive)**
