@@ -129,7 +129,8 @@ reply 1: "분석 결과 이건 Mac 이 해야 합니다. 아래 내용을 @MyCla
 
 - Primary 흐름은 Claude Code 가 핑 도착 시점에 mid-task 인 경우 핑 본문이 user input 으로 끼어들 수 있음. 짧은 1줄(파일 경로 핑) 이라 본문 자체는 안 깨지지만, 세션 컨텍스트가 흐려질 수 있음. 발신측은 가능하면 수신측이 idle 일 때 핑.
 - tmux send-keys 의 `Enter` 또는 `S-Enter` 를 텍스트와 한 burst 로 보내면 Claude Code 가 submit 트리거 안 함. 원인: 빠른 burst 가 통째로 bracketed paste 마커 (`\e[200~ ... \e[201~`) 안에 감싸져서 안의 Enter/S-Enter 도 paste 콘텐츠 (= 줄바꿈) 로 흡수됨. 직접 손가락 Enter 는 paste 마커 밖에서 와서 submit 됨.
-- **정답 (2026-04-25 검증 완료, METHOD A PASS)**: 텍스트 send-keys → `sleep 0.5` → Enter send-keys (별도 호출) 로 분리 발사. sleep 동안 paste 모드 종료 → Enter 가 진짜 keystroke 으로 도착 → submit. 명령 형태는 §2 Primary 참조.
+- **정답 (2026-04-25 검증 완료, METHOD A PASS, 양방향)**: 텍스트 send-keys → `sleep 0.5` → Enter send-keys (별도 호출) 로 분리 발사. sleep 동안 paste 모드 종료 → Enter 가 진짜 keystroke 으로 도착 → submit. 명령 형태는 §2 Primary 참조.
+- **WSL→Mac 방향 PATH 함정**: Mac 비인터랙티브 SSH 셸은 `~/.zshrc` 안 로드해서 `/opt/homebrew/bin` PATH 빠짐 → `tmux: command not found` (exit=127). WSL→Mac SSH 명령에서는 `tmux` 를 `/opt/homebrew/bin/tmux` 절대경로로 사용 (memory `reference_ssh_mac_tools.md` 와 동일 함정). Mac→WSL 방향은 WSL 셸이 PATH 정상이라 영향 없음.
 
 ## 관련
 
