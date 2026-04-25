@@ -50,23 +50,28 @@ ssh ssamssae@desktop-i4tr99i-1 "tmux send-keys -t claude-main '🍎 [MAC→WSL H
 **Secondary — peer-bot `send.sh --peer` (짧은 인라인 directive)**
 
 ```bash
-~/.claude/channels/telegram/send.sh --peer 538806975 "<디렉티브 본문>"
+# WSL→Mac 방향 (보낸 기기 = WSL = 🪟)
+~/.claude/channels/telegram/send.sh --peer 538806975 "🪟 [한 줄 제목]\n\n<본문>"
+
+# Mac→WSL 방향 (보낸 기기 = Mac = 🍎)
+~/.claude/channels/telegram/send.sh --peer 538806975 "🍎 [한 줄 제목]\n\n<본문>"
 ```
 
+- **본문 첫 글자는 보낸 기기 이모지 필수** (WSL=🪟, Mac=🍎). Primary 핑 규칙과 동일 적용 — 강대종님이 받은 메시지가 본인 입력 아님 즉시 식별.
 - handoffs/ 영구 기록 불필요한 짧은 directive (예: "PR #123 머지해", "포트 3000 죽여").
 - chat_id `538806975` 는 강대종님 user_id (양 봇 같은 DM).
 - send.sh `--peer` 시 `TELEGRAM_PEER_BOT_TOKEN` 사용 → 상대 봇 챗에 도착. 강대종님 수동 paste 가 트리거 (자동 처리 안 됨).
 
 **Fallback — 현재 봇 reply 별도 메시지 (peer 토큰 누락 또는 SSH 다운)**
 
-디렉티브를 `mcp__plugin_telegram_telegram__reply` 로 별도 메시지 발송 (현재 봇 챗에). 강대종님이 챗 전환해서 paste — 옛날 방식.
+디렉티브를 `mcp__plugin_telegram_telegram__reply` 로 별도 메시지 발송 (현재 봇 챗에). 강대종님이 챗 전환해서 paste — 옛날 방식. **본문 첫 글자 sender 이모지(🪟/🍎)** Secondary 와 동일하게 필수.
 
 ### 3. 디렉티브 메시지 포맷 규칙
 
-(handoffs/ 파일 본문 + secondary peer-bot Telegram directive 본문에 적용. Primary 핑은 §2 별도 규칙 — 보낸 기기 이모지 첫 글자 필수.)
+(handoffs/ 파일 본문 + secondary peer-bot Telegram directive 본문 + fallback reply directive 본문 모두 적용. **단 sender 이모지 첫 글자(🪟/🍎)는 §2 의 별도 규칙으로 모든 directive 메시지에 필수** — handoffs/ 파일 frontmatter 직후 본문 시작점에도, peer-bot 발송 본문 첫 글자에도, fallback reply 본문 첫 글자에도 동일 적용.)
 
 - 인용 박스 (`>`) 사용 금지 — long-press 복사 영역 오염
-- 이모지 사용 금지 (Primary 핑의 sender 이모지는 예외)
+- 이모지 사용 금지 (sender 이모지 첫 글자는 예외 — 핑/handoffs/secondary/fallback 전부)
 - "다음은 디렉티브입니다" 류 프리픽스 금지 — 상대 Claude 가 명령 일부로 오해
 - 코드 펜스 (```) 금지 — 동일 이유
 - **자족적 (self-contained)**. 상대 Claude 가 새 세션 첫 입력으로 가정. 컨텍스트·repo URL·파일경로·제약·금지사항 전부 인라인. "아까 말한 그거" 금지
