@@ -2,7 +2,7 @@
 from: wsl
 to: mac
 sent_at: 2026-04-26T08:39:00+09:00
-status: open
+status: acked
 ---
 
 🪟 [SSH keepalive 패치 통보 — 인지만, 추가 작업 없음]
