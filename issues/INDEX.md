@@ -1,10 +1,17 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-24 00:15 KST_
+_마지막 생성: 2026-04-26 08:48 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-26 | [mac-ssh-stale-socket-overnight](2026-04-26-mac-ssh-stale-socket-overnight.md) | Mac SSH 새벽 sleep 후 stale 소켓 — Windows Terminal 탭 묶임 | low | low (양방향 keepalive 박힘) | — | — |
+| 2026-04-26 | [handoff-method-a-fallback-regression](2026-04-26-handoff-method-a-fallback-regression.md) | /handoff METHOD A 회귀 — 무복붙 인프라 두고 복붙 폴백으로 빠짐 | medium | medium | — | — |
+| 2026-04-26 | [handoff-claude-main-empty-shell](2026-04-26-handoff-claude-main-empty-shell.md) | /handoff Primary 첫 실전 — claude-main 세션은 살아있는데 안에서 Claude Code 가 안 돌고 있었음 | ? | ? | — | — |
+| 2026-04-25 | [wsl-playwright-mcp-install-blocked](2026-04-25-wsl-playwright-mcp-install-blocked.md) | WSL Playwright MCP 플러그인 설치 — 하네스 자기수정 게이트로 차단 | ? | ? | — | — |
+| 2026-04-24 | [playwright-mcp-content-rights-dialog-misclick](2026-04-24-playwright-mcp-content-rights-dialog-misclick.md) | Playwright MCP App Store Connect 콘텐츠 권한 다이얼로그 "완료" 오클릭 | low (작업 15~25분 지연, 복구 가능) | high (Playwright MCP 로 App Store Connect 폼 자동화할 때마다 유사 위험) | — | — |
+| 2026-04-24 | [ios-ipad13-screenshot-mandatory](2026-04-24-ios-ipad13-screenshot-mandatory.md) | App Store 심사 제출: iPad 13" 스크린샷 누락으로 "심사에 추가" 차단 | medium (심사 제출 지연 수십 분) | high (iPhone 전용으로 기획한 앱을 App Store 에 올릴 때마다 동일하게 발견됨) | — | — |
+| 2026-04-24 | [insta-autopost-mac-mirror-missing](2026-04-24-insta-autopost-mac-mirror-missing.md) | 4/24 인스타 자동 포스팅 누락 — Mac 호출 시 시크릿/인프라 부재 | ? | ? | — | — |
 | 2026-04-23 | [ios-gidclientid-missing](2026-04-23-ios-gidclientid-missing.md) | iOS GoogleSignIn GIDClientID 누락 크래시 (심사레이더) | high (앱 첫 화면 전 강제 종료) | high (google_sign_in 쓰는 신규 Flutter 앱 iOS 첫 빌드에서 동일하게 재현) | — | — |
 | 2026-04-21 | [orphan-skill-file-after-interrupt](2026-04-21-orphan-skill-file-after-interrupt.md) | 세션 중단 직후 방금 만든 스킬 파일이 커밋/푸시 없이 로컬에만 남음 | medium (데이터 유실 가능성 — Mac 디스크 단일 장애점 의존, 단일 파일 규모) | high (인터럽트/컨텍스트 스위치가 일상적, 현재 가드 없음) | 2회 | — |
 | 2026-04-21 | [memoyo-signup-ghost-form](2026-04-21-memoyo-signup-ghost-form.md) | 메모요 스토어 드롭 후 2주 동안 홈페이지 사전예약 폼이 살아있어서 이메일 계속 수집 | low (개인 데이터 소규모 + 악의적 수집은 아님). 단 사용자 기대 이탈 위험은 있음. | medium (다른 앱/스킬 드롭 시 동일 구조 — 백엔드만 끄고 입력 채널 남김 — 재현 가능) | — | — |
