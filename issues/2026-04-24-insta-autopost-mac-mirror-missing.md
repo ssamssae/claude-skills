@@ -215,3 +215,39 @@ WSL `/insta-post` SKILL.md 의 venv 의존성 명시는 현재 `Pillow + request
 - posted.json 양방향 동기 정책 (WSL SoT? git remote? — 미정)
 - 토큰 만료 D-7 알림 자동화 (~2026-06-23, GET_TOKEN.md 수동 절차)
 - /insta-post SKILL.md 가드 fail 시 텔레그램 즉시 보고 패치
+
+## SKILL.md 갱신 (2026-04-25 14:25 KST, WSL @Myclaude2)
+
+Mac 의 finding (render.py 가 playwright Python pkg 필요, requests/python-dateutil 사실 미사용) + 가드 fail 보고 누락 두 건 한꺼번에 SKILL.md 에 반영.
+
+### 1) 의존성 섹션 신설
+
+기존엔 의존성 명시가 흩어져 있었음 ("실패 시" 섹션의 `playwright install chromium` 한 줄 정도). 새로 "사전 조건 → 의존성 (Python venv)" 서브섹션 추가:
+
+- 최소 세트: `Pillow + playwright` + `playwright install chromium`
+- requests / python-dateutil: 불필요 명시 (publish.py 가 stdlib 만 사용)
+- 새 기기 미러링 시 두 줄 명령으로 끝나는 절차 박음
+
+### 2) 가드 재정렬 + 텔레그램 보고
+
+기존 가드 #1, #2 (worklog / 중복) → 가드 #0~#3 으로 4단계 분리:
+
+- 가드 #0 (venv 점검): `~/.claude/tools/venv/bin/python` 부재 → 텔레그램 알림 + 중단
+- 가드 #1 (worklog 점검): 부재 시 텔레그램 알림 + 중단 (기존엔 silent abort, 4/24 누락 사례 재발 방지)
+- 가드 #2 (시크릿 점검): 부재 시 기기 가드 흐름 + 자동 호출 시 텔레그램 알림
+- 가드 #3 (중복 점검): 누락 아님 — 텔레그램 알림 불필요, 채팅 회신만
+
+이후 절차 step 4-8 → 6-10 으로 시프트.
+
+### 3) 다음 단계 절차 번호 정렬
+
+가드 5개 (#0~#3 + 시크릿) → 카드 렌더 = step 6, 캡션 = 7, 발행 = 8, 텔레그램 = 9, cleanup = 10. 가드 #3 의 dedup 보호 layer 언급도 가드 #3 으로 정정.
+
+### 커밋
+
+`feat(insta-post): add venv guard, plain dependency spec, telegram alert on miss` (1183a3c → rebase 후 07a10a2 push). Mac 측은 다음 /sync 때 받음.
+
+### 남은 후속 (이번 turn 미해결)
+
+- posted.json 양쪽 동기화 정책 — 강대종님 OK 받기 전 WSL 단독 결정 안 함
+- 토큰 만료 D-7 알림 — Mac directive 의 캘린더 등록 (2026-06-16 09:00 KST) 으로 처리됨 → 별도 자동화 작업 필요 없음, 이 후속 항목 닫음
