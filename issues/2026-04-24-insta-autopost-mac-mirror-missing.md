@@ -150,3 +150,68 @@ A) `~/.claude/tools/venv/bin/pip install playwright` 추가 설치 → render.py
 B) /insta-post SKILL.md 의 의존성 정의 갱신 (Pillow/requests/dateutil + playwright) — WSL directive 보강 따로 필요
 
 A 가 1단계로 끝남 (chromium 번들 재사용으로 다운로드 비용 0).
+
+## A 진행 결과 (2026-04-25 14:04 KST)
+
+강대종님 OK (msg 6986) 후 A 경로 진행 완료.
+
+### playwright Python pkg 설치
+
+```
+$ ~/.claude/tools/venv/bin/pip install playwright
+Successfully installed greenlet-3.4.0 playwright-1.58.0 pyee-13.0.1 typing-extensions-4.15.0
+```
+
+### chromium 번들 호환성 — 추가 다운로드 발생
+
+기존 `~/Library/Caches/ms-playwright/chromium-1217/` 은 npm playwright-core 1.60.0-alpha (Apr 16 Playwright MCP 가 깐 것). Python playwright 1.58.0 은 별도 빌드 `chromium_headless_shell-1208` 요구 → mismatch:
+
+```
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at
+.../chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+```
+
+`playwright install chromium` 으로 91.1 MiB 추가 다운로드 (280MB 풀 크롬 아니고 headless shell 만 받음, render.py 가 헤드리스로 동작하므로 충분):
+
+```
+Chrome Headless Shell 145.0.7632.6 (playwright chromium-headless-shell v1208)
+downloaded to ~/Library/Caches/ms-playwright/chromium_headless_shell-1208
+```
+
+### 실 dry 호출 PASS
+
+```
+$ ~/.claude/tools/venv/bin/python render.py \
+    --title "Mac venv smoke" \
+    --hook "이건 검증용 더미 카드" \
+    --date 2026-04-25 \
+    --output ~/insta-autopost/out/dummy-mac-smoke.png
+/Users/user/insta-autopost/out/dummy-mac-smoke.png
+
+$ ls -la ~/insta-autopost/out/dummy-mac-smoke.png
+-rw-r--r--  73156 Apr 25 14:04 dummy-mac-smoke.png
+
+$ python -c "from PIL import Image; im=Image.open(...); print(im.size, im.mode)"
+(2160, 2700) RGB
+```
+
+✅ PNG 73KB, 크기 2160×2700 (CANVAS 1080×1350 @ device_scale_factor=2 retina). 정리 완료(`rm dummy-mac-smoke.png`).
+
+### 최종 상태
+
+- ✅ Mac venv: Python 3.13.5, pip 26.0.1, Pillow 12.2.0, requests 2.33.1, dateutil 2.9.0.post0, **playwright 1.58.0 추가**
+- ✅ chromium_headless_shell-1208 번들 Mac 표준 위치 설치
+- ✅ render.py 실 dry-run PASS (PNG 1080×1350 @2x 정상 생성/정리)
+- ⛔️ publish.py 미호출 (인스타 실 POST 0건, posted.json 변경 0)
+- ✅ /insta-post Mac 측 양방향 호출 가능 상태 확정
+
+### 발견 — WSL directive 의 의존성 정의 갱신 권장
+
+WSL `/insta-post` SKILL.md 의 venv 의존성 명시는 현재 `Pillow + requests + python-dateutil` (publish.py 가 사실 stdlib 만 쓰니 `requests`/`python-dateutil` 도 불필요). 정확한 최소 세트는 **`Pillow + playwright` + `playwright install chromium`** 만이면 충분. 다음 turn 후속 작업 후보 (강대종님 결정).
+
+### 남은 후속
+
+- WSL `/insta-post` SKILL.md 의존성 갱신 (위 finding 반영)
+- posted.json 양방향 동기 정책 (WSL SoT? git remote? — 미정)
+- 토큰 만료 D-7 알림 자동화 (~2026-06-23, GET_TOKEN.md 수동 절차)
+- /insta-post SKILL.md 가드 fail 시 텔레그램 즉시 보고 패치
