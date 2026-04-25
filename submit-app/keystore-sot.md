@@ -16,6 +16,7 @@ One line per app:
 <!-- Keep sorted by app name. Add via /create-play-app or manual edit. -->
 
 - dutch_pay_calculator: 🍎 Mac (keystore: `android/dutchpay-upload-keystore.jks`, created: 2025 이전)
+- hanjul: 🍎 Mac (keystore: `android/hanjul-upload-keystore.jks`, created: 2026-04-25)
 - hankeup: 🍎 Mac (keystore: `android/hankeup-upload-keystore.jks`, created: 2026-04-20)
 - memoyo (simple_memo_app): 🍎 Mac (keystore: `android/memoyo-upload-keystore.jks`, created: 2025 이전)
 - mini_expense: 🍎 Mac (keystore: `android/mini_expense-upload-keystore.jks`, created: 2026-04-20)
