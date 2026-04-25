@@ -61,7 +61,62 @@ fi
 OK 하면 진행합니다.
 ```
 
-사용자 OK 받으면 2단계로.
+사용자 OK 받으면 1.5 단계로.
+
+### 1.5. 자동 완료 todos 매칭 (✨ 2026-04-26 추가)
+
+오늘 끝낸 일과 todos.md 의 열린 항목을 토큰 매칭해 "이미 끝났는데 todo 만 안 옮긴" 항목을 자동 검출.
+
+배경: 강대종님 패턴 — 작업이 자연스럽게 끝나도 진행중 [ ] 마킹을 안 옮기는 일이 자주 발생 (예: 4/24 iOS 심사 제출 완료 → 4/26 아침에야 발견). 진행중 섹션이 부풀어서 오늘 우선순위 안 보임.
+
+**입력**:
+- 열린 todos: `grep "^- \[ \]" ~/todo/todos.md`
+- 오늘 증거 (이미 step 1 에서 수집됨): 오늘 커밋 메시지, 오늘 done 항목, 오늘 worklog 본문
+
+**매칭 알고리즘**:
+
+```python
+import re
+
+# 토큰 추출 — 3글자+, 한/영/숫자, 흔한 stopword 제외
+STOPWORDS = {"오늘","내일","어제","처리","작업","완료","마무리","수정","변경","추가","제거","업데이트","검증","해결","진행","제출","빌드","배포"}
+
+def tokens(text):
+    raw = re.findall(r'[가-힣A-Za-z0-9_]{3,}', text)
+    return {w.lower() for w in raw if w.lower() not in STOPWORDS}
+
+evidence_tokens = tokens(today_commits + today_done + today_worklog)
+for todo_line in open_todos:
+    title = todo_line.split('  (')[0]  # 메타 빼고 본문만
+    overlap = tokens(title) & evidence_tokens
+    if len(overlap) >= 2:
+        candidates.append((title, overlap))
+```
+
+매칭 임계값 2개 — 1개는 false positive 너무 많음, 3개는 너무 빡빡.
+
+**텔레그램 질문 포맷**:
+
+```
+✅ 자동 완료 후보 N건 — 오늘 한 일이랑 매칭됨:
+1. <todo 한 줄 제목> (매칭: 단어1, 단어2, ...)
+2. ...
+
+처리: "1,2" 박을 번호 / "전부" / "없음" / "확인 필요" (자세히 보고 싶음)
+```
+
+**응답 처리**:
+- **번호** / **"전부"**: `/todo` 스킬에 위임. 항목별로 `/todo 완료 <제목>` 호출. 완료 메모는 "✨ 자동 매칭 완료 (오늘 커밋·done 매칭)" 로 표기 — 나중에 본인이 "왜 완료됐지?" 확인할 수 있게.
+- **"확인 필요"**: 후보별로 매칭된 단어 + 어디서 매칭됐는지(커밋 hash / done 줄 / worklog 섹션) 상세 표시.
+- **"없음"**: skip, 2단계로.
+- 후보 0개 / 임계값 미달: 사용자에게 안 물어봄. 조용히 다음 단계.
+
+**오작동 방지**:
+- 토큰이 너무 일반적이면 false positive 위험. STOPWORDS 에 "심사", "iOS", "Android" 같은 자주 나오는 단어 추가 검토.
+- "검토 필요" 대답이 자주 나오면 임계값 3개로 올리거나, 오늘 commit 의 본문 (제목 외) 도 evidence 에 포함.
+- 매칭은 후보 제시일 뿐, 자동 완료 처리 금지. 반드시 사용자 confirm.
+
+이 단계가 끝나면 2단계(미기록 이슈 점검)로.
 
 ### 2. 미기록 이슈 점검 (✨ 핵심)
 
