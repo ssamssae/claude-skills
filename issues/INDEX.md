@@ -1,15 +1,17 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-26 10:17 KST_
+_마지막 생성: 2026-04-26 18:03 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-26 | [review-status-disabled-blind-spot](2026-04-26-review-status-disabled-blind-spot.md) | review-status-check _disabled 이동 후 17h 동안 Apple issue 메일 누락 | high (App Store 제출 일정 + 사용자 신뢰 영향, 2개 앱 동시 영향) | high (forcing function 없음, _disabled/ 폴더의 다른 모니터링·알림 잡들 다 같은 위험) | — | — |
 | 2026-04-26 | [paste-block-label-leak](2026-04-26-paste-block-label-leak.md) | 복붙 메시지에 라벨/안내 텍스트 섞어 보냄 → PowerShell 명령 깨짐 | medium | high (이번이 3-4번째) | — | — |
 | 2026-04-26 | [mac-ssh-stale-socket-overnight](2026-04-26-mac-ssh-stale-socket-overnight.md) | Mac SSH 새벽 sleep 후 stale 소켓 — Windows Terminal 탭 묶임 | low | low (양방향 keepalive 박힘) | — | — |
 | 2026-04-26 | [heartbeat-rule-soft-enforcement](2026-04-26-heartbeat-rule-soft-enforcement.md) | 작업 중 5분 하트비트 룰 강제력 부재로 12분간 침묵 | medium (UX, 사용자가 진행 상태 파악 못 함) | high (메모리 룰 만으로는 강제력 없음 — 작업 몰입 시 timestamp 추적 실패가 일상) | — | 2026-04-27 |
 | 2026-04-26 | [handoff-method-a-fallback-regression](2026-04-26-handoff-method-a-fallback-regression.md) | /handoff METHOD A 회귀 — 무복붙 인프라 두고 복붙 폴백으로 빠짐 | medium | medium | — | — |
 | 2026-04-26 | [handoff-claude-main-empty-shell](2026-04-26-handoff-claude-main-empty-shell.md) | /handoff Primary 첫 실전 — claude-main 세션은 살아있는데 안에서 Claude Code 가 안 돌고 있었음 | ? | ? | — | — |
+| 2026-04-26 | [handoff-active-session-marker-mismatch](2026-04-26-handoff-active-session-marker-mismatch.md) | 발생 | ? | ? | — | — |
 | 2026-04-25 | [wsl-playwright-mcp-install-blocked](2026-04-25-wsl-playwright-mcp-install-blocked.md) | WSL Playwright MCP 플러그인 설치 — 하네스 자기수정 게이트로 차단 | ? | ? | — | — |
 | 2026-04-24 | [playwright-mcp-content-rights-dialog-misclick](2026-04-24-playwright-mcp-content-rights-dialog-misclick.md) | Playwright MCP App Store Connect 콘텐츠 권한 다이얼로그 "완료" 오클릭 | low (작업 15~25분 지연, 복구 가능) | high (Playwright MCP 로 App Store Connect 폼 자동화할 때마다 유사 위험) | — | — |
 | 2026-04-24 | [ios-ipad13-screenshot-mandatory](2026-04-24-ios-ipad13-screenshot-mandatory.md) | App Store 심사 제출: iPad 13" 스크린샷 누락으로 "심사에 추가" 차단 | medium (심사 제출 지연 수십 분) | high (iPhone 전용으로 기획한 앱을 App Store 에 올릴 때마다 동일하게 발견됨) | — | — |
@@ -21,7 +23,7 @@ _마지막 생성: 2026-04-26 10:17 KST_
 | 2026-04-21 | [mac-wsl-todos-desync](2026-04-21-mac-wsl-todos-desync.md) | Mac 과 WSL 이 같은 심사레이더 작업을 병렬로 붙잡고 todos 정합성 파탄 | medium (잘못된 커밋 1건 + 사용자 혼란 + 양 기기 불일치, 다만 실제 파괴적 액션은 없음) | high (현재 구조상 기기 간 todo 상태 sync 가 인간 개입에만 의존) | — | — |
 | 2026-04-21 | [launchd-silent-job-dropout](2026-04-21-launchd-silent-job-dropout.md) | launchd 가 등록된 잡을 소리 없이 떨궈서 수 주 동안 자동 스케줄 유실 | medium (자동화 잡 2개가 몇 주간 침묵 실행 실패 가능성) | medium (launchd 수동 편집 시마다 동일 현상 가능) | 1회 | — |
 | 2026-04-20 | [terminal-only-reply-missed-telegram](2026-04-20-terminal-only-reply-missed-telegram.md) | Telegram-origin 질문에 터미널로만 답하고 reply 툴 호출 누락 | high (사용자 의사소통 차단) | high (같은 세션에서 여러 번 반복 확인됨) | 6회 | — |
-| 2026-04-20 | [telegram-typing-midsession-drop](2026-04-20-telegram-typing-midsession-drop.md) | 텔레그램 typing 표시가 채팅 중 "한번 쏘고" 완전 정지 | low (UX, 응답 중 상태 불투명) | medium | 1회 | — |
+| 2026-04-20 | [telegram-typing-midsession-drop](2026-04-20-telegram-typing-midsession-drop.md) | 텔레그램 typing 표시가 채팅 중 "한번 쏘고" 완전 정지 | low (UX, 응답 중 상태 불투명) | medium | 12회 | — |
 | 2026-04-20 | [telegram-client-delivery-lag](2026-04-20-telegram-client-delivery-lag.md) | 텔레그램 답변이 "안 오는 것처럼" 보인 지연 현상 | medium | medium | — | — |
 | 2026-04-20 | [irun-locked-iphone](2026-04-20-irun-locked-iphone.md) | /irun 재배포 시 "Could not run Runner.app" 반복 — 실제 원인은 아이폰 잠금 | medium | high | — | — |
 | 2026-04-20 | [flutter-not-in-path](2026-04-20-flutter-not-in-path.md) | flutter 명령 PATH 누락으로 APK 빌드 초기 실패 | medium | high | — | — |
