@@ -46,7 +46,15 @@ Mac push 완료, WSL 은 `cd ~/.claude/automations && git pull --rebase origin m
 - **heartbeat 로그가 재발 감지 forcing function.** 다음에 "끊김" 신고 들어오면 `/tmp/claude-telegram-typing-heartbeat.log` 의 마지막 로그 시각 + HTTP 코드로 원인이 pkill 인지 API 오류인지 즉시 구분 가능.
 
 ## 재발 이력
-- 2026-04-26 09:55:03~10:10:02: daemon PID 24413 이 `start` + `iter=0 http=200` 만 찍고 silent death. 이후 15분간 새 daemon 시작 흔적 없음 (사용자 turn 안에서 죽었음). `/tmp/claude-telegram-typing-heartbeat.log` 확인. 동시에 Claude 측 5분 reply 하트비트도 누락되어 사용자에게는 "12분 완전 침묵" 으로 인지됨 → 별건 이슈 `2026-04-26-heartbeat-rule-soft-enforcement.md` 와 동시 발생. **이전 예방(세션별 PID 격리, set -e 제거, disown)이 통한 줄 알았으나 sess=unknown 환경에서는 PID 파일이 모두 `default` 로 통일되어 격리 실패 가능성**. 재조사 필요.
+- 2026-04-26 09:55:03~10:10:02: daemon PID 24413 이 `start` + `iter=0 http=200` 만 찍고 silent death. 이후 15분간 새 daemon 시작 흔적 없음 (사용자 turn 안에서 죽었음). `/tmp/claude-telegram-typing-heartbeat.log` 확인. 동시에 Claude 측 5분 reply 하트비트도 누락되어 사용자에게는 "12분 완전 침묵" 으로 인지됨 → 별건 이슈 `2026-04-26-heartbeat-rule-soft-enforcement.md` 와 동시 발생.
+
+### 2026-04-26 재조사 — 두 번째 forcing function 추가 (commit 3f4d2d1)
+- **확정 원인:** `CLAUDE_SESSION_ID` 환경변수가 hook 프로세스에 주입되지 않음. start.sh / stop.sh 모두 `${CLAUDE_SESSION_ID:-default}` 로 떨어지고 daemon.sh 는 `unknown` 으로 떨어져, **모든 병렬 세션이 단일 PID 파일 `/tmp/claude-telegram-typing-default.pid` 를 공유**. 04-20 의 세션별 PID 격리 forcing function 자체는 살아있었으나, "세션 ID 가 항상 동일 fallback" 이라는 함정 때문에 격리가 무력화됨.
+- **외부 kill 증거:** `/tmp/claude-stop-hook.log` 에 09:55:44 sess `663444…` 의 Stop 발생 → 그 직전 09:55:03 에 시작한 [24413] 이 iter=15 (예상 09:56:03) 도 못 찍고 사라짐. silent exit 아니고 sibling Stop 이 `default.pid` 의 24413 을 kill.
+- **두 번째 forcing function:** Claude Code 가 Stop / UserPromptSubmit hook 에 JSON stdin 으로 `session_id` 를 넘겨줌 (env 가 아니라). 이걸 `jq -r '.session_id'` 로 파싱해 PID 파일 키로 사용. fallback 도 `default` 같은 단일 리터럴이 아니라 transcript 파일명 또는 hostname+pid 같은 고유값으로 변경.
+- **stop.sh 의 안전 가드:** 만약 session_id 도, transcript 도 모두 비면 SESSION_ID="MISSING" 으로 두고 **아무것도 안 함** (sibling 데몬 nuke 방지 — 누설이 차라리 안전).
+- **e2e 검증:** synthetic JSON 으로 다른 session_id 두 개 만들어서 한 세션의 Stop 이 다른 세션의 daemon 을 안 죽이는 것 확인. heartbeat-log 에 `sess=e2e-test` 로 실제 세션 prefix 가 찍힘 (이전엔 `sess=unknown`).
+- **실데이터 확인 신호:** 다음 세션부터 heartbeat-log 의 `sess=` 부분이 `unknown` / `default` 가 아니라 진짜 UUID 8자 prefix 가 찍혀야 정상. 다시 `unknown` 이 보이면 stdin 파싱 실패 — fallback (transcript basename) 으로 떨어졌어야 함.
 
 ## 관련 링크
 - 커밋: `claude-automations` 0c62bab (hooks 3종 수정)
