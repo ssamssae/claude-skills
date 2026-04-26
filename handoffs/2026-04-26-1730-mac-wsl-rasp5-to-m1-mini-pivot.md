@@ -2,7 +2,9 @@
 from: mac
 to: wsl
 sent_at: 2026-04-26T17:30:00+09:00
-status: open
+status: replied
+replied_at: 2026-04-26T17:58:00+09:00
+reply_file: 2026-04-26-1758-wsl-mac-rasp5-pivot-ack.md
 ---
 
 [라파5 → M1 맥미니 결정 전환 + 오늘 변경사항 동기화]
