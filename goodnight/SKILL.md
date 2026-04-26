@@ -71,7 +71,12 @@ OK 하면 진행합니다.
 
 **입력**:
 - 열린 todos: `grep "^- \[ \]" ~/todo/todos.md`
-- 오늘 증거 (이미 step 1 에서 수집됨): 오늘 커밋 메시지, 오늘 done 항목, 오늘 worklog 본문
+- 오늘 증거 (step 1 에서 수집된 것 + 추가):
+  - 오늘 커밋 메시지
+  - 오늘 done 항목
+  - 오늘 worklog 본문
+  - **오늘 갱신된 메모리** (✨ 2026-04-26 추가): `find ~/.claude/projects/-Users-user/memory -name "*.md" -mtime -1` → 각 파일에서 "발행/배포/완료/성공/PASS/도달/충족/투입" 키워드 grep
+  - **오늘 텔레그램 reply 본문** (✨ 2026-04-26 추가): 현재 conversation 의 직전 reply 들 또는 transcript jsonl 의 오늘분 — `assistant` role 중 `mcp__plugin_telegram_telegram__reply` tool_use 의 `text` 인자에 동일 키워드 grep
 
 **매칭 알고리즘**:
 
@@ -106,8 +111,9 @@ for todo_line in open_todos:
 ```
 
 **응답 처리**:
-- **번호** / **"전부"**: `/todo` 스킬에 위임. 항목별로 `/todo 완료 <제목>` 호출. 완료 메모는 "✨ 자동 매칭 완료 (오늘 커밋·done 매칭)" 로 표기 — 나중에 본인이 "왜 완료됐지?" 확인할 수 있게.
-- **"확인 필요"**: 후보별로 매칭된 단어 + 어디서 매칭됐는지(커밋 hash / done 줄 / worklog 섹션) 상세 표시.
+- **번호** / **"전부"**: `/todo` 스킬에 위임. 항목별로 `/todo 완료 <제목>` 호출. 완료 메모는 "✨ 자동 매칭 완료 (오늘 커밋·done·메모리 매칭)" 로 표기 — 나중에 본인이 "왜 완료됐지?" 확인할 수 있게.
+  - **메모리 status 동시 갱신** (✨ 2026-04-26 추가): 닫힌 todo 와 매칭된 메모리 파일이 있으면 (evidence 출처가 메모리인 경우), 그 메모리 파일의 status/decision 필드를 "완료"로 갱신 또는 description 한 줄 보강. 갱신 끝난 메모리는 auto-push hook 이 알아서 commit + push.
+- **"확인 필요"**: 후보별로 매칭된 단어 + 어디서 매칭됐는지(커밋 hash / done 줄 / worklog 섹션 / 메모리 파일명 / 텔레그램 reply 시각) 상세 표시.
 - **"없음"**: skip, 2단계로.
 - 후보 0개 / 임계값 미달: 사용자에게 안 물어봄. 조용히 다음 단계.
 
