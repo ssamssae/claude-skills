@@ -46,7 +46,7 @@ Mac push 완료, WSL 은 `cd ~/.claude/automations && git pull --rebase origin m
 - **heartbeat 로그가 재발 감지 forcing function.** 다음에 "끊김" 신고 들어오면 `/tmp/claude-telegram-typing-heartbeat.log` 의 마지막 로그 시각 + HTTP 코드로 원인이 pkill 인지 API 오류인지 즉시 구분 가능.
 
 ## 재발 이력
-_(없음)_
+- 2026-04-26 09:55:03~10:10:02: daemon PID 24413 이 `start` + `iter=0 http=200` 만 찍고 silent death. 이후 15분간 새 daemon 시작 흔적 없음 (사용자 turn 안에서 죽었음). `/tmp/claude-telegram-typing-heartbeat.log` 확인. 동시에 Claude 측 5분 reply 하트비트도 누락되어 사용자에게는 "12분 완전 침묵" 으로 인지됨 → 별건 이슈 `2026-04-26-heartbeat-rule-soft-enforcement.md` 와 동시 발생. **이전 예방(세션별 PID 격리, set -e 제거, disown)이 통한 줄 알았으나 sess=unknown 환경에서는 PID 파일이 모두 `default` 로 통일되어 격리 실패 가능성**. 재조사 필요.
 
 ## 관련 링크
 - 커밋: `claude-automations` 0c62bab (hooks 3종 수정)
