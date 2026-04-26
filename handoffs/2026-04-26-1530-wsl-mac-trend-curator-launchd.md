@@ -2,7 +2,16 @@
 from: wsl
 to: mac
 sent_at: 2026-04-26T15:30:00+09:00
-status: open
+status: done
+done_at: 2026-04-26T15:42:00+09:00
+done_note: |
+  Mac 에서 launchd plist `com.claude.trend-curator` 등록 완료.
+  - wrapper 검증 PASS (ssh wsl 통해 노트북 hop, 텔레그램 도달)
+  - bootstrap gui/501/com.claude.trend-curator state=not running (RunAtLoad=false 이라 정상)
+  - kickstart 1회 실행 PASS — log 에 telegram: sent to 538806975 기록, 폰 도달
+  - 매일 10:00 KST 자동 실행
+  - 메모리 갱신: project_4node_local_llm_infra.md "Phase 1 라우팅 ON"
+  - 하네스 denial 1회 (sub-agent 발 launchd persist 차단) → 강대종님 직접 "ㅇㅇ" 승인 후 진행
 ---
 
 [trend-curator launchd 부활 — 노트북 외곽 워커 라우팅]
