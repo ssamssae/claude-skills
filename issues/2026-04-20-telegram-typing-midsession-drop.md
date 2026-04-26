@@ -47,8 +47,15 @@ Mac push 완료, WSL 은 `cd ~/.claude/automations && git pull --rebase origin m
 
 ## 재발 이력
 - 2026-04-26 09:55:03~10:10:02: daemon PID 24413 이 `start` + `iter=0 http=200` 만 찍고 silent death. 이후 15분간 새 daemon 시작 흔적 없음 (사용자 turn 안에서 죽었음). `/tmp/claude-telegram-typing-heartbeat.log` 확인. 동시에 Claude 측 5분 reply 하트비트도 누락되어 사용자에게는 "12분 완전 침묵" 으로 인지됨 → 별건 이슈 `2026-04-26-heartbeat-rule-soft-enforcement.md` 와 동시 발생.
+- **2026-04-26 12:33 KST 세 번째 재발**: /clear 직후 새 세션(20372e1a) 첫 telegram prompt 에 데몬이 안 뜸. 04-26 오전의 두 번째 forcing function(stdin .session_id 파싱)으로 sess UUID 8자 prefix(c458df1d)는 살아있었지만, 새 세션 20372e1a 에는 heartbeat-log 가 0줄. start.sh 수동 invoke 는 성공 → 진단: hook fires before Claude flushes prompt to transcript, `grep -q 'source=...' "$transcript"` 가 빈 파일 만나서 exit 0 → daemon 안 뜸. 사용자가 turn 전체 동안 입력중 표시 못 봄.
 
-### 2026-04-26 재조사 — 두 번째 forcing function 추가 (commit 3f4d2d1)
+### 2026-04-26 12:33 KST 세 번째 forcing function (claude-automations commit 9094e88)
+- **확정 원인 (3차)**: UserPromptSubmit hook 이 발화하는 시점에 `transcript_path` 파일에는 아직 새 prompt 가 flush 되지 않음 (race). start.sh 의 `grep -q 'source=...' "$transcript"` 가 false → 데몬 spawn 단계 도달 못 하고 exit 0. 새 세션 첫 telegram prompt 에서 일관 재현.
+- **검증**: 12:43 에 동일 transcript 로 start.sh 수동 invoke → daemon spawn 성공, heartbeat log 에 `sess=20372e1a` 정상 기록. 결국 transcript 가 비어있는 그 한 순간만 grep 이 헛도는 게 원인.
+- **세 번째 forcing function**: UserPromptSubmit hook stdin JSON 의 `.prompt` 필드를 읽어 거기에 `source="plugin:telegram:telegram"` 가 있으면 transcript grep 실패와 무관하게 spawn. transcript 그rep 은 1차 path 로 유지 (legacy/이상 케이스 대응), prompt 검사가 fallback.
+- **e2e 검증 (commit 9094e88)**: synthetic JSON `transcript_path:/dev/null` + `.prompt` 안에 telegram channel 태그만 있을 때 daemon spawn OK. 일반 문자열 prompt 는 spawn 안 함.
+
+### 2026-04-26 09:50 KST 재조사 — 두 번째 forcing function 추가 (commit 3f4d2d1)
 - **확정 원인:** `CLAUDE_SESSION_ID` 환경변수가 hook 프로세스에 주입되지 않음. start.sh / stop.sh 모두 `${CLAUDE_SESSION_ID:-default}` 로 떨어지고 daemon.sh 는 `unknown` 으로 떨어져, **모든 병렬 세션이 단일 PID 파일 `/tmp/claude-telegram-typing-default.pid` 를 공유**. 04-20 의 세션별 PID 격리 forcing function 자체는 살아있었으나, "세션 ID 가 항상 동일 fallback" 이라는 함정 때문에 격리가 무력화됨.
 - **외부 kill 증거:** `/tmp/claude-stop-hook.log` 에 09:55:44 sess `663444…` 의 Stop 발생 → 그 직전 09:55:03 에 시작한 [24413] 이 iter=15 (예상 09:56:03) 도 못 찍고 사라짐. silent exit 아니고 sibling Stop 이 `default.pid` 의 24413 을 kill.
 - **두 번째 forcing function:** Claude Code 가 Stop / UserPromptSubmit hook 에 JSON stdin 으로 `session_id` 를 넘겨줌 (env 가 아니라). 이걸 `jq -r '.session_id'` 로 파싱해 PID 파일 키로 사용. fallback 도 `default` 같은 단일 리터럴이 아니라 transcript 파일명 또는 hostname+pid 같은 고유값으로 변경.
