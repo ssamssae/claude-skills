@@ -34,7 +34,8 @@ prevention_deferred: 2026-04-27
 - **claim 마커가 아닌 시간 마커**: hook 이 nudge 띄울 때 단순 경고 외에 도구 호출명/파일명도 함께 출력 → 무엇 하다가 침묵했는지 자동 라벨.
 
 ## 재발 이력
-_(없음, 신규)_
+
+- **2026-04-26 18:14 ~ 19:05 KST (51분 침묵)**: 약먹자/더치페이 ASC Information Needed 대응 작업 흐름. 18:14 reply (id 7703) 에 "진행 단계마다 한 줄씩 보고할게요" 명시 약속까지 했는데, 그 후 약먹자 pub get → 빌드 23초 → 시뮬 install/launch → 더치페이 pub get → 빌드 15초 → computer-use request_access 까지 도구만 6단계 쌓이고 reply 0번. 강대종님이 7704 (19:05 "하는중이야? 입력중 하트비트 안나옴 이슈등록후 재발방지") + 7705 (19:07 "mcp 끊김?") 로 지적. 09:55 12분 침묵 대비 **4배 길어진 51분**. 원인: PreToolUse hook 미구현(prevention_deferred 2026-04-27) 상태 그대로 + 명시 약속 위반(self-binding 도 fail) — 메모리 룰 + 자기 약속 둘 다 강제력 0 재확인. 2026-04-27 마감 forcing function 우선순위 high 격상 권고.
 
 ## 관련 링크
 - 메모리: `feedback_heartbeat_during_work.md` (룰 정의)
