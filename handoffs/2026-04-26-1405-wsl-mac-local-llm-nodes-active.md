@@ -2,7 +2,7 @@
 from: wsl
 to: mac
 sent_at: 2026-04-26T14:05:00+09:00
-status: open
+status: done
 ---
 
 🪟 [4-노드 로컬 LLM 인프라 가동 — 데스크탑·노트북 신입 합류]
