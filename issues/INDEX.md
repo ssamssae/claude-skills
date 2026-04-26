@@ -1,10 +1,11 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-26 08:48 KST_
+_마지막 생성: 2026-04-26 09:54 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-26 | [paste-block-label-leak](2026-04-26-paste-block-label-leak.md) | 복붙 메시지에 라벨/안내 텍스트 섞어 보냄 → PowerShell 명령 깨짐 | medium | high (이번이 3-4번째) | — | — |
 | 2026-04-26 | [mac-ssh-stale-socket-overnight](2026-04-26-mac-ssh-stale-socket-overnight.md) | Mac SSH 새벽 sleep 후 stale 소켓 — Windows Terminal 탭 묶임 | low | low (양방향 keepalive 박힘) | — | — |
 | 2026-04-26 | [handoff-method-a-fallback-regression](2026-04-26-handoff-method-a-fallback-regression.md) | /handoff METHOD A 회귀 — 무복붙 인프라 두고 복붙 폴백으로 빠짐 | medium | medium | — | — |
 | 2026-04-26 | [handoff-claude-main-empty-shell](2026-04-26-handoff-claude-main-empty-shell.md) | /handoff Primary 첫 실전 — claude-main 세션은 살아있는데 안에서 Claude Code 가 안 돌고 있었음 | ? | ? | — | — |
