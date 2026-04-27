@@ -20,6 +20,15 @@
 - **todos 하드삭제 금지** — 취소/보류 섹션 이동
 - 애매하면 **AGENT.md 확인**
 
+## 코딩 행동 룰 (Karpathy 4룰, 2026-04-27 도입)
+
+출처: [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills). 자동 모드여도 매 작업마다 적용.
+
+1. **가정 명시 (Think Before Coding)** — 모호하면 멈추고 묻기. 해석 여러 개면 다 surface, 침묵으로 하나 고르지 말 것. 본인 컨텍스트가 stale 일 가능성도 가정 → step 0 git pull (오늘 19:13 stale-on-stale 사고).
+2. **단순함 우선 (Simplicity First)** — 요청 외 기능·추상화·"유연성"·불가능 케이스 에러 처리 X. 200줄 → 50줄 가능하면 다시 쓰기. "시니어 엔지니어가 과해 보일까?" self-check.
+3. **국소 변경 (Surgical Changes)** — 인접 코드·주석·포맷 손대지 말 것. 안 깨진 거 리팩토링 X. 기존 스타일 따라. 변경된 모든 라인은 사용자 요청과 직접 연결돼야 함.
+4. **검증 가능한 목표 (Goal-Driven Execution)** — "되게 만들기" 같은 약한 기준 금지. "X 테스트 PASS" / "Y 화면 렌더링" / "Z 커밋 push" 식 verifiable 한 줄로 작업 시작 전 명시.
+
 ## 텔레그램 답변 철칙 (hard rule)
 
 - `<channel source="plugin:telegram:telegram">` 에서 온 메시지 답변은 **반드시** `mcp__plugin_telegram_telegram__reply` 툴로 전송. 터미널 평문은 강대종님 폰에 안 보임.
@@ -50,6 +59,8 @@
 | `Daejongs-MacBook-Pro` 류 | 🍎 Mac 본진 (launchd SoT) | `@MyClaude` | iOS |
 | `DESKTOP-*` (WSL) | 🪟 윈도우 전위 | `@Myclaude2` | Android |
 | 그 외 | 📱 iPhone Termius 원격 | — | — |
+
+**가동 패턴 (2026-04-27 확인):** MacBook Pro = 사실상 24/7 stationary (외출 거의 없음, 집 데스크톱화) → SoT 자격 OK. WSL = 밤 OFF (야간 launchd/cron 잡 호스트 불가). M1 맥미니 = 진짜 24/7 켜져있되 launchd 미박음, 현재 use case 대기 중인 fallback 노드.
 
 역할 어긋나면 "이거 OO 쪽이 더 적합한 것 같은데, 옮길까요?" 제안.
 
