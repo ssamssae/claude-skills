@@ -1,7 +1,7 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-27 17:13 KST_
+_마지막 생성: 2026-04-27 19:32 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -10,7 +10,7 @@ _마지막 생성: 2026-04-27 17:13 KST_
 | 2026-04-26 | [review-status-disabled-blind-spot](2026-04-26-review-status-disabled-blind-spot.md) | review-status-check _disabled 이동 후 17h 동안 Apple issue 메일 누락 | high (App Store 제출 일정 + 사용자 신뢰 영향, 2개 앱 동시 영향) | high (forcing function 없음, _disabled/ 폴더의 다른 모니터링·알림 잡들 다 같은 위험) | — | — |
 | 2026-04-26 | [paste-block-label-leak](2026-04-26-paste-block-label-leak.md) | 복붙 메시지에 라벨/안내 텍스트 섞어 보냄 → PowerShell 명령 깨짐 | medium | high (이번이 3-4번째) | — | — |
 | 2026-04-26 | [mac-ssh-stale-socket-overnight](2026-04-26-mac-ssh-stale-socket-overnight.md) | Mac SSH 새벽 sleep 후 stale 소켓 — Windows Terminal 탭 묶임 | low | low (양방향 keepalive 박힘) | — | — |
-| 2026-04-26 | [heartbeat-rule-soft-enforcement](2026-04-26-heartbeat-rule-soft-enforcement.md) | 작업 중 5분 하트비트 룰 강제력 부재로 12분간 침묵 | medium (UX, 사용자가 진행 상태 파악 못 함) | high (메모리 룰 만으로는 강제력 없음 — 작업 몰입 시 timestamp 추적 실패가 일상) | 2회 | 2026-04-27 |
+| 2026-04-26 | [heartbeat-rule-soft-enforcement](2026-04-26-heartbeat-rule-soft-enforcement.md) | 작업 중 5분 하트비트 룰 강제력 부재로 12분간 침묵 | medium (UX, 사용자가 진행 상태 파악 못 함) | high (메모리 룰 만으로는 강제력 없음 — 작업 몰입 시 timestamp 추적 실패가 일상) | 3회 | — |
 | 2026-04-26 | [handoff-method-a-fallback-regression](2026-04-26-handoff-method-a-fallback-regression.md) | /handoff METHOD A 회귀 — 무복붙 인프라 두고 복붙 폴백으로 빠짐 | medium | medium | — | — |
 | 2026-04-26 | [handoff-claude-main-empty-shell](2026-04-26-handoff-claude-main-empty-shell.md) | /handoff Primary 첫 실전 — claude-main 세션은 살아있는데 안에서 Claude Code 가 안 돌고 있었음 | ? | ? | — | — |
 | 2026-04-26 | [handoff-active-session-marker-mismatch](2026-04-26-handoff-active-session-marker-mismatch.md) | 발생 | ? | ? | — | — |
