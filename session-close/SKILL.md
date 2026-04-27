@@ -19,22 +19,66 @@ allowed-tools: Bash, Write, Edit, Read, Grep
 - "세션 클리어해도 돼?" / "세션 클리어" / "세션클리어"
 - "/session-close" / "/session-end"
 - "이 세션 닫아도 돼?" / "/clear 해도 돼?"
-- "오늘 세션 끝낼까?"
+- "오늘 세션 끝낼까?" / "이쯤 마무리할까?" / "세션 그만"
 
 **"되?" / "돼?" 의문형이 핵심 시그널.** 그냥 "/clear" 만 친 거면 강대종님이 이미 닫기로 결심한 거니 발동하지 말고 통과.
+
+## 트리거-후보-저장 흐름 (v0.2 명시화)
+
+세션 닫기는 3-stage 라이프사이클:
+
+1. **트리거 stage** — 강대종님 발화 감지. 발화 받은 세션이 trigger session.
+2. **후보 stage** — trigger session 이 진행 기록 + someday 후보 수집해 텔레그램 후보 메시지 발송. 강대종님 응답 대기.
+3. **저장 stage** — 응답 받은 세션이 메모리 파일 Write + someday 트리거 + 청소 + 그린라이트.
+
+**같은 세션이 3-stage 모두 처리하는 게 표준.** 다만 강대종님이 trigger session 을 일찍 끄거나 (`/clear` 누름) 다른 기기로 이동해서 응답할 경우, 후보 메시지를 받는 세션 ≠ trigger session 일 수 있음 (cross-session takeover). 이 케이스에선:
+
+- takeover session 은 후보 메시지의 진행 기록을 그대로 신뢰 (자기가 만든 게 아니라도 OK)
+- 단, in_progress 메모리 정리 시 takeover session 이 만들지 않은 파일은 함부로 삭제 X. mtime 24h + 후보 본문 매칭 둘 다 확인 후 정리
+- 체크포인트 파일의 "발동 발화" 필드에 `(takeover)` 표시
+
+이번 v0.1 첫 사용(2026-04-27 18:58 KST)은 takeover 케이스였음 — 직전 다른 세션이 후보 메시지를 만들어 보냈고, 새로 들어온 세션이 응답("체크포인트 OK")을 받아 저장 stage 만 수행. v0.2 부터 이 흐름이 정상.
+
+## No-op 자동 판단 (휴리스틱)
+
+트리거 받은 세션이 아래 조건 중 하나면 무거운 후보 메시지 안 보내고 한 줄 텔레그램 reply 만:
+
+```
+✅ 가벼운 세션이라 체크포인트 안 박아도 OK. /clear 진행하셔도 됩니다.
+```
+
+조건 (OR):
+
+1. 세션 시작 ts 와 현재 ts 의 차이가 5분 미만 (대화 첫 turn ts 기준)
+2. `git log --since='session_start_ts'` 결과가 모든 작업 repo 합쳐서 0개
+3. 진행중 메모리 (`project_*_in_progress.md`) 가 0개 + git 결과 0개
+
+위 조건은 trigger session 이 진행 기록 수집 직후 cross-check. 단 takeover 케이스에선 후보 메시지가 이미 도착해있으니 no-op 판정 X (저장 stage 그대로 진행).
 
 ## 0. 기기 라우팅
 
 Mac/WSL/iPhone 어디서든 발동 가능. 단:
-- 진행 기록(체크포인트)은 메모리 폴더에 직접 Write — `~/.claude/projects/-home-ssamssae/memory/` 가 양쪽 동기화돼있음
-- someday 박기는 마스터 파일이 `~/todo/someday.md` (Mac 로컬) → WSL/iPhone 에서 발동되면 텔레그램 트리거로 Mac 에 위임
+- 진행 기록(체크포인트)은 메모리 폴더에 직접 Write. **폴더 경로는 호스트별 분기** (양쪽 ssamssae/claude-memory 로 git 동기화됨):
+  - Mac: `~/.claude/projects/-Users-user/memory/`
+  - WSL: `~/.claude/projects/-home-ssamssae/memory/`
+  - 본 docs 코드 블록의 `$MEMORY_DIR` 은 호스트별 위 경로로 치환
+- someday 박기는 마스터 파일이 `~/todo/someday.md` (Mac 로컬) → WSL/iPhone 에서 발동되면 **METHOD A 무복붙 핸드오프** 로 Mac 에 위임 (5-2 절 참조)
 
 ```bash
 host=$(hostname)
 case "$host" in
-  *MacBook*|*MBP*) DEVICE=mac ;;
-  DESKTOP-*) DEVICE=wsl ;;
-  *) DEVICE=other ;;
+  *MacBook*|*MBP*)
+    DEVICE=mac
+    MEMORY_DIR="$HOME/.claude/projects/-Users-user/memory"
+    ;;
+  DESKTOP-*)
+    DEVICE=wsl
+    MEMORY_DIR="$HOME/.claude/projects/-home-ssamssae/memory"
+    ;;
+  *)
+    DEVICE=other  # iPhone Termius — 가능한 SSH 로 Mac/WSL 에 위임
+    MEMORY_DIR="$HOME/.claude/projects/-home-ssamssae/memory"
+    ;;
 esac
 ```
 
@@ -45,13 +89,13 @@ esac
 1. **대화 맥락** — 이 세션 내내 어떤 작업을 했는지 기억
 2. **git log 24h** — 작업한 repo 들의 최근 커밋
    ```bash
-   for d in ~/claude-automations ~/claude-skills ~/daejong-page ~/trend-curator ~/.claude/projects/-home-ssamssae/memory; do
+   for d in ~/claude-automations ~/claude-skills ~/daejong-page ~/trend-curator "$MEMORY_DIR/.."; do
      [ -d "$d/.git" ] && (cd "$d" && echo "=== $d ===" && git log --since='24 hours ago' --oneline | head -10)
    done
    ```
-3. **진행중 메모리** — `~/.claude/projects/-home-ssamssae/memory/project_*_in_progress.md` 패턴
+3. **진행중 메모리** — `$MEMORY_DIR/project_*_in_progress.md` 패턴
    ```bash
-   ls ~/.claude/projects/-home-ssamssae/memory/project_*_in_progress.md 2>/dev/null
+   ls "$MEMORY_DIR"/project_*_in_progress.md 2>/dev/null
    ```
 4. **todos.md 24h diff** — `~/daejong-page/todos/` 최신 스냅샷에서 진행중 섹션 변화
 
@@ -99,18 +143,18 @@ B. ...
 
 | 응답 | 동작 |
 |------|------|
-| "체크포인트 OK" | 진행 기록 그대로 저장으로 |
-| "체크포인트 수정: ..." | 해당 항목 다듬기 |
+| "체크포인트 OK" / "OK" / "ㅇㅇ" / "그대로" | 진행 기록 그대로 저장으로 |
+| "체크포인트 수정: ..." / "수정: ..." | 해당 항목 다듬기 후 다시 후보 보냄 |
 | "💤 A B C" | A, B, C 항목만 someday 트리거 발사 |
-| "💤 X" / "💤 없어" | someday 박기 skip |
-| "닫아" / "OK" | 5번으로 |
-| "잠깐만 / 다시" | 발동 취소, 통상 응답으로 복귀 |
+| "💤 X" / "💤 없어" / "💤 다 드롭" | someday 박기 skip |
+| "닫아" / "그만" / "마무리" | "체크포인트 OK + 💤 X" 의 alias (저장 + someday skip + 그린라이트 한 번에) |
+| "잠깐만 / 다시 / 보류" | 발동 취소, 통상 응답으로 복귀 |
 
 ## 5. 저장
 
 ### 5-1. 진행 기록 → 메모리 파일
 
-`~/.claude/projects/-home-ssamssae/memory/checkpoint_YYYY-MM-DD-HHMM.md` 형식 신규 파일. (in_progress 메모리와 다른 prefix `checkpoint_` 로 구분)
+`$MEMORY_DIR/checkpoint_YYYY-MM-DD-HHMM.md` 형식 신규 파일. (in_progress 메모리와 다른 prefix `checkpoint_` 로 구분. 분 단위 충돌 시 `-2` 접미사로 회피.)
 
 ```markdown
 ---
@@ -148,28 +192,45 @@ type: project
 
 저장 후 **MEMORY.md 인덱스에는 일부러 안 올림** (체크포인트는 1회용, 7일 후 자동 정리 가능). 단, 메모리 폴더에는 남겨서 다음 세션이 grep 으로 찾을 수 있게.
 
-### 5-2. someday 후보 → 트리거
+### 5-2. someday 후보 → 트리거 (METHOD A 무복붙)
 
-선택된 someday 후보들 각각에 대해 텔레그램 reply (별도 메시지):
+기기별로:
+
+**Mac 발동**: `someday` 스킬 직접 호출. 후보 항목별로 한 번씩.
 
 ```
-💭 /someday 트리거
-액션: 추가
-항목: 🤝 <이모지> <제목> — <한 줄 설명>
-
-Mac Claude 창에 아래 한 줄 복붙:
-/someday 추가 🤝 <이모지> <제목>
+Skill(someday, "추가 🤝 <이모지> <제목> — <한 줄 설명>")
 ```
 
-WSL/iPhone 에서는 위 트리거만 보내고 종료. Mac 에서는 직접 someday 스킬 호출.
+**WSL/iPhone 발동**: `handoff` 스킬 호출해서 Mac 으로 SSH+tmux send-keys 핑 자동 발사 (어제 정착한 zero-touch 인프라 그대로). 강대종님 손 0번.
+
+handoff 디렉티브 본문 (claude-skills/handoffs/YYYY-MM-DD-HHMM-{from}-mac-someday-from-checkpoint.md):
+
+```
+🪟 [WSL→MAC] /someday 추가 핸드오프 (체크포인트 사이드 발견)
+
+후보 N개:
+- 🤝 <이모지> <제목> — <한 줄 설명>
+- ...
+
+처리: 각 항목별로 /someday 추가 한 번씩 호출. 끝나면 답신 핸드오프 (status: done).
+
+종료 조건: someday.md 에 N개 추가 + commit + push.
+```
+
+옛날 "Mac Claude 창에 복붙" 가이드는 v0.2 부터 폐기. METHOD A 가 표준.
 
 ### 5-3. 진행중 메모리 정리
 
 이번 세션에서 만든 `project_*_in_progress.md` 메모리 중 **완료된 것** 은 삭제 (룰 일관). MEMORY.md 인덱스에서도 빼기.
 
+**식별 휴리스틱** (takeover 케이스 안전):
+- mtime 24h 이내 + 후보 메시지 본문에 주제 키워드 매칭 → 본 세션 작업 가능성 높음, 정리 OK
+- mtime 24h 이전 또는 매칭 없음 → 다른 세션이 만든 거, 손대지 말 것
+
 ```bash
-# in_progress 중 이번 세션 완료분 식별 후
-rm ~/.claude/projects/-home-ssamssae/memory/project_<완료된주제>_in_progress.md
+# in_progress 중 이번 세션 완료분 식별 후 (mtime 24h + 키워드 매칭 통과한 것만)
+rm "$MEMORY_DIR/project_<완료된주제>_in_progress.md"
 # MEMORY.md 인덱스 라인 제거 (Edit 툴로)
 ```
 
@@ -201,4 +262,10 @@ rm ~/.claude/projects/-home-ssamssae/memory/project_<완료된주제>_in_progres
 ## 메모
 
 - v0.1 시드: 2026-04-27 18:05 KST WSL 본진
-- 첫 사용 시 강대종님 피드백 받아 v0.2 에서 다듬기 (체크포인트 위치, 트리거 정확도, 후보 추출 휴리스틱 등)
+- v0.2 다듬기: 2026-04-27 20:10 KST Mac 본진. 첫 사용(18:58 takeover 케이스) 후 식별 4개 적용:
+  1. 메모리 경로 호스트별 분기 (`$MEMORY_DIR`, Mac=`-Users-user/`, WSL=`-home-ssamssae/`) — v0.1 은 WSL 만 하드코딩
+  2. someday 트리거 옛날 "Mac 창에 복붙" → METHOD A 무복붙 핸드오프 (5-2 절)
+  3. 트리거-후보-저장 3-stage 라이프사이클 명시 + cross-session takeover 케이스 처리
+  4. No-op 자동 판단 휴리스틱 (5분 미만 / git log 24h 0개 / in_progress 0개)
+  + 응답 매트릭스 alias ("닫아"/"그만"/"마무리" = OK + 💤 X), 트리거 발화 변형 추가
+- v0.3 후보: 체크포인트 7일+ 자동 정리 (daily-sync-and-learn.py 에 한 줄), MEMORY.md 인덱스 자동 정리
