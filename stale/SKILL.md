@@ -7,11 +7,19 @@ description: 추천·작업 시작 전 stale 검출 5단계 패스를 즉시 실
 
 근거: `~/.claude/projects/-Users-user/memory/feedback_stale_check_before_recommend.md`. 그 룰의 5단계를 SKILL 한 번 호출로 일관되게 돌리기 위한 wrapper. 본 skill 의 단계는 그 메모리 룰과 강결합 — 메모리 룰이 갱신되면 이 SKILL 도 같이 갱신.
 
-## 호출 패턴
+## 호출 패턴 (토큰 절감 모드 분리)
 
-- 사용자: `/stale` / "스테일" / "stale 체크" / "낡았는지 봐줘"
-- 자동: Claude 가 "뭐할까/다음 뭐/새 작업/다음에 뭐할까" 류 추천 만들기 직전 (옵션 — 사용자가 명시 호출 안 해도 시도)
-- 인자: 없음. 또는 `/stale <주제 키워드>` 로 step 4 의 grep 키워드 지정 가능.
+- **사용자 명시 호출** `/stale` — 풀 패스 (step 0+1+2+3+5). ssh wsl 같은 비싼 원격 호출은 **빠짐**
+- **사용자 명시 + remote** `/stale --remote` — 풀 패스 + step 5 의 ssh wsl 까지 (정말 시스템 점검 필요할 때만)
+- **사용자 명시 + 키워드** `/stale <주제>` — 풀 패스 + step 4 의 keyword grep 활성
+- **--lite 모드** `/stale --lite` — step 0+2+3 만 (메모리 + 텔레그램 본문 위주, ~1500 토큰). git log 와 시스템 상태 모두 스킵
+- **자동 (Claude 자기 트리거)** — "뭐할까/다음 뭐/새 작업" 류 발화 받았을 때 **--lite 모드만** 자동 호출. 풀 패스 자동 호출 금지 (토큰 폭주)
+- 조합 가능: `/stale --lite <주제>`, `/stale --remote <주제>` 등
+
+비용 가이드:
+- `--lite`: ~1500 토큰
+- 기본 (`/stale`): ~3000~4000 토큰
+- `--remote`: ~5000~7000 토큰 (ssh wsl 비용)
 
 ## 5단계 절차
 
@@ -69,17 +77,22 @@ ls ~/docs/ 2>/dev/null | grep -i <주제>
 "X 가 Y 시각에 자동으로 돈다 / Z 잡이 켜져있다 / 프로세스 W 가 실행 중이다" 류 단정은 SKILL 문서 description 만 보고 추론하면 안 됨. 직접 확인:
 
 ```bash
-# macOS launchd
+# macOS launchd (기본)
 launchctl list | grep -iE "claude|<주제>"
 ls ~/Library/LaunchAgents/ ~/Library/LaunchAgents/_disabled/ 2>/dev/null | grep -iE "claude|<주제>"
 
-# Linux systemd (WSL — ssh 로)
-ssh wsl "systemctl list-units --all | grep -iE 'claude|<주제>'; systemctl --user list-units --all | grep -iE 'claude|<주제>'"
-
-# cron
+# cron 로컬 (기본)
 crontab -l 2>/dev/null
-ssh wsl "crontab -l 2>/dev/null"
 ```
+
+**원격 (`--remote` 플래그 있을 때만):** ssh wsl 호출은 네트워크 + remote 명령으로 비싸기 때문에 명시적으로 요청됐을 때만:
+
+```bash
+# Linux systemd (WSL — ssh 로). --remote 플래그에서만 실행
+ssh wsl "systemctl list-units --all | grep -iE 'claude|<주제>'; systemctl --user list-units --all | grep -iE 'claude|<주제>'; crontab -l 2>/dev/null"
+```
+
+`--lite` 모드면 step 5 자체를 **전부 스킵**.
 
 ## 통합 보고 형식
 
@@ -120,9 +133,21 @@ ssh wsl "crontab -l 2>/dev/null"
 
 `<channel source="plugin:telegram:telegram">` 컨텍스트 안에서 호출됐으면 결과는 mcp__plugin_telegram_telegram__reply 로 보내야 함. 터미널 평문은 폰에 안 보임.
 
+## 모드별 단계 매트릭스 (토큰 절감)
+
+| 모드 | step 0 | step 1 | step 2 | step 3 | step 4 | step 5 (local) | step 5 (ssh wsl) |
+|---|---|---|---|---|---|---|---|
+| `--lite` | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ |
+| 기본 `/stale` | ✓ | ✓ | ✓ | ✓ | (키워드 있을 때) | ✓ | ✗ |
+| `/stale --remote` | ✓ | ✓ | ✓ | ✓ | (키워드 있을 때) | ✓ | ✓ |
+| 자동 (Claude self-trigger) | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ |
+
+자동 호출은 **반드시 lite** — 풀 패스 자동 호출 금지.
+
 ## 헷갈리지 말 것
 
 - 이 SKILL 은 **검출만** 한다. todos.md 자동 마킹 X. 매치 발견되면 "닫을까?" confirm 후에만 [x] 처리.
 - 매치가 0건이면 평소 흐름대로 추천/작업 진행. SKILL 이 무조건 차단하는 건 아님.
 - step 4 의 키워드 grep 은 인자 없으면 생략 (지금 작업 주제가 명확하지 않은 상태라).
+- step 5 의 ssh wsl 은 `--remote` 명시 있을 때만. 평소 호출에선 macOS 만 본다.
 - /goodnight 의 todos sweep step 과 별개. /stale 은 즉시·소규모, /goodnight 은 일일 통합.
