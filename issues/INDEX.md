@@ -1,11 +1,16 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-27 19:32 KST_
+_마지막 생성: 2026-04-28 20:29 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-28 | [cf-colo-region-block](2026-04-28-cf-colo-region-block.md) | CF colo region-block 으로 친구 wifi 에서만 OpenAI 호출 거부 | high (1900원 유료 출시 블로커) | medium (CF Workers 에서 OpenAI/Anthropic 등 region-block 권역 API 를 직접 호출하는 모든 앱) | — | — |
+| 2026-04-27 | [wsl-hanjul-push-classifier-block](2026-04-27-wsl-hanjul-push-classifier-block.md) | WSL 측 hanjul main push 가 auto-mode classifier 에 막힘 + Mac SSH 우회도 동일 룰로 막힘 | medium | high (다른 앱·다른 기기에도 동일 발생 가능) | 3회 | — |
 | 2026-04-27 | [telegram-msg-id-leak](2026-04-27-telegram-msg-id-leak.md) | 텔레그램 답장에 Bot API raw msg ID 인용해서 사용자 혼선 | low | high (이번이 첫 기록이지만 매 reply 마다 발생 가능한 패턴) | — | — |
+| 2026-04-27 | [same-turn-commit-fp](2026-04-27-same-turn-commit-fp.md) | 같은 turn 내 Write→commit 묶음, harness sandbox false positive 거부 | medium | high (METHOD A 무복붙 핸드오프 매번 같은 흐름) | — | — |
+| 2026-04-27 | [paste-block-mixed-r6](2026-04-27-paste-block-mixed-r6.md) | 복붙 블록 별도 메시지 룰 6번째 재발 (오늘만 4번) | medium | high (메모리·CLAUDE.md 룰만으론 6번째까지 어김) | 3회 | — |
+| 2026-04-27 | [harness-default-branch-push-block](2026-04-27-harness-default-branch-push-block.md) | `git push origin main` 하네스 차단 — default branch 직접 push | medium | high — repo 마다 분류기 판단이 다르고, 작업 끝마다 같은 패턴 반복 | — | — |
 | 2026-04-26 | [tahoe-ssh-cli-block](2026-04-26-tahoe-ssh-cli-block.md) | macOS Tahoe 26.x: systemsetup -setremotelogin 이 Full Disk Access 부족으로 차단 | low | medium | — | — |
 | 2026-04-26 | [review-status-disabled-blind-spot](2026-04-26-review-status-disabled-blind-spot.md) | review-status-check _disabled 이동 후 17h 동안 Apple issue 메일 누락 | high (App Store 제출 일정 + 사용자 신뢰 영향, 2개 앱 동시 영향) | high (forcing function 없음, _disabled/ 폴더의 다른 모니터링·알림 잡들 다 같은 위험) | — | — |
 | 2026-04-26 | [paste-block-label-leak](2026-04-26-paste-block-label-leak.md) | 복붙 메시지에 라벨/안내 텍스트 섞어 보냄 → PowerShell 명령 깨짐 | medium | high (이번이 3-4번째) | — | — |
