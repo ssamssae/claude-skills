@@ -259,8 +259,17 @@ mcp__plugin_telegram_telegram__reply 로 chat_id 538806975 에 다음 메시지 
 - worklog 가 없으면 insta-post 내부 가드가 "worklog 없음" 으로 중단 + 텔레그램 알림 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
 - 이미 올렸으면 dedup 가드로 중단 → 기존 permalink 를 최종 보고에 넣음
 - API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속
+- **publish.py wait_public timeout** → publish.py 자체에 300s + 120s retry 박혀있음 (2026-04-28 도입). 그래도 timeout 나면 "⚠️ 인스타 발행 실패 (GH Pages 빌드 timeout): 내일 `/insta-post <date>` 로 백필 권장" 텔레그램 알림. 다음 날 첫 호출 시 강대종님이 인지
 
-**중요**: 인스타 업로드가 실패해도 goodnight 전체를 중단하지 말 것. worklog/done 이 홈페이지에 올라갔으면 하루 마감은 이미 성공.
+**미발행 사후 점검 (2026-04-28 추가)**: insta-post 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 박혔는지 확인. 안 박혔으면 publish 단계가 죽은 거 → 위 "발행 실패" 알림 송신. 이 점검은 WSL 직접 호출과 Mac 핸드오프 양쪽 모두 적용 — Mac 핸드오프 시엔 WSL 처리 결과를 ~30초 후 grep 으로 cross-check (WSL posted.json 변경분이 git push 됐는지 확인은 별도). 알림 통합:
+
+```
+⚠️ 인스타 미발행: <date> posted.json 에 entry 없음
+사유: <publish.py 마지막 stderr 또는 "WSL 응답 없음">
+백필: 내일 /insta-post <date> 호출
+```
+
+**중요**: 인스타 업로드가 실패해도 goodnight 전체를 중단하지 말 것. worklog/done 이 홈페이지에 올라갔으면 하루 마감은 이미 성공. 다만 미발행 사실이 텔레그램에 명시적으로 떠야 다음 날 백필 가능.
 
 ### 5. 3 repo 상태 점검
 
