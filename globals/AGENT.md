@@ -100,6 +100,7 @@
 - **Mac→WSL = 작업 지시 directive**: 목표 / 수정 파일 / 금지 사항 / 성공 기준 / 보고 형식 명시
 - **WSL→Mac = 결과 보고 report**: 수행한 작업 / 수정한 파일 / 테스트 결과 / 실패 로그 / Mac 세션이 판단해야 할 사항. WSL 이 다음 방향을 새로 정하지 않음
 - 채널(SSH+tmux METHOD A / peer-bot / fallback reply) 자체는 양방향이지만 **컨텐츠는 비대칭**
+- **예외 (운반체)**: 사용자 명령을 자동화로 운반하는 트리거(예: WSL `/to-iphone` → Mac `/land` 페어, Mac `/goodnight` step 4.5 → WSL `/insta-post` 핸드오프)는 directive 아님. WSL/Mac 세션이 자체 판단으로 새 방향을 결정하는 경우만 새 원칙 적용.
 
 **Mac 세션 측 책임 (참고):** 같은 파일을 WSL 과 동시에 직접 수정 금지, WSL 이 작업 중인 범위를 중간에 바꾸기 금지.
 
