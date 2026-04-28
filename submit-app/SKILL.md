@@ -76,10 +76,10 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
      SoT 키: <F4:A7…>
      출시 차단됨. 옵션:
        (A) 비공개 키 복원 — 강대종님 과거 keystore 자산 검색 (분실 시 거의 불가능)
-       (B) 패키지 이름 변경 — AndroidManifest + build.gradle.kts + applicationId + iOS Bundle ID 일괄
+       (B) 패키지 이름 변경 — **신규 패키지 이름은 com.daejongkang.* 도메인 우선** (`feedback_new_package_use_daejongkang_domain.md`, ssamssae 같은 일반 닉네임은 점유 충돌 위험). AndroidManifest + build.gradle.kts + applicationId + MainActivity 디렉토리/package + iOS Bundle ID(pbxproj 6군데) + Apple Dev Portal 신규 등록 일괄
        (C) 출시 보류
      ```
-     사용자 결정 전까지 Step 0.5 / 빌드 진행 금지.
+     사용자 결정 전까지 Step 0.5 / 빌드 진행 금지. **2026-04-28 한줄일기 사고 = 옵션 B 채택 사례** (com.ssamssae.hanjul → com.daejongkang.hanjul, 1시간 소요).
 
 4. **출시 14일 전 권고**: 이 점검은 **출시 사이클 시작 시점**(빌드 직전 X)에 1회 미리 수행. 충돌 시 14일 여유 확보 가능.
 

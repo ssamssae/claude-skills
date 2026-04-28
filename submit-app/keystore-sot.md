@@ -18,8 +18,9 @@ One line per app:
 <!-- Keep sorted by app name. Add via /create-play-app or manual edit. -->
 
 - dutch_pay_calculator: 🍎 Mac (keystore: `android/dutchpay-upload-keystore.jks`, created: 2025 이전, play_sha: ?)
-- hanjul: 🍎 Mac (keystore: `android/hanjul-upload-keystore.jks`, created: 2026-04-25, play_sha: **MISMATCH** (Play=`05:CF…`, SoT=`F4:A7:E2:AA:C0:93:CE:B5:D5:AE:59:95:C7:77:2C:6C:BB:1D:C0:C6:12:04:36:B1:CF:01:C9:43:EC:B3:04:A3`))
-  - ⚠️ 2026-04-28 19:39 KST 발견. Play 등록 키(05:CF…) 출처 불명, 비공개 키 분실 추정. 옵션 A(키 복원)/B(패키지 이름 변경)/C(보류) 결정 미정. lessons/android-play-package-already-registered.md 참조
+- hanjul (com.daejongkang.hanjul): 🍎 Mac (keystore: `android/hanjul-upload-keystore.jks`, created: 2026-04-25, play_sha: F4:A7:E2:AA:C0:93:CE:B5:D5:AE:59:95:C7:77:2C:6C:BB:1D:C0:C6:12:04:36:B1:CF:01:C9:43:EC:B3:04:A3)
+  - 2026-04-28 com.ssamssae.hanjul → com.daejongkang.hanjul 전환. 사연: WSL Windows debug.keystore (05:CF…) 잔재가 com.ssamssae.hanjul 패키지에 영구 바인딩돼 등록 차단. 본명 도메인으로 우회. lessons/android-play-package-already-registered.md + 메모리 project_hanjul_wsl_build_artifact.md 참조
+- hanjul (com.ssamssae.hanjul, deprecated): Play 임시 등록 보존 (debug.keystore=05:CF 로 영구 바인딩). 미래 재시도 가능성 1% — 비공개 debug.keystore 가 어딘가 잔존하면 회수 가능, 아니면 사실상 사망
 - hankeup: 🍎 Mac (keystore: `android/hankeup-upload-keystore.jks`, created: 2026-04-20, play_sha: ?)
 - memoyo (simple_memo_app): 🍎 Mac (keystore: `android/memoyo-upload-keystore.jks`, created: 2025 이전, play_sha: ?)
 - mini_expense: 🍎 Mac (keystore: `android/mini_expense-upload-keystore.jks`, created: 2026-04-20, play_sha: ?)
