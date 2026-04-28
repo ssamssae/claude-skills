@@ -2,7 +2,9 @@
 from: wsl
 to: mac
 sent_at: 2026-04-28T18:42:27+09:00
-status: open
+status: done
+done_at: 2026-04-28T18:50:00+09:00
+done_note: SHA-256 추출 + 텔레그램 보고 완료 (msg id 8529). alias=upload. JDK 26 keytool withWeakConstraint formatter 버그 우회 위해 JDK 17 keytool 사용.
 ---
 
 🪟 한줄일기 Android keystore SHA-256 fingerprint 미리 뽑기 (19:00 출시 사이클 사전 준비)
