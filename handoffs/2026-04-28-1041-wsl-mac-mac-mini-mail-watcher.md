@@ -2,7 +2,23 @@
 from: wsl
 to: mac
 sent_at: 2026-04-28T10:41:00+09:00
-status: open
+status: done
+done_at: 2026-04-28T12:03:00+09:00
+done_by: mac
+done_note: |
+  Part A: ~/apps/review_radar rm -rf 완료 (clean tree, archived repo 보존).
+  Part B-G: ADC 경로 막힘(Gmail sensitive scope 차단) 후 기존 review-radar GCP 프로젝트
+    내 mail-watcher Desktop OAuth Client Playwright MCP 로 자동 추출 (secret hashed
+    이슈 회피: 새 secret 추가 → 그 자리 다운로드).
+  Architecture pivot: credentials.json + token.json 직접 (gcloud ADC 폐기), Python
+    venv on mac-mini with Python 3.14, Gmail API direct (Claude API 호출 0건 유지).
+  Files: ~/secrets/mail-watcher/{credentials,token,.env, mail_watcher.py,venv}
+    on both Mac main + mac-mini (mode 600/700).
+  Telegram bot: Mac main bot @MyClaude 토큰 재사용 (sendMessage 다중 client 충돌 없음).
+  ollama llama3.1:8b-instruct-q4_K_M: 4h interval 검증 PASS (8h normal: 0/0,
+    7d backfill: 14→7→1 stricter prompt OK, important=true 1건 = Dutch Pay reject).
+  launchd: com.claude.mail-watcher.plist on mac-mini, StartInterval 14400,
+    RunAtLoad 첫 invocation status=0, 다음 auto run ~16:02 KST.
 ---
 
 🪟 ~/apps/review_radar 삭제 컨펌 + 맥미니 mail-watcher 새 시스템 구축
