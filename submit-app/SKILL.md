@@ -46,7 +46,42 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
      <앱명>: 🍎 Mac | 🪟 WSL (keystore: android/<file>.jks, created: YYYY-MM-DD)
    ```
    사용자가 "일단 진행" 이라고 하면 warning 만 남기고 계속.
-5. 통과하면 Step 0.5 (Lessons) 로.
+5. 통과하면 Step 0.4 (Play 패키지 등록 사전 점검) 로.
+
+### Step 0.4 — Play 패키지 등록 사전 점검 (Android 만 해당)
+
+**필수**. 출시일 직전 사고(2026-04-28 한줄일기 19:00 1900원 유료 출시, lesson `android-play-package-already-registered`) 재발 차단.
+
+빌드·업로드 시작 전에 Play 가 com.X.Y 패키지를 이미 다른 keystore 로 영구 바인딩했는지 확인:
+
+1. **SoT keystore SHA-256 추출**:
+   ```bash
+   keytool -list -v -keystore <keystore-sot.md 의 SoT 경로> -alias upload 2>/dev/null | grep -i "SHA256:"
+   ```
+   alias 가 'upload' 가 아니면 -alias 인자 빼고 전체 list. 출력은 `SHA256: F4:A7:...` 형식.
+
+2. **Play Console 비교 (사용자 손)**:
+   - URL: Play Console > 설정 > 개발자 계정 > Android 패키지 이름 > 신규 등록
+   - 패키지 이름 입력 → 페이지 로드 후 "이미 등록됨" 메시지 + 후보 SHA-256 표시 여부 확인
+   - 사용자에게 두 SHA 비교 요청, 결과 텔레그램 보고
+
+3. **분기**:
+   - **Play 에 미등록** → 정상 신규 등록 흐름 (Step 0.5 진행)
+   - **등록됨 + SHA 매칭** → Play 가 우리 keystore 인정. 정상 (Step 0.5 진행)
+   - **등록됨 + SHA 미스매치** → 즉시 중단:
+     ```
+     🚨 Play 패키지 이름 충돌
+     com.X.Y 가 이미 Play 에 등록돼있고 보유 SoT keystore SHA-256 과 매칭되지 않습니다.
+     Play 등록 키: <05:CF…>
+     SoT 키: <F4:A7…>
+     출시 차단됨. 옵션:
+       (A) 비공개 키 복원 — 강대종님 과거 keystore 자산 검색 (분실 시 거의 불가능)
+       (B) 패키지 이름 변경 — AndroidManifest + build.gradle.kts + applicationId + iOS Bundle ID 일괄
+       (C) 출시 보류
+     ```
+     사용자 결정 전까지 Step 0.5 / 빌드 진행 금지.
+
+4. **출시 14일 전 권고**: 이 점검은 **출시 사이클 시작 시점**(빌드 직전 X)에 1회 미리 수행. 충돌 시 14일 여유 확보 가능.
 
 ### Step 0.5 — Lessons 로드 & 체크리스트 생성
 

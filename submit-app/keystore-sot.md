@@ -8,20 +8,23 @@ Used by `/submit-app` guard: before building/uploading, read this file, find the
 
 One line per app:
 ```
-<app-name>: <🍎 Mac | 🪟 WSL> (keystore: <relative path from repo root>, created: YYYY-MM-DD)
+<app-name>: <🍎 Mac | 🪟 WSL> (keystore: <relative path from repo root>, created: YYYY-MM-DD, play_sha: <SHA-256 or "?" or "MISMATCH (...)">)
 ```
+
+`play_sha` 는 Play Console 패키지 이름 등록 페이지에서 본 등록 SHA-256. 우리 SoT keystore 의 SHA 와 일치해야 함. 첫 등록 시 `?` 로 두고 `/submit-app` Step 0.4 통과한 시점에 채워넣을 것. SoT SHA 와 다르면 `MISMATCH (Play=<...>, SoT=<...>)` 로 표기 + 출시 차단.
 
 ## Registry
 
 <!-- Keep sorted by app name. Add via /create-play-app or manual edit. -->
 
-- dutch_pay_calculator: 🍎 Mac (keystore: `android/dutchpay-upload-keystore.jks`, created: 2025 이전)
-- hanjul: 🍎 Mac (keystore: `android/hanjul-upload-keystore.jks`, created: 2026-04-25)
-- hankeup: 🍎 Mac (keystore: `android/hankeup-upload-keystore.jks`, created: 2026-04-20)
-- memoyo (simple_memo_app): 🍎 Mac (keystore: `android/memoyo-upload-keystore.jks`, created: 2025 이전)
-- mini_expense: 🍎 Mac (keystore: `android/mini_expense-upload-keystore.jks`, created: 2026-04-20)
-- pomodoro: 🍎 Mac (keystore: `android/pomodoro-upload-keystore.jks`, created: 2026-04-21)
-- yakmukja: 🍎 Mac (keystore: `android/yakmukja-upload-keystore.jks`, created: 2025 이전)
+- dutch_pay_calculator: 🍎 Mac (keystore: `android/dutchpay-upload-keystore.jks`, created: 2025 이전, play_sha: ?)
+- hanjul: 🍎 Mac (keystore: `android/hanjul-upload-keystore.jks`, created: 2026-04-25, play_sha: **MISMATCH** (Play=`05:CF…`, SoT=`F4:A7:E2:AA:C0:93:CE:B5:D5:AE:59:95:C7:77:2C:6C:BB:1D:C0:C6:12:04:36:B1:CF:01:C9:43:EC:B3:04:A3`))
+  - ⚠️ 2026-04-28 19:39 KST 발견. Play 등록 키(05:CF…) 출처 불명, 비공개 키 분실 추정. 옵션 A(키 복원)/B(패키지 이름 변경)/C(보류) 결정 미정. lessons/android-play-package-already-registered.md 참조
+- hankeup: 🍎 Mac (keystore: `android/hankeup-upload-keystore.jks`, created: 2026-04-20, play_sha: ?)
+- memoyo (simple_memo_app): 🍎 Mac (keystore: `android/memoyo-upload-keystore.jks`, created: 2025 이전, play_sha: ?)
+- mini_expense: 🍎 Mac (keystore: `android/mini_expense-upload-keystore.jks`, created: 2026-04-20, play_sha: ?)
+- pomodoro: 🍎 Mac (keystore: `android/pomodoro-upload-keystore.jks`, created: 2026-04-21, play_sha: ?)
+- yakmukja: 🍎 Mac (keystore: `android/yakmukja-upload-keystore.jks`, created: 2025 이전, play_sha: ?)
 
 ## WSL 에도 keystore 가 있으면?
 
@@ -38,5 +41,7 @@ One line per app:
 
 ## 관련
 
-- `/submit-app` §Step 0.5 — SoT 확인 가드
+- `/submit-app` §Step 0 — SoT 확인 가드
+- `/submit-app` §Step 0.4 — Play 등록 SHA vs SoT SHA 비교 (2026-04-28 신설)
+- `lessons/android-play-package-already-registered.md` — hanjul 19:00 출시 사고 회고
 - 메모리 `multi_device_rules.md` 규칙 4 — Android 라우팅 nuance
