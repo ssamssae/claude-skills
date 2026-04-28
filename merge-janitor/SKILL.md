@@ -1,12 +1,12 @@
 ---
 name: merge-janitor
-description: WSL night-runner 가 janitor 브랜치로 만든 PR 을 머지하거나 닫는다. morning-briefing 1-E 섹션에서 보여준 PR 에 대해 사용자가 "PR #3 머지", "PR #5 닫아", "/merge-janitor 3", "janitor PR 3번 merge" 같은 자연어·명시 호출로 실행. gh CLI 기반, 크로스 repo 자동 탐색.
+description: WSL night-runner 가 janitor 브랜치로 만든 PR 을 머지하거나 닫는다. 사용자가 "PR #3 머지", "PR #5 닫아", "/merge-janitor 3", "janitor PR 3번 merge" 같은 자연어·명시 호출로 실행. gh CLI 기반, 크로스 repo 자동 탐색.
 allowed-tools: Bash, Read
 ---
 
 # /merge-janitor — 야간 러너 PR 머지/닫기
 
-WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 PR 을 맥 본진에서 머지·닫는다. morning-briefing 이 매일 07:15 에 해당 PR 목록을 텔레그램으로 보여주고, 사용자는 "PR #N 머지" 또는 "PR #N 닫아" 라고 답장해 이 스킬을 실행시킨다.
+WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 PR 을 맥 본진에서 머지·닫는다. 사용자가 "PR #N 머지" 또는 "PR #N 닫아" 같이 자연어로 호출해 이 스킬을 실행시킨다.
 
 ## 호출 패턴
 
@@ -16,13 +16,13 @@ WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 
 - `/merge-janitor 3 --squash` — 동일
 - `/merge-janitor 3 close` — PR #3 을 닫기
 - `/merge-janitor 3 --close` — 동일
-- 자연어 (repo 별칭 포함, morning-briefing 1-E 섹션의 답장 포맷):
+- 자연어 (repo 별칭 포함):
   - "더치페이 #1 머지" · "메모요 #1 닫아" · "약묵자 #3 squash 머지" · "밥먹자 #2 머지해"
   - 별칭 없는 형태도 여전히 지원: "PR #3 머지", "PR 5번 머지해", "PR #7 닫아", "janitor PR 3 merge"
 
 ### repo 별칭 테이블
 
-morning-briefing 과 동일한 테이블 유지 (양쪽 스킬이 같은 별칭을 써야 매칭 성공):
+repo 별칭 테이블:
 
 | 별칭 | repo nameWithOwner |
 |---|---|

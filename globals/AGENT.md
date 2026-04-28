@@ -21,7 +21,7 @@
 | `/todo` | 할일·사이드프로젝트 관리. `~/todo/todos.md` + 미리알림 앱 "Claude" 목록 연동 |
 | `/ctx` | 세션 진행 상황 요약 (완료/진행중/블로커/다음액션/할일). "ctx" 한 단어도 호출됨 |
 | `/merge-janitor N [close]` | WSL night-runner janitor PR 머지/닫기. 자세한 규칙은 3절 참조 |
-| `/worklog`, `/done`, `/usage`, `/review-status-check` | 각 SKILL.md 참조 |
+| `/worklog`, `/done`, `/usage` | 각 SKILL.md 참조 |
 
 ### /merge-janitor 자연어 트리거
 - "PR #N 머지", "PR #N 닫아", "janitor PR 3 merge", "PR 5번 닫자" → `/merge-janitor N [close]` 자동 호출
@@ -61,7 +61,7 @@
 강대종님은 **Mac (MacBook Pro) + 윈도우 데스크탑 (3900X/2070S, WSL Ubuntu) + iPhone (Termius)** 3-way 환경에서 Claude Code 를 사용한다. 기기마다 역할이 다르므로 현재 호스트에 맞게 행동한다.
 
 ### 🍎 Mac = 본진 (Headquarter)
-- **모든 launchd 자동화의 단일 진실 소스** (morning-briefing, todo-reminder, review-status-check 등)
+- **모든 launchd 자동화의 단일 진실 소스** (todo-reminder, mac-mini mail-watcher 등)
 - **Telegram MCP 메인 봇**: `@MyClaude` (1봇 1세션 원칙)
 - **iOS 빌드** 전담 (Xcode/Flutter iOS — 윈도우 불가)
 - 메인 git push 권한 (consistency)

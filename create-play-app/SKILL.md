@@ -148,7 +148,7 @@ Registry 에 이미 해당 앱이 있으면 skip (중복 등록 방지). SoT 가
 
 - `/submit-app` — 등록 이후 AAB 업로드·심사 제출
 - `/land` — iOS 실기 배포
-- `/review-status-check` — 제출 후 심사 상태 Gmail 모니터링
+- 맥미니 mail-watcher v5 — 제출 후 4시간 폴링 Gmail 심사 알림 (스킬 아닌 백그라운드 자동화)
 
 ## Lessons 생성 가이드
 

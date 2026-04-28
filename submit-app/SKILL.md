@@ -118,7 +118,7 @@ cd <app> && fvm flutter build appbundle --release
 
 ### Step 4 — 심사 제출 후 모니터링 활성화
 
-`/review-status-check` 스킬이 이미 Gmail 모니터링하므로 별도 조치 불필요. 업로드 완료 시 텔레그램으로 "심사 제출 완료 — Gmail 상태 알림 대기" 공지.
+맥미니 mail-watcher v5 (4시간 폴링) 가 Gmail 모니터링하므로 별도 조치 불필요. 업로드 완료 시 텔레그램으로 "심사 제출 완료 — Gmail 상태 알림 대기" 공지.
 
 ### Step 5 — 회고 & Lesson 추가
 
@@ -200,6 +200,6 @@ source: manual | auto-from-session | reviewer-feedback
 ## 관련 스킬
 
 - `/irun`, `/land` — 빌드·아이폰 설치 (제출 전 동작 확인)
-- `/review-status-check` — 제출 후 심사 상태 Gmail 모니터링
+- 맥미니 mail-watcher v5 — 제출 후 4시간 폴링 Gmail 심사·결제 알림 (스킬 아닌 백그라운드 자동화)
 - `/issue` — 포괄적 이슈 로깅 (앱 제출 관련이면 이 스킬의 lessons/ 에도 저장)
 - `/worklog` — 제출 작업 로그 기록

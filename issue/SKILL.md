@@ -124,7 +124,7 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
     - frontmatter `prevention_deferred: YYYY-MM-DD` 설정
     - "예방" 섹션에 `(deferred — 작성 마감 YYYY-MM-DD)` 로 표기
     - 통과
-    - `/morning-briefing` 이나 리마인더에서 "예방 작성 미결 이슈" 섹션으로 별도 추적 대상.
+    - 예방 작성 미결 이슈는 frontmatter `prevention_deferred` 로 표기됨. 자동 추적 채널은 없음 (수동 점검).
 
 ### 4. 최종 컨펌 + 저장
 
