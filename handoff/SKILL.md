@@ -61,7 +61,7 @@ fi
 ssh ssamssae@desktop-i4tr99i-1 "tmux send-keys -t '$peer_session' '🍎 [MAC→WSL HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; tmux send-keys -t '$peer_session' Enter"
 
 # WSL→Mac (보낸 기기 = WSL = 🪟). Mac 계정명 user 주의 (ssamssae 아님), tmux 절대경로 필수.
-ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t '$peer_session' '🪟 [WSL→MAC HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 directive 따라 진행'; sleep 0.5; /opt/homebrew/bin/tmux send-keys -t '$peer_session' Enter"
+ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t '$peer_session' '🪟 [WSL→MAC HANDOFF] git pull 후 handoffs/YYYY-MM-DD-HHMM-...md 읽고 본문 report 검토/판단'; sleep 0.5; /opt/homebrew/bin/tmux send-keys -t '$peer_session' Enter"
 ```
 
 - **핑 첫 글자는 보낸 기기 이모지 필수** (WSL=🪟, Mac=🍎). 강대종님이 본인이 친 게 아님을 즉시 식별. 이 이모지는 §3 의 "이모지 금지" 규칙 예외 — §3 는 handoffs/ 파일 안 directive 본문 한정, 핑은 ephemeral chat injection 이라 별도.
@@ -92,9 +92,11 @@ ssh user@user-macbookpro-1 "/opt/homebrew/bin/tmux send-keys -t '$peer_session' 
 
 디렉티브를 `mcp__plugin_telegram_telegram__reply` 로 별도 메시지 발송 (현재 봇 챗에). 강대종님이 챗 전환해서 paste — 옛날 방식. **본문 첫 글자 sender 이모지(🪟/🍎)** Secondary 와 동일하게 필수.
 
-### 3. 디렉티브 메시지 포맷 규칙
+### 3. 디렉티브 / 리포트 메시지 포맷 규칙
 
-(handoffs/ 파일 본문 + secondary peer-bot Telegram directive 본문 + fallback reply directive 본문 모두 적용. **단 sender 이모지 첫 글자(🪟/🍎)는 §2 의 별도 규칙으로 모든 directive 메시지에 필수** — handoffs/ 파일 frontmatter 직후 본문 시작점에도, peer-bot 발송 본문 첫 글자에도, fallback reply 본문 첫 글자에도 동일 적용.)
+이 포맷 규칙은 **Mac→WSL directive 와 WSL→Mac report 양쪽 메시지 형식에 동일 적용** — 형식만 동일이지 컨텐츠 권한은 비대칭 (지휘관 1명 원칙 참조).
+
+(handoffs/ 파일 본문 + secondary peer-bot Telegram directive/report 본문 + fallback reply directive/report 본문 모두 적용. **단 sender 이모지 첫 글자(🪟/🍎)는 §2 의 별도 규칙으로 모든 메시지에 필수** — handoffs/ 파일 frontmatter 직후 본문 시작점에도, peer-bot 발송 본문 첫 글자에도, fallback reply 본문 첫 글자에도 동일 적용.)
 
 - 인용 박스 (`>`) 사용 금지 — long-press 복사 영역 오염
 - 이모지 사용 금지 (sender 이모지 첫 글자는 예외 — 핑/handoffs/secondary/fallback 전부)
