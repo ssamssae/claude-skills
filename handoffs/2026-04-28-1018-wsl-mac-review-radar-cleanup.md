@@ -2,7 +2,16 @@
 from: wsl
 to: mac
 sent_at: 2026-04-28T10:18:00+09:00
-status: open
+status: done
+done_at: 2026-04-28T10:21:00+09:00
+done_by: mac
+done_note: |
+  launchctl: review-status-check 활성 0건 (이미 _disabled/ 에만 있었음)
+  삭제: ~/Library/LaunchAgents/_disabled/com.claude.review-status-check.plist (rm 완료, 일반 파일 2404B)
+  ~/claude-automations + ~/.claude/automations 에 review-status 원본/래퍼 0건 — git rm 불필요
+  ~/.claude/runner/settings-launchd.json: review-status 항목 0건 (보존)
+  ~/apps/review_radar: 디렉토리 존재 + git clean + origin/main 동기화. 강대종님 컨펌 대기 (rm 보류).
+  Gmail OAuth: 텔레그램 안내 전송 (revoke 본인 계정 인증 필요).
 ---
 
 🪟 심사레이더 + review-status-check 일괄 폐기 — Mac 잔여 정리

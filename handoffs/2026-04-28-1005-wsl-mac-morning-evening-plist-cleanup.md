@@ -2,7 +2,13 @@
 from: wsl
 to: mac
 sent_at: 2026-04-28T10:05:00+09:00
-status: open
+status: done
+done_at: 2026-04-28T10:21:00+09:00
+done_by: mac
+done_note: |
+  Mac 측 plist 0건 — 두 잡 모두 _disabled/ 에도 없었음. launchctl list 검증 0건.
+  ~/claude-automations + ~/.claude/automations 에 원본 plist/래퍼 0건. step 4~5 N/A.
+  보존 plist: daily-sync-and-learn(symlink), done-auto, todo-reminder, memoyo.beta-worker.
 ---
 
 🪟 morning-briefing + evening-wrap 자동화 자체 폐기 — Mac _disabled/ plist 정리
