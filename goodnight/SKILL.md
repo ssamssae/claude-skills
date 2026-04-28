@@ -220,52 +220,29 @@ done 스킬이 알아서:
 - `~/daejong-page/done/$(date +%F).md` 저장/갱신
 - daejong-page push
 
-### 4.5. insta-post 실행 (2026-04-24 추가, 2026-04-25 hostname 분기 추가)
+### 4.5. insta-post 실행 (2026-04-24 추가, 2026-04-29 단순화 — Mac 직접 호출만)
 
-worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드. **정책 A** (2026-04-25 결정) 에 따라 hostname 으로 분기:
+worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드. **2026-04-29 부터 hostname 분기·WSL 핸드오프 폐기** — 어느 기기든 무조건 직접 호출.
 
-```bash
-HN=$(hostname)
-case "$HN" in
-  Daejongs-MacBook-Pro*) DEVICE_ROLE=mac ;;
-  DESKTOP-*)             DEVICE_ROLE=wsl ;;
-  *)                     DEVICE_ROLE=other ;;
-esac
-```
-
-**`DEVICE_ROLE=wsl`** — 직접 호출:
 ```
 Skill tool → insta-post 호출 (인자 없음, 오늘 날짜 사용)
 ```
+
 insta-post 스킬이 worklog 파싱 → 카드 PNG 렌더 → posted.json dedup → Instagram Graph API 자동 업로드 → permalink. 최종 보고에 permalink.
 
-**`DEVICE_ROLE=mac`** — 텔레그램 핸드오프 (Mac→WSL 자동 라우팅, 강대종님 발화 없음):
+**왜 단순화했나 (2026-04-29):** 이전엔 Mac 에서 호출되면 WSL 로 텔레그램 핸드오프했음. 그러나 (1) WSL = 야간 OFF 라 야간 /goodnight 핸드오프는 사일런트 실패, (2) Mac=SoT 지휘관 1명 원칙과도 정렬 안 됨. Mac 에 IG 시크릿·venv·posted.json 미러링이 이미 돼있어 직접 호출이 안전.
 
-mcp__plugin_telegram_telegram__reply 로 chat_id 538806975 에 다음 메시지 송신:
-```
-📸 /insta-post 핸드오프 — Mac /goodnight 자동 송신
-날짜: <오늘 YYYY-MM-DD>
-요청: WSL @Myclaude2 가 /insta-post <오늘 날짜> 호출해주세요. 결과 1줄 답신.
-— Mac (@MyClaude) <KST 시각>
-```
-
-송신 후 답신 기다리지 않음 (fire-and-forget). 최종 보고에 "📸 인스타: WSL 핸드오프 송신됨" 한 줄. WSL Claude 가 텔레그램에서 이 메시지 인식해 자동으로 /insta-post 호출 (트리거 키워드는 insta-post SKILL.md 에 등록됨).
-
-송신 실패해도 /goodnight 전체 중단 금지 — 보고에 "⚠️ 인스타 핸드오프 송신 실패" 만.
-
-**`DEVICE_ROLE=other`** — skip + 보고에 "📸 인스타: 알 수 없는 기기 ($HN), skip"
-
-실패 케이스 처리 (WSL 직접 호출 시):
+실패 케이스 처리:
 - worklog 가 없으면 insta-post 내부 가드가 "worklog 없음" 으로 중단 + 텔레그램 알림 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
 - 이미 올렸으면 dedup 가드로 중단 → 기존 permalink 를 최종 보고에 넣음
 - API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속
 - **publish.py wait_public timeout** → publish.py 자체에 300s + 120s retry 박혀있음 (2026-04-28 도입). 그래도 timeout 나면 "⚠️ 인스타 발행 실패 (GH Pages 빌드 timeout): 내일 `/insta-post <date>` 로 백필 권장" 텔레그램 알림. 다음 날 첫 호출 시 강대종님이 인지
 
-**미발행 사후 점검 (2026-04-28 추가)**: insta-post 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 박혔는지 확인. 안 박혔으면 publish 단계가 죽은 거 → 위 "발행 실패" 알림 송신. 이 점검은 WSL 직접 호출과 Mac 핸드오프 양쪽 모두 적용 — Mac 핸드오프 시엔 WSL 처리 결과를 ~30초 후 grep 으로 cross-check (WSL posted.json 변경분이 git push 됐는지 확인은 별도). 알림 통합:
+**미발행 사후 점검 (2026-04-28 추가)**: insta-post 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 박혔는지 확인. 안 박혔으면 publish 단계가 죽은 거 → 위 "발행 실패" 알림 송신. 알림:
 
 ```
 ⚠️ 인스타 미발행: <date> posted.json 에 entry 없음
-사유: <publish.py 마지막 stderr 또는 "WSL 응답 없음">
+사유: <publish.py 마지막 stderr>
 백필: 내일 /insta-post <date> 호출
 ```
 
