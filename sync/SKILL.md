@@ -1,6 +1,6 @@
 ---
 name: sync
-description: 맥과 WSL 의 자동화·이슈 히스토리·앱 코드·디자인 시안을 즉시 최신 상태로 끌어오는 수동 스킬. 강대종님이 "동기화", "최신화", "sync", "/sync", "pull", "복습", "이슈 복기" 이라고 말하거나 데스크탑에서 방금 push 한 내용을 맥에서 바로 받고 싶을 때 호출. 내부적으로 claude-automations/scripts/daily-sync-and-learn.py 를 실행해 06:45 KST 자동 동기화와 동일한 작업을 즉시 수행. 2026-04-22 부터 ~/apps/*/ 앱 repo 도 자동 커버, 2026-04-24 부터 ~/design-lab 시안도 커버.
+description: 맥과 WSL 의 자동화·이슈·앱 코드·디자인을 즉시 최신화하는 수동 스킬. 트리거 "동기화", "최신화", "sync", "/sync", "pull", "복습", "이슈 복기" 또는 다른 기기에서 방금 push 한 걸 받고 싶을 때. 내부적으로 daily-sync-and-learn.py 실행 (06:45 KST 자동 동기화와 동일). ~/apps/*/, ~/design-lab 도 커버.
 allowed-tools: Bash
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: to-iphone
-description: Flutter 앱 하나를 git 커밋 → GitHub push → Mac 트리거까지 원샷으로 실행해서 최종적으로 아이폰에 /irun 까지 자동으로 닿게 한다. WSL 데스크탑 전용. Mac 쪽 /land 스킬과 페어로 동작. 호출 형태 `/to-iphone <앱명>` 또는 `/to-iphone --path <절대경로>`. 사용자가 "/to-iphone", "아이폰에 올려줘", "ship to iphone", "이 앱 폰으로 보내", "ship-to-iphone" 이라고 하면 이 스킬을 실행한다.
+description: Flutter 앱 git commit → GitHub push → Mac 트리거 → 아이폰 /irun 까지 원샷. WSL 데스크탑 전용, Mac 쪽 /land 와 페어. 호출 `/to-iphone <앱명>` 또는 `--path <절대경로>`. 트리거 "/to-iphone", "아이폰에 올려줘", "ship to iphone", "이 앱 폰으로 보내", "ship-to-iphone".
 ---
 
 # /to-iphone — Ship Flutter app to iPhone (via Mac)

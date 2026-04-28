@@ -1,6 +1,6 @@
 ---
 name: goodnight
-description: 하루 마무리 종합 스킬. 오늘 한 일을 **worklog(산문체 작업일지) + done(체크리스트) + 미기록 이슈 점검** 세 축으로 한 번에 최신화하고, claude-automations·claude-skills·daejong-page 3개 repo 상태를 점검해 홈페이지까지 반영한다. 사용자가 "굿나잇", "잘자", "/goodnight", "오늘 마무리", "하루 마무리", "종합 동기화", "오늘 정리해줘", "오늘 끝", "하루 정리" 라고 말하면 이 스킬을 실행.
+description: 하루 마무리 종합 스킬. worklog(산문) + done(체크리스트) + 미기록 이슈 점검을 한 번에 최신화하고 claude-automations·claude-skills·daejong-page 3개 repo 점검 후 홈페이지 반영. 트리거 "굿나잇", "잘자", "/goodnight", "오늘 마무리", "하루 마무리", "종합 동기화", "오늘 정리해줘", "오늘 끝", "하루 정리".
 daejong_device: mac
 daejong_tag: 하루 마무리
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill

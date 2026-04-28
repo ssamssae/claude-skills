@@ -1,6 +1,6 @@
 ---
 name: done
-description: 오늘 한 일을 체크리스트 형식으로 자동 수집해 ~/daejong-page/done/YYYY-MM-DD.md 에 저장하고 홈페이지 /done 페이지에 반영한다. worklog 가 산문체 상세 기록이라면 done 은 한 눈에 파악하는 체크리스트. 사용자가 "완료리스트", "체크리스트", "오늘 체크", "완료 찍어줘", "done", "/done" 이라고 말하거나, "홈페이지 완료 [날짜] 안 됐", "완료탭 [날짜]", "done 페이지 [날짜]", "완료 [날짜] 업데이트", "홈페이지 완료", "완료탭" 같은 **불평/진단형 문장**으로 완료 페이지 상태를 지적할 때도 이 스킬을 호출한다. 날짜가 언급되면 `$ARGUMENTS` 로 해당 날짜를 전달.
+description: 오늘 한 일 체크리스트를 ~/daejong-page/done/YYYY-MM-DD.md 에 저장하고 홈페이지 /done 에 반영. worklog=산문, done=체크리스트. 트리거 "완료리스트", "체크리스트", "오늘 체크", "완료 찍어줘", "done", "/done" 또는 "홈페이지 완료/완료탭/done 페이지 [날짜] 안 됐/업데이트" 같은 불평·진단형 문장. 날짜 언급 시 `$ARGUMENTS`.
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
 

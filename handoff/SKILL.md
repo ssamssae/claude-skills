@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Mac↔WSL 크로스 디바이스 프롬프트 넘기기. 2026-04-25 부터 Primary 채널은 SSH+tmux send-keys METHOD A 무복붙(zero-touch) — 강대종님 손 0번. 텔레그램 peer-bot 발송과 fallback reply 는 보조. 강대종님이 "맥에 시켜 / 맥으로 넘겨 / WSL 로 넘겨 / 윈도우에 시켜 / 다른 기기에 보내 / handoff / /handoff / 쏴줘 / 맥도 알게 / 맥에 알려 / 맥에 보내 / WSL 도 알게 / 양방향 / 양쪽 다 알게 / 둘 다 알게 / 둘 다 인지 / 상대도 알아야 / 저쪽 Claude 한테 / 다른 Claude 한테" 같은 표현을 쓰거나, Claude 가 스스로 "이 작업·정보는 상대 기기 Claude 도 알아야 함" 판단 시 즉시 이 스킬을 실행. **함정**: "복붙용으로 보내줘 / 복사해서 줘" 식으로 reply 복붙 모드를 명시 요청한 게 아닌 한, "쏴줘 / 보내줘 / 알려" 는 모두 METHOD A 무복붙으로 해석 — "별도 reply 로 복붙해주세요" 답변으로 빠지면 어제 만든 zero-touch 인프라를 무시하는 셈.
+description: Mac↔WSL 크로스 디바이스 프롬프트 넘기기. Primary = SSH+tmux METHOD A 무복붙(zero-touch), 텔레그램 peer-bot 폴백. 트리거 "맥에 시켜 / 맥으로 넘겨 / WSL 로 넘겨 / 다른 기기에 보내 / handoff / /handoff / 쏴줘 / 맥도 알게 / 맥에 알려 / WSL 도 알게 / 양방향 / 양쪽 다 알게 / 둘 다 인지 / 상대도 알아야 / 저쪽 Claude 한테 / 다른 Claude 한테" 또는 Claude 스스로 상대 기기도 알아야 한다고 판단 시. "쏴줘/보내줘/알려" = METHOD A. "복붙용으로/복사해서" 만 reply 복붙 모드.
 allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 ---
 

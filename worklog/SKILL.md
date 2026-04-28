@@ -1,6 +1,6 @@
 ---
 name: worklog
-description: 하루 전체 작업 내용(현재 세션 + 그날의 모든 Claude Code 세션 로그 + 모든 프로젝트의 git 커밋)을 수집·요약해서 작업일지로 저장하고 GitHub·홈페이지에 반영한다. 마크다운 원본(worklog-source/)과 뉴스레터 스타일 공개본(worklog/) 을 동시에 생성해 push 한다. 사용자가 "작업일지", "일지", "일지 써줘", "오늘 일지", "일지 기록", "/worklog" 등을 말하면 이 스킬 호출.
+description: 하루 전체 작업(현재 세션 + 그날 모든 Claude 세션 로그 + 모든 프로젝트 git 커밋) 수집·요약해 작업일지 저장 + GitHub·홈페이지 반영. 마크다운 원본(worklog-source/) + 뉴스레터 공개본(worklog/) 동시 생성. 트리거 "작업일지", "일지", "일지 써줘", "오늘 일지", "일지 기록", "/worklog".
 allowed-tools: Bash, Write, Edit, Read, Glob, Grep
 ---
 

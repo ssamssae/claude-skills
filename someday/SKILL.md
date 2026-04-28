@@ -1,6 +1,6 @@
 ---
 name: someday
-description: Someday/Maybe 리스트(`~/todo/someday.md`)를 관리한다. 해야 할 일은 아니지만 언젠가 해도 좋을 것들 — todos.md 와 분리해서 우선순위 노이즈 없이 모아둔다. 사용자가 "someday", "언젠가", "/someday", "써뎀이", "야 이거 someday 에 박아줘", "이건 todo 말고 someday" 같은 발화를 하면 이 스킬을 실행. 실제로 할 일이 되면 todos.md 로 승격(promote), 아니면 그대로 두거나 드롭.
+description: Someday/Maybe 리스트(`~/todo/someday.md`) 관리. 해야 할 일은 아니지만 언젠가 해도 좋을 것들 — todos.md 와 분리해 우선순위 노이즈 없이 모음. 트리거 "someday", "언젠가", "/someday", "써뎀이", "야 이거 someday 에 박아줘", "이건 todo 말고 someday". 실제 할 일 되면 todos.md 로 promote.
 allowed-tools: Bash, Write, Edit, Read
 ---
 

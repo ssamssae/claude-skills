@@ -1,6 +1,6 @@
 ---
 name: issue
-description: 이슈/사건/버그/혼선이 생겼다가 해결된 상황을 구조적으로 기록한다. `~/.claude/skills/issues/YYYY-MM-DD-<slug>.md` 에 마크다운으로 저장하고 ssamssae/claude-skills repo 에 자동 commit+push. WSL / Mac 어디서 호출해도 동일 포맷으로 쌓여서 기기 간 공유된다. 사용자가 "/issue", "이 이슈 기록해줘", "이거 포스트모템", "이슈로그", "트러블슈팅 기록" 이라고 하면 이 스킬을 실행한다.
+description: 이슈/버그/혼선이 해결된 상황을 구조적으로 기록. `~/.claude/skills/issues/YYYY-MM-DD-<slug>.md` 에 저장하고 claude-skills repo 에 자동 commit+push. WSL/Mac 어디서나 동일 포맷. 트리거 "/issue", "이 이슈 기록해줘", "이거 포스트모템", "이슈로그", "트러블슈팅 기록".
 ---
 
 # /issue — 이슈 포스트모템 기록

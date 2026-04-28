@@ -1,6 +1,6 @@
 ---
 name: submit-app
-description: Flutter 앱을 Apple App Store Connect 또는 Google Play Console 에 제출하는 루틴. 과거 실수·리젝 사례(lessons/)를 먼저 읽어서 재발 방지 체크리스트를 돌린 뒤 빌드·업로드·심사 제출한다. 사용자가 "앱 등록", "스토어 제출", "심사 보내", "aab 업로드", "ipa 업로드", "리뷰 제출", "/submit-app", "/submit", "Play Console 올려", "App Store 올려" 라고 말하면 이 스킬을 실행.
+description: Flutter 앱 App Store / Play Console 제출 루틴. 과거 실수·리젝 사례(lessons/) 먼저 읽어 재발 방지 체크리스트 후 빌드·업로드·심사 제출. 트리거 "앱 등록", "스토어 제출", "심사 보내", "aab 업로드", "ipa 업로드", "리뷰 제출", "/submit-app", "/submit", "Play Console 올려", "App Store 올려".
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 
