@@ -1,6 +1,6 @@
 ---
 name: pull-apps
-description: 모든 Flutter 앱 repo(~/ 최상위 + ~/apps/*/) 를 git pull --rebase --autostash 로 일괄 최신화. 다른 기기(주로 Mac)에서 push 한 앱 코드 변경을 이 기기(주로 WSL)에서 받아올 때 호출. /sync 는 스킬·자동화·이슈만 다루지만 이 스킬은 앱 코드 전용. 강대종님이 "앱 당겨줘", "앱 pull", "/pull-apps", "WSL 에 앱 받아", "맥에서 넘긴 앱 받아" 라고 하면 실행.
+description: 모든 Flutter 앱 repo(~/ 최상위 + ~/apps/*/) 를 git pull --rebase --autostash 로 일괄 최신화. 다른 기기(주로 Mac)에서 push 한 앱 코드 변경을 이 기기(주로 WSL)에서 받아올 때 호출. 강대종님이 "앱 당겨줘", "앱 pull", "/pull-apps", "WSL 에 앱 받아", "맥에서 넘긴 앱 받아" 라고 하면 실행.
 allowed-tools: Bash
 ---
 
@@ -12,17 +12,7 @@ allowed-tools: Bash
 
 - 다른 기기(주로 Mac) 에서 앱 코드를 push 했고 이 기기(주로 WSL) 에서 바로 받고 싶을 때
 - "맥에서 한줄일기 만졌는데 WSL 에서 최신화 안 돼" 류 상황
-- WSL 에서 아침 `daily-sync` 이후 Mac 이 새로 push 한 게 있을 때 즉시 수령
 - 새 세션 시작 직후 앱 repo 가 동기 상태인지 확보하고 싶을 때
-
-## /sync 와의 차이
-
-| 스킬 | 커버 범위 | 용도 |
-| --- | --- | --- |
-| `/sync` | `~/.claude/skills` + `~/.claude/automations` + `~/daejong-page` + **모든 앱 repo** + 이슈 메모리 재생성 | 풀 크로스 기기 동기화 |
-| `/pull-apps` | 모든 앱 repo 만 (~/ 최상위 + ~/apps/*/) | 앱 코드만 빠르게 |
-
-둘 다 가능하면 `/sync` 한 번이면 충분. 앱만 따로 빨리 돌리고 싶으면 `/pull-apps`.
 
 ## 절차
 
