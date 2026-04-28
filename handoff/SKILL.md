@@ -6,6 +6,13 @@ allowed-tools: mcp__plugin_telegram_telegram__reply, Bash, Read
 
 # handoff — 크로스 디바이스 프롬프트 넘기기
 
+## 방향성 (지휘관 1명 원칙, 2026-04-28)
+
+- **Mac→WSL = 작업 지시 directive** (목표/수정파일/금지/성공기준/보고형식)
+- **WSL→Mac = 결과 보고 report** (수행작업/수정파일/테스트결과/실패로그/Mac판단필요사항). WSL 이 다음 방향을 새로 정하지 않음.
+- 채널(SSH+tmux METHOD A / peer-bot / fallback reply) 자체는 양방향이지만 **컨텐츠는 비대칭**.
+- 최종 결정은 Mac 세션. WSL→Mac 핸드오프는 결과/확인 요청까지만 — 역지시 금지.
+
 강대종님이 두 Claude 세션(Mac=`@MyClaude`, WSL=`@Myclaude2`) 을 운영한다. 디렉티브를 상대 기기로 넘기는 채널은 **3단 사다리**:
 
 1. **Primary — `handoffs/` + SSH+send-keys ping** (2026-04-25 정착): directive 본문은 priv repo `ssamssae/claude-skills/handoffs/` 파일에 git 으로 운반, 짧은 1줄 핑은 SSH 로 상대 tmux 안 Claude 프롬프트에 자동 인젝션. 강대종님 손 0번 (단 text 와 Enter 를 `sleep 0.5` 끼워 별도 send-keys 로 분리 발사 필수 — bracketed paste 우회).
