@@ -16,7 +16,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ### 0. 기기 라우팅 (맥 본진 집중 실행, 텔레그램 트리거 방식)
 
-/done 도 /worklog 와 같이 맥이 SoT. 맥 아닌 기기에서 호출되면 텔레그램으로 트리거 1줄 전송하고 여기서 끝난다 (/to-iphone → /land 패턴).
+/done 도 /worklog 와 같이 맥이 SoT. 맥 아닌 기기에서 호출되면 텔레그램으로 트리거 1줄 전송하고 여기서 끝난다.
 
 ```bash
 host=$(hostname)

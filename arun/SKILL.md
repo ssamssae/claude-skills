@@ -24,6 +24,13 @@ allowed-tools: Bash, Monitor
 - mac mini Flutter: `/opt/homebrew/bin/flutter`
 - mac mini adb: `/opt/homebrew/share/android-commandlinetools/platform-tools/adb`
 - mac mini 프로젝트 위치: `~/apps/<repo-name>`
+- **SSH 비대화형 세션 환경변수 주입** (필수, ~/.zshrc 자동 source 안 됨):
+  ```
+  export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+  export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+  export PATH=$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:/opt/homebrew/bin:$PATH
+  ```
+  (mac mini night-build launchd plist 와 동일 변수 셋)
 
 ## 절차
 
@@ -44,7 +51,7 @@ allowed-tools: Bash, Monitor
 4. **mac mini 측 빌드 + 실행** (run_in_background=true)
    - 명령:
      ```
-     ssh mac-mini "cd ~/apps/$REPO && git pull --rebase --autostash && /opt/homebrew/bin/flutter clean && /opt/homebrew/bin/flutter run --debug -d $DEVICE_ID"
+     ssh mac-mini 'export JAVA_HOME=/opt/homebrew/opt/openjdk@17; export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools; export PATH=$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:/opt/homebrew/bin:$PATH; cd ~/apps/'$REPO' && git pull --rebase --autostash && /opt/homebrew/bin/flutter clean && /opt/homebrew/bin/flutter run --debug -d '$DEVICE_ID
      ```
    - **release 모드 금지** — release aab SoT 는 mac mini night-build (launchd, 02:00 KST)
 
