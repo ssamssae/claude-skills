@@ -229,12 +229,12 @@ source: manual | auto-from-session | reviewer-feedback
 - `apple-3-1-1-external-payment.md` — Apple 3.1.1 외부 결제/기부 링크 금지 (메모요 1.0 리젝)
 - `android-aab-naming.md` — aab 파일명은 영문·하이픈 (`memoyo-1.0.2-19.aab`)
 - `ios-bundle-id-convention.md` — `com.ssamssae.<name>` 고정
-- `ios-signing-team.md` — DEVELOPMENT_TEAM = 46UH85U2B8 사전 주입 (/land 가 처리)
+- `ios-signing-team.md` — DEVELOPMENT_TEAM = 46UH85U2B8 사전 주입 (submit-app 본체에서 처리)
 - `both-pretendard-font-size.md` — Pretendard 번들 시 앱 용량 +~3MB
 
 ## 관련 스킬
 
-- `/irun`, `/land` — 빌드·아이폰 설치 (제출 전 동작 확인)
-- 맥미니 mail-watcher v5 — 제출 후 4시간 폴링 Gmail 심사·결제 알림 (스킬 아닌 백그라운드 자동화)
+- `/irun`, `/arun` — 빌드·실기기 설치 (제출 전 동작 확인, mac mini SSH 빌드)
+- 맥미니 mail-watcher v5 — 제출 후 2시간 폴링 Gmail 심사·결제 알림 (스킬 아닌 백그라운드 자동화)
 - `/issue` — 포괄적 이슈 로깅 (앱 제출 관련이면 이 스킬의 lessons/ 에도 저장)
 - `/worklog` — 제출 작업 로그 기록

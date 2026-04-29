@@ -19,7 +19,7 @@ allowed-tools: Bash, Write, Edit, Read
 /todo 는 `~/todo/todos.md` (Mac 로컬) + macOS Reminders AppleScript + `/Users/user/daejong-page/...` 하드코딩 경로를 쓰므로 **맥 전용**.  맥 아닌 기기(WSL/iPhone)에서 호출되면 아래 규칙 적용:
 
 1. **조회 (read-only)** — `~/daejong-page/todos/YYYY-MM-DD.md` 스냅샷이 git 으로 동기화돼 있음. WSL 에서도 Read 해서 응답 가능. 마감일/오늘 진행중 조회까지는 여기서 끝.
-2. **쓰기 (추가/완료/취소/이동/수정)** — 맥에서만 가능. 텔레그램 reply 로 chat_id 538806975 에 아래 본문 전송하고 종료 (사용자 발화 운반체 — globals 운반체 예외 적용, /to-iphone → /land 동일 패턴):
+2. **쓰기 (추가/완료/취소/이동/수정)** — 맥에서만 가능. 텔레그램 reply 로 chat_id 538806975 에 아래 본문 전송하고 종료 (사용자 발화 운반체 — globals 운반체 예외 적용):
 
 ```
 ✅ /todo 트리거
