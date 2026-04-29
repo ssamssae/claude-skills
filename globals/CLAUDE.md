@@ -63,9 +63,17 @@
 - `mcp__plugin_telegram_telegram__reply` 로 directive 본문을 **별도 메시지** 1통으로 송신 (분석/근거 메시지와 분리)
 - 강대종님이 다른 봇 챗 열어서 long-press → copy → paste 로 운반
 
-### WSL → Mac
+### WSL → Mac — 운반체 mac-report.sh (2026-04-29 추가)
 
-WSL 세션은 결과 보고만 (지휘관 1명 원칙). 그냥 `mcp__plugin_telegram_telegram__reply` 한 통이면 충분. 별도 directive 송신 채널 불필요.
+WSL 세션은 결과 보고만 (지휘관 1명 원칙). 보고 끝나면 2-channel 송신:
+
+- **(1차)** `~/.claude/automations/scripts/mac-report.sh <report_abs_path> "<3줄 요약>"` 호출
+  - 본진 tmux 'claude' 세션에 paste → 본진 챗봇이 자동으로 깨어나 보고서 fetch + 검토 + 회신
+  - 강대종님 손 0 — "본진 idle 상태로 보고를 모르고 넘어감" 사고 방지용
+  - 운반체 호출은 directive 가 아니라 **정해진 양식의 보고 라우팅** = 지휘관 1명 원칙의 운반체 예외
+- **(2차)** `mcp__plugin_telegram_telegram__reply` 로 강대종에게 1통 (사람 채널, 평소 그대로)
+
+mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 스킵하고 2차만 송신, 강대종이 운반.
 
 ## 빠른 자동 트리거 (상세는 AGENT.md)
 
