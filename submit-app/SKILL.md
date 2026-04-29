@@ -18,35 +18,52 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 
 ## 전제
 
-- Flutter 프로젝트 루트가 `~/apps/<앱명>/` 에 있거나 `pwd` 가 Flutter 프로젝트
-- iOS: Xcode Command Line Tools + CocoaPods + fvm 세팅 완료, signing team `46UH85U2B8` 주입돼있음
-- Android: keystore 준비, `android/key.properties` 존재, release 서명 설정 완료
-- Play Console / App Store Connect 는 사용자가 수동으로 웹 UI 접속 (이 스킬은 aab·ipa 파일 생성과 업로드 지시까지)
+- **실행 SoT = Mac mini.** 이 스킬은 본진(MacBook) Claude Code 에서 호출하지만, 빌드·서명·업로드는 전부 `ssh mac-mini "..."` 라우팅으로 Mac mini 에서 수행 (2026-04-29 결정 — `feedback_android_build_deploy_mac_mini.md`).
+- Flutter 프로젝트 루트가 **Mac mini** `~/apps/<앱명>/` 에 있음 (Mac mini 가 코드 SoT)
+- iOS: Mac mini 에 Xcode + CocoaPods + fvm 세팅, signing team `46UH85U2B8` 주입
+- Android: Mac mini 에 keystore 보관 (`~/apps/<app>/android/<app>-upload-keystore.jks`), `android/key.properties` 존재, release 서명 설정 완료
+- Mac mini 에 `fastlane` 설치 (Phase A 셋업)
+- App Store Connect / Google Play API key 가 Mac mini `~/.claude/secrets/` 에 보관
+- Play Console / App Store Connect 메타·스크린샷·심사제출 버튼은 강대종님이 본진 브라우저에서 직접 (이 스킬은 aab/ipa 빌드 + 업로드까지만)
 
 ## 절차
 
-### Step 0 — Keystore SoT 가드 (Android 만 해당)
+### Step 0 — Mac mini 라우팅 + Keystore 가드
 
-`--platform=android` 일 때 **반드시 먼저** 실행. iOS 는 스킵.
+**전 플랫폼(iOS/Android) 공통**. 빌드/서명/업로드는 전부 Mac mini 라우팅이므로 진입 시점에 Mac mini 도달 가능 + 산출물 위치 확인.
 
-1. `~/.claude/skills/submit-app/keystore-sot.md` 의 "## Registry" 섹션에서 해당 앱 라인 찾기
-2. SoT 가 `🍎 Mac` 인데 현재 hostname 이 `*MacBook*`/`*MBP*` 가 아니면 → 즉시 중단:
+1. **Mac mini 도달 확인**:
+   ```bash
+   ssh -o ConnectTimeout=5 mac-mini 'echo OK' 2>&1
    ```
-   🚨 keystore SoT 불일치
-   <앱명> 의 release keystore SoT 는 🍎 Mac 입니다.
-   현재 기기: 🪟 WSL
-   이 기기에서 서명·업로드 시 Play Store 가 "서명 불일치" 로 영구 거부할 수 있어요.
-   → Mac 세션에서 /submit-app <앱명> --platform=android 호출해주세요.
+   실패 시 즉시 중단:
    ```
-3. SoT 가 `🪟 WSL` 인데 현재 hostname 이 `DESKTOP-*` 가 아니면 → 동일한 방식으로 중단 + WSL 로 안내
-4. registry 에 앱이 없으면 → 경고:
+   🚨 Mac mini 도달 불가 (SSH timeout)
+   배포는 Mac mini SoT 라 본진 단독 진행 불가. Tailscale/SSH 상태 확인 후 재시도.
+   ```
+
+2. **앱 디렉토리 확인** (Mac mini 위):
+   ```bash
+   ssh mac-mini "ls -d ~/apps/<앱명>/" 2>&1
+   ```
+   없으면 중단 — 코드 SoT 도 Mac mini 인 게 원칙. 본진에만 있으면 강대종님이 먼저 동기화 (또는 git push/pull) 필요.
+
+3. **Android 만 — keystore 존재 확인 + SHA 추출**:
+   ```bash
+   ssh mac-mini "ls ~/apps/<앱명>/android/*-upload-keystore.jks && keytool -list -v -keystore ~/apps/<앱명>/android/<앱명>-upload-keystore.jks -alias upload 2>/dev/null | grep -i SHA256:"
+   ```
+   keystore 없으면 중단 + registry 확인 안내.
+
+4. **registry 에 앱이 없으면** → 경고:
    ```
    ⚠️ <앱명> 이 keystore SoT registry 에 없습니다.
-   keystore-sot.md "## Registry" 섹션에 먼저 한 줄 추가해주세요:
-     <앱명>: 🍎 Mac | 🪟 WSL (keystore: android/<file>.jks, created: YYYY-MM-DD)
+   keystore-sot.md "## Registry" 섹션에 먼저 한 줄 추가:
+     <앱명>: 🏭 Mac mini (keystore: android/<file>.jks, created: YYYY-MM-DD)
    ```
-   사용자가 "일단 진행" 이라고 하면 warning 만 남기고 계속.
+
 5. 통과하면 Step 0.4 (Play 패키지 등록 사전 점검) 로.
+
+**참고:** keystore-sot.md 의 `🍎 Mac` 표기는 2026-04-29 이전 표기. 현재 모든 release keystore 의 실제 SoT 는 Mac mini(`/Users/USER/apps/<app>/android/`). registry 의 emoji 는 점진적 마이그레이션 — 표기와 무관하게 라우팅은 Mac mini 로.
 
 ### Step 0.4 — Play 패키지 등록 사전 점검 (Android 만 해당)
 
@@ -119,37 +136,62 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 
 ### Step 1 — 버전 bump
 
-- `pubspec.yaml` 의 `version: X.Y.Z+N` 에서 N(build number) +1
+- Mac mini 의 `~/apps/<앱명>/pubspec.yaml` 의 `version: X.Y.Z+N` 에서 N(build number) +1
 - X.Y.Z 는 사용자에게 물어봄 (patch/minor/major 중 선택)
-- 커밋: `chore: bump version to X.Y.Z+N`
+- bump 명령:
+  ```bash
+  ssh mac-mini "cd ~/apps/<앱명> && sed -i '' 's/^version: .*/version: X.Y.Z+N/' pubspec.yaml && git add pubspec.yaml && git commit -m 'chore: bump version to X.Y.Z+N'"
+  ```
 
-### Step 2 — 빌드
+### Step 2 — 빌드 (Mac mini SSH 라우팅)
 
 **iOS**:
 ```bash
-cd <app> && fvm flutter build ipa --release
+ssh mac-mini "cd ~/apps/<앱명> && fvm flutter build ipa --release 2>&1 | tail -30"
 ```
-산출물: `build/ios/ipa/*.ipa`
+산출물 (Mac mini 위): `~/apps/<앱명>/build/ios/ipa/*.ipa`
 
 **Android**:
 ```bash
-cd <app> && fvm flutter build appbundle --release
+ssh mac-mini "cd ~/apps/<앱명> && fvm flutter build appbundle --release 2>&1 | tail -30"
 ```
-산출물: `build/app/outputs/bundle/release/app-release.aab`
+산출물 (Mac mini 위): `~/apps/<앱명>/build/app/outputs/bundle/release/app-release.aab`
 
-빌드 후 파일명 규칙 확인 (aab: 영문·하이픈). 어긋나면 `build/<app>-X.Y.Z-N.aab` 로 복사.
+빌드 후 파일명 규칙 확인 (aab: 영문·하이픈). 어긋나면 Mac mini 에서:
+```bash
+ssh mac-mini "cd ~/apps/<앱명> && cp build/app/outputs/bundle/release/app-release.aab build/<app>-X.Y.Z-N.aab"
+```
 
-### Step 3 — 업로드
+검증:
+```bash
+ssh mac-mini "ls -lh ~/apps/<앱명>/build/ios/ipa/*.ipa  ~/apps/<앱명>/build/app/outputs/bundle/release/*.aab 2>/dev/null"
+```
 
-**iOS**:
-- Transporter.app 또는 `xcrun altool --upload-app -f <ipa> -t ios` 사용
-- App Store Connect 프로세싱 대기 (보통 5~20분)
+### Step 3 — 업로드 (Mac mini SSH + fastlane)
 
-**Android**:
-- `fastlane supply --aab <aab>` 또는 수동 업로드 링크 안내
-- 메모요처럼 Closed Testing 트랙 별도 관리 시 `--track=beta`
+**iOS** (App Store Connect API + altool):
+```bash
+ssh mac-mini "cd ~/apps/<앱명> && fastlane pilot upload --ipa build/ios/ipa/<file>.ipa --api_key_path ~/.claude/secrets/asc-api-key.json --skip_waiting_for_build_processing"
+```
+또는 단순 upload 만 (TestFlight 처리 대기 별도):
+```bash
+ssh mac-mini "xcrun altool --upload-app -f ~/apps/<앱명>/build/ios/ipa/<file>.ipa -t ios --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>"
+```
+App Store Connect 프로세싱 대기 (보통 5~20분) — `mail-watcher v5` 가 결과 알림 수신.
 
-이 스킬은 업로드 **명령어와 경로만 출력**하고 실제 웹 업로드는 사용자가 제어 (프로덕션 계정 조작은 항상 수동 확인).
+**Android** (Google Play Publisher API + fastlane supply):
+```bash
+ssh mac-mini "cd ~/apps/<앱명> && fastlane supply --aab build/app/outputs/bundle/release/<file>.aab --json_key ~/.claude/secrets/play-service-account.json --track internal --skip_upload_metadata --skip_upload_changelogs --skip_upload_images --skip_upload_screenshots"
+```
+- `--track internal/alpha/beta/production` — 메모요처럼 Closed Testing 은 `internal` 또는 `beta`
+- 메타·스크린샷·what's new 는 강대종님 본진 브라우저에서 (자동화 X, 책임 명확화)
+
+업로드 후 검증:
+```bash
+ssh mac-mini "fastlane supply --json_key ~/.claude/secrets/play-service-account.json --package_name com.daejongkang.<앱명> --validate_only=true" 2>&1 | tail -20
+```
+
+심사 제출 버튼은 **자동화 X** — 강대종님 본진에서 직접 클릭 (책임 명확화 결정).
 
 ### Step 4 — 심사 제출 후 모니터링 활성화
 

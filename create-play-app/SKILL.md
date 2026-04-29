@@ -16,38 +16,42 @@ description: Google Play Console 에 Flutter 앱을 **웹 UI 자동 클릭 + API
 
 ## 전제
 
-- Playwright MCP 사용 가능 (설정에서 enabled)
-- 사용자가 Play Console 에 이미 로그인 상태 (브라우저 프로필에 쿠키 있음) — 아니면 로그인 prompt 뜸
-- `~/apps/<name>/android/app/build.gradle.kts` 에 `applicationId` 있음
-- `~/apps/<name>/store_metadata.md` 에 앱 이름/언어 설정 (옵션, 없으면 커맨드 인자 또는 기본값)
+- **실행 SoT = Mac mini** (2026-04-29 결정). 본진에서 호출하면 SSH 로 Mac mini 의 raw Playwright 스크립트 트리거.
+- Mac mini 에 `node` + `playwright` + `chromium` 설치 (Phase A 셋업)
+- 저장된 Google 로그인 세션 쿠키: `~/.claude/secrets/google-session.json` (1회 헤드풀 로그인 후 저장)
+- Mac mini 의 `~/apps/<name>/android/app/build.gradle.kts` 에 `applicationId` 있음
+- Mac mini 의 `~/apps/<name>/store_metadata.md` 에 앱 이름/언어 설정 (옵션)
+- Play Console Service Account JSON: `~/.claude/secrets/play-service-account.json` (API probe 용)
 
 ## 플로우
 
-### Step 1 — 사전 체크
+### Step 1 — 사전 체크 (Mac mini SSH 라우팅)
+
+이미 등록된 앱인지 확인 — `edits.insert` 가 200 이면 존재, 404 면 신규:
 
 ```bash
-# 이미 등록된 앱인지 확인 — edits.insert 가 200 이면 이미 존재, 404 면 신규
-python3 ~/.claude/automations/scripts/play-upload.py --check <name>
+ssh mac-mini "python3 ~/.claude/automations/scripts/play-upload.py --check <name>"
 ```
 
-또는 간단하게:
+스크립트가 없으면 inline python (Mac mini 에서):
 
-```python
+```bash
+ssh mac-mini bash -lc "'python3 -c \"
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-creds = service_account.Credentials.from_service_account_file(
-    "~/.claude/secrets/play-service-account.json",
-    scopes=["https://www.googleapis.com/auth/androidpublisher"],
-)
-svc = build("androidpublisher", "v3", credentials=creds, cache_discovery=False)
+creds = service_account.Credentials.from_service_account_file(\\\"/Users/USER/.claude/secrets/play-service-account.json\\\", scopes=[\\\"https://www.googleapis.com/auth/androidpublisher\\\"])
+svc = build(\\\"androidpublisher\\\", \\\"v3\\\", credentials=creds, cache_discovery=False)
 try:
-    edit = svc.edits().insert(packageName=pkg, body={}).execute()
-    print("ALREADY REGISTERED")
-    svc.edits().delete(packageName=pkg, editId=edit["id"]).execute()
+    edit = svc.edits().insert(packageName=\\\"<pkg>\\\", body={}).execute()
+    print(\\\"ALREADY REGISTERED\\\")
+    svc.edits().delete(packageName=\\\"<pkg>\\\", editId=edit[\\\"id\\\"]).execute()
 except Exception as e:
-    if "404" in str(e) or "does not exist" in str(e):
-        print("NEEDS REGISTRATION")
+    if \\\"404\\\" in str(e):
+        print(\\\"NEEDS REGISTRATION\\\")
+\"'"
 ```
+
+(실제로는 별도 `.py` 파일에 저장하고 호출하는 게 깔끔.)
 
 이미 등록됐으면 `/submit-app <name>` 으로 바로 가라고 안내하고 종료.
 
@@ -59,33 +63,43 @@ except Exception as e:
 - **앱/게임**: 기본 `앱` (override: `--game`)
 - **무료/유료**: 기본 `무료` (override 불가 — 유료 앱은 Play Console 정책상 출시 후 변경 불가라 수동 진행 권장)
 
-### Step 3 — Playwright 자동 클릭
+### Step 3 — Mac mini Raw Playwright 호출
 
-이 시퀀스를 정확히 따라 실행:
+본진에서 Playwright MCP 직접 클릭하지 않고 Mac mini 의 headless playwright 스크립트 호출:
 
-```
-1. browser_navigate → https://play.google.com/console
-2. 계정 선택 화면이면 DAEJONG KANG option 클릭
-3. browser_navigate → /console/u/0/developers/6982984193099657371/create-new-app
-   (또는 app-list 에서 "앱 만들기" 링크 찾아 click)
-4. browser_fill_form:
-   - 앱 이름 (textbox) → <한글 이름>
-   - 패키지 이름 (textbox) → <com.ssamssae.XXX>
-   - 앱/게임 (radio: 앱) → true
-   - 무료/유료 (radio: 무료) → true
-   - 개발자 프로그램 정책 체크 → true
-   - 미국 수출법 체크 → true
-5. 기본 언어 dropdown 클릭 → "한국어 – ko-KR" option 클릭
-6. take_screenshot → 형상 확인용
-7. browser_click → "앱 만들기" submit 버튼 (활성화된 상태여야 함)
-8. wait 3~5s, URL 이 /app/<newAppId>/app-dashboard 로 리다이렉트되면 성공
+```bash
+ssh mac-mini "node ~/.claude/automations/scripts/create-play-app.js \
+  --name '<한글이름>' \
+  --package <com.daejongkang.XXX> \
+  --lang ko-KR \
+  --type app \
+  --pricing free \
+  --session ~/.claude/secrets/google-session.json"
 ```
 
-### Step 4 — 성공 검증
+스크립트(`create-play-app.js`)는 다음 시퀀스를 자동 실행:
+1. `chromium.launch({ headless: true })`
+2. 저장된 Google 세션 쿠키 로드 → `play.google.com/console` 접근
+3. `/console/u/0/developers/6982984193099657371/create-new-app` 이동
+4. 폼 입력: 앱 이름, 패키지, 앱/게임=앱, 무료/유료=무료, 정책 체크 2개
+5. 기본 언어 dropdown click → ko-KR option click (1-step fill 안 먹음, 2026-04-23 검증)
+6. `page.screenshot()` 으로 검증용 스샷 저장 (`/tmp/create-play-app-<timestamp>.png`)
+7. "앱 만들기" submit click
+8. URL 이 `/app/<id>/app-dashboard` 로 리다이렉트되면 성공
+9. JSON 출력: `{"new_app_id": "...", "package_name": "...", "dashboard_url": "..."}`
 
-- URL 파싱으로 `newAppId` 추출
+세션 쿠키가 만료되면 (보통 수개월) 재로그인 필요:
+- 강대종님 본진에서 헤드풀로 1회 로그인 → 쿠키 export → Mac mini `~/.claude/secrets/google-session.json` 으로 scp.
+
+### Step 4 — 성공 검증 (Mac mini)
+
+```bash
+ssh mac-mini "python3 ~/.claude/automations/scripts/play-upload.py --check <name>"
+```
+
+- 위 ssh 결과의 `new_app_id`, `package_name`, `dashboard_url` 파싱
 - API probe 재실행 → 200 이면 success
-- 출력: `new_app_id`, `package_name`, `dashboard_url`
+- 검증 스크린샷은 `scp mac-mini:/tmp/create-play-app-*.png .` 으로 본진으로 가져와서 텔레그램 첨부
 
 ### Step 4.5 — Keystore SoT 기록
 
