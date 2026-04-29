@@ -45,7 +45,7 @@ B. <한 줄>
 
 ## 3. 컨펌 처리
 
-- `💤 A B` → 선택 항목만 someday 트리거. Mac 이면 `someday` 스킬 직접 호출, WSL/iPhone 이면 `handoff` 스킬로 Mac 핑 (zero-touch)
+- `💤 A B` → 선택 항목만 someday 트리거. Mac 이면 `someday` 스킬 직접 호출, WSL/iPhone 이면 텔레그램 reply 1통으로 Mac 운반체 송신 (Mac 세션이 받아 someday 처리)
 - `💤 X` / `닫아` / `OK` → someday skip
 - `잠깐만` → 발동 취소, 통상 응답 복귀
 
@@ -74,7 +74,7 @@ reply 1줄: `✅ 닫아도 OK. /clear 진행하셔도 됩니다.`
 
 ## 헷갈리지 말 것
 
-`/session-close` ≠ `/goodnight`(하루 마무리) ≠ `/clear`(세션 메모리 비우기) ≠ `/handoff`(타기기 인계).
+`/session-close` ≠ `/goodnight`(하루 마무리) ≠ `/clear`(세션 메모리 비우기). 타기기 인계는 `wsl-directive.sh` (Mac→WSL) 또는 텔레그램 reply (WSL→Mac).
 
 ## 메모
 

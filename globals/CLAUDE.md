@@ -43,17 +43,29 @@
 - **Mac mini** = 24/7 자동 실행 노드(launchd 워커). 챗봇 세션 추가 금지. 설계 판단/다음작업 결정 금지.
 - **방향성**: Mac→WSL = 작업 지시 directive. WSL→Mac = 결과 보고 report (다음 방향 제안 금지).
 - 모든 최종 결정은 **Mac 세션**.
-- **예외 (운반체)**: 사용자 명령을 자동화로 라우팅하는 트리거(/to-iphone → /land 페어 등 WSL 자동화→Mac 자동화)는 directive 가 아닌 운반체. WSL 세션이 자체 판단으로 새 방향을 결정한 게 아니면 새 원칙 위반 아님.
+- **예외 (운반체)**: 사용자 명령을 자동화로 라우팅하는 트리거(cross-device 자동 핸드오프 패턴)는 directive 가 아닌 운반체. WSL 세션이 자체 판단으로 새 방향을 결정한 게 아니면 새 원칙 위반 아님.
 
-## 크로스 디바이스 핸드오프 철칙 (hard rule)
+## 크로스 디바이스 디렉티브 송신 (hard rule, 2026-04-29)
 
-다른 기기 Claude 세션(WSL↔Mac)에 전달할 지시문은 **반드시 별도 텔레그램 메시지**로 보낸다.
+### Mac → WSL — METHOD A (zero-touch)
 
-- **복붙 단위 1개 = 텔레그램 메시지 1개** (분석/근거/답변과 절대 섞지 말 것)
-- 각 directive 메시지는 **self-contained** — 새 채팅 첫 메시지로 가정하고 컨텍스트·판정결과·할일·금지사항 모두 포함
-- 분석 답변 끝에 "다음 directive" 섹션으로 내장하는 것 = 위반
-- 시그널 키워드 (본인 답변에서): "WSL Claude 용 복붙 directive", "Mac 세션에 넘겨", "복붙해서 전달", "넘겨줘" → 이 순간 즉시 `reply` 툴 호출을 **별도 메시지**로 분리
-- 위반 감지 시 바로 찢어서 재전송
+강대종님이 `쏴줘 / 맥도 알게 / 양방향 / 양쪽 다 알게 / WSL 도 알게 / 넘겨줘` 같이 말하거나, Claude 스스로 "WSL 도 알아야 한다" 판단 시:
+
+- **즉시** `~/.claude/automations/scripts/wsl-directive.sh` 호출. 별도 핸드오프 스킬 불필요.
+- 디렉티브는 self-contained (목표/수정파일/금지/성공기준/보고형식). 새 채팅 첫 메시지로 가정.
+- wsl-directive.sh 가 자동으로 텔레그램에 디렉티브 본문 forward (강대종님이 무엇이 보내졌는지 채팅에서 확인 가능).
+- 분석/판단 응답 끝에 "다음 directive" 섹션으로 내장 X — 운반체 호출은 별도 함수.
+
+### 텔레그램 reply 복붙 모드 — fallback
+
+`복붙용으로 / 복사해서 / 직접 복붙` 같이 명시하시거나 wsl-directive.sh 가 닿지 않을 때(SSH 다운, tmux 세션 부재):
+
+- `mcp__plugin_telegram_telegram__reply` 로 directive 본문을 **별도 메시지** 1통으로 송신 (분석/근거 메시지와 분리)
+- 강대종님이 다른 봇 챗 열어서 long-press → copy → paste 로 운반
+
+### WSL → Mac
+
+WSL 세션은 결과 보고만 (지휘관 1명 원칙). 그냥 `mcp__plugin_telegram_telegram__reply` 한 통이면 충분. 별도 directive 송신 채널 불필요.
 
 ## 빠른 자동 트리거 (상세는 AGENT.md)
 
