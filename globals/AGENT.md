@@ -69,17 +69,20 @@
 
 ### 🪟 윈도우 데스크탑 = 전위 (Worker)
 - **Telegram MCP 봇**: `@Myclaude2` (Mac 봇과 분리. 같은 봇 양쪽 폴링 시 getUpdates 409 충돌)
-- **Android 빌드/에뮬레이터** 전담 (3900X + 2070S 활용)
+- **Android dev/debug 빌드 + 갤럭시 S24 adb 실기** (3900X + 2070S 활용)
 - 무거운 작업 (장시간 리서치/리팩토링/배치)
 - 실험적·파괴적 작업 (실패해도 본진 무영향)
 - **launchd 잡 신규 추가 금지** (본진 충돌 방지)
+- **Android release aab 빌드 금지** (2026-04-29) — release/keystore SoT 는 🤖 Mac mini 단일. release 효과 폰 검증 필요하면 mac-mini night-build 산출물(`~/apps/<app>/build/app/outputs/bundle/release/app-release.aab`) 받아 `adb install`
 
 ### 📱 iPhone Termius = 원격 컨트롤러
 - Tailscale 경유로 Mac (`100.74.85.37`, user@) 또는 데스크탑 (`100.80.253.65`, ssamssae@) SSH 접속
 - 외부에서 가벼운 명령. 긴 세션은 본체 권장
 
-### 🤖 M1 Mac mini = 24/7 자동 실행 노드 (당직자)
+### 🤖 M1 Mac mini = 24/7 자동 실행 노드 (당직자) + Android release 빌드 SoT
 - launchd 워커 호스트 (mail-watcher, night-build 등)
+- **Android release aab 빌드 단일 진실 소스 (2026-04-29)** — 모든 앱의 release 서명 빌드는 여기서만. v2.0a 풀그린 검증 끝(PASS:4 FAIL:0)
+- **Android upload keystore SoT (2026-04-29)** — `~/apps/<app>/android/{key.properties, *-upload-keystore.jks}` 단일 위치. Mac 본진/WSL 에 release keystore 두지 말 것 (이중 SoT 혼선 방지)
 - **챗봇 세션 추가 금지** — 세 번째 챗봇으로 쓰지 않음
 - 설계 판단/다음작업 결정/다른 봇에게 지시 금지
 - 정해진 시간에 정해진 스크립트만 실행. 결과 md 작성 + 필요 시 텔레그램 보고만

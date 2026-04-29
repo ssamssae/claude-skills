@@ -1,12 +1,20 @@
 ---
 name: arun
-description: Flutter 앱을 연결된 갤럭시 S24(기본 device id R3CX10GX1XR)에 clean + release 로 재빌드·실행. WSL→Windows 브릿지로 동작. 이전 Gradle 데몬 정리(광범위 java kill 금지). irun 의 Android 버전.
+description: Flutter 앱을 연결된 갤럭시 S24(기본 device id R3CX10GX1XR)에 clean + debug 로 재빌드·실행. WSL→Windows 브릿지로 동작. 이전 Gradle 데몬 정리(광범위 java kill 금지). irun 의 Android 버전.
 allowed-tools: Bash, Monitor
 ---
 
-# 안드로이드(S24) 릴리즈 재실행
+# 안드로이드(S24) 디버그 재실행
 
-WSL 셸에서 호출되는 스킬. 현재 Flutter 프로젝트를 Windows 측 `flutter` 와 `adb` 를 거쳐 갤럭시 S24 (또는 인자로 받은 Android 디바이스) 에 clean 빌드 후 release 모드로 설치·실행한다.
+WSL 셸에서 호출되는 스킬. 현재 Flutter 프로젝트를 Windows 측 `flutter` 와 `adb` 를 거쳐 갤럭시 S24 (또는 인자로 받은 Android 디바이스) 에 clean 빌드 후 **debug** 모드로 설치·실행한다.
+
+> **2026-04-29 정책 변경**: Android **release aab 빌드 SoT = 🤖 Mac mini 단독**. WSL 에는 release upload keystore 가 없으므로 release 빌드 시 sign fail. arun 은 **dev/debug install 워크플로우** 전용이다. release 효과 폰 검증이 필요하면:
+>
+> 1. mac-mini night-build 산출물 받기: `scp mac-mini:apps/<app>/build/app/outputs/bundle/release/app-release.aab ./` (또는 launchd 잡 결과 파일)
+> 2. aab → apks 변환: `bundletool build-apks --bundle=app-release.aab --output=app.apks --mode=universal`
+> 3. `unzip -p app.apks universal.apk > app-release.apk && adb install -r app-release.apk`
+>
+> 자세한 SoT 정책은 `~/.claude/AGENT.md` "🪟 윈도우 데스크탑 = 전위" / "🤖 M1 Mac mini" 섹션 참조.
 
 ## 입력
 
@@ -46,13 +54,14 @@ WSL 셸에서 호출되는 스킬. 현재 Flutter 프로젝트를 Windows 측 `f
    - `"$ADB" devices -l | grep "$DEVICE_ID"` 
    - 안 잡히면 사용자에게 안내: "S24 가 안 잡힘. 무선 디버깅 토글 ON/OFF 시도해보세요" + 종료
 
-4. **clean + release run (백그라운드)**
+4. **clean + debug run (백그라운드)**
    - 로그 파일 준비: `mkdir -p /tmp/arun_logs; LOG=/tmp/arun_logs/run_$(date +%s).log; echo "$LOG" > /tmp/arun_logs/last_log`
    - 명령 (nohup 으로 분리, run_in_background=true):
      ```
-     nohup powershell.exe -NoProfile -Command "$env:JAVA_HOME=[Environment]::GetEnvironmentVariable('JAVA_HOME','User'); cd $WIN_PROJECT_DIR; flutter clean; flutter run --release -d $DEVICE_ID" > "$LOG" 2>&1 &
+     nohup powershell.exe -NoProfile -Command "$env:JAVA_HOME=[Environment]::GetEnvironmentVariable('JAVA_HOME','User'); cd $WIN_PROJECT_DIR; flutter clean; flutter run --debug -d $DEVICE_ID" > "$LOG" 2>&1 &
      ```
    - JAVA_HOME 주입 동일 (flutter 도 안전하게)
+   - **release 모드 금지** (2026-04-29) — WSL 에 upload keystore 없음 → sign fail. release 효과 검증 필요하면 mac-mini night-build 산출물 다운로드 후 adb install (스킬 본문 상단 절차 참조).
 
 5. **Monitor 로 빌드 이벤트 관찰**
    - BG_ID 의 stdout 을 Monitor 로 스트림
