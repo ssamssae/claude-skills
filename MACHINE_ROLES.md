@@ -1,6 +1,6 @@
 # 머신 역할표 + 위험 작업 블랙리스트
 
-마지막 갱신: 2026-04-30 (KST) — 자동배포 라우팅 + 3060/3060Ti 추가
+마지막 갱신: 2026-05-01 (KST) — WSL wsl/\* 브랜치 정책 + mail-watcher v5 드롭 반영
 SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 
 ## 1. 역할표 (한 줄 요약)
@@ -45,7 +45,6 @@ SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 - **fastlane 자동 업로드** (App Store Connect / Play Publisher API)
 - night-runner v1 (read-only 점검, 03:00 KST launchd)
 - night-builder v2.0a (야간 자동 빌드)
-- mail-watcher v5 (4h Gmail+ollama 심사·결제 알림)
 - mac-report.sh / wsl-directive.sh 운반체 받는 쪽
 - 키스토어 보관 (`~/apps/<app>/android/*-upload-keystore.jks`)
 - **API key/Service Account/세션쿠키 보관** (`~/.claude/secrets/`, 2026-04-30 추가)
@@ -62,18 +61,21 @@ SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 
 **한다:**
 - 낮 시간 즉응 작업 (강대종님이 WSL 머신 앞에 있을 때)
+- **wsl/\* 브랜치 직접 개발자**: 코드/문서 수정 + commit + `git push origin wsl/<slug>` (2026-05-01 명시)
 - 코드/로그 분석, 보고서 초안
 - Windows ADB 게이트웨이 (Galaxy S24 무선 토글)
 - WSL→Windows Chrome CDP (Playwright attach)
 - 보고는 mac-report.sh 로 본진 라우팅
 
 **안 한다:**
+- **main 직접 push** (모든 main 반영은 Mac 본진이 검토·머지, 2026-05-01 명시)
 - 야간 자동 작업 (밤 OFF)
 - todos 직접 쓰기 (Mac 라우팅)
 - 설계 변경/방향 변경/새 인프라 추가 제안 (지휘관 1명 원칙)
 - 옵션 메뉴 surface ("뭐할래 1/2/3?" 금지)
 - iOS 빌드 (Mac mini)
 - Android aab 빌드/Play 배포 (Mac mini, 2026-04-29 결정)
+- App Store Connect / Play Console 배포 클릭 (강대종님 본진)
 
 ### iPhone Termius (원격 헤드)
 
@@ -100,7 +102,7 @@ SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 | Play Console aab 업로드 (Publisher API) | 🏭 Mac mini | 강대종님 (필요시 본진 GUI) |
 | 스크린샷/메타데이터 입력 | — | 🍎 Mac 본진 + 강대종님 |
 | 심사 제출 버튼 | — (자동화 X, 책임 명확화) | 🍎 Mac 본진 + 강대종님 |
-| 심사 결과 알림 receive | 🏭 Mac mini (mail-watcher v5, 4h 폴링) | — |
+| 심사 결과 알림 receive | — (mail-watcher v5 2026-05-01 드롭) | 🍎 Mac 본진 ASC/Play 직접 모니터링 |
 | 승인 후 출시 결정 | — | 🍎 Mac 본진 + 강대종님 |
 
 **핵심 분리:** 
