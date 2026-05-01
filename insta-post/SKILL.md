@@ -90,7 +90,7 @@ allowed-tools: Bash, Read, Write, mcp__plugin_telegram_telegram__reply
    ```bash
    ~/.claude/tools/venv/bin/python ~/insta-autopost/render.py --worklog --date <date>
    ```
-7. 캡션 준비: H1 title + 첫 hook 한 줄 + 해시태그(`#바이브코딩 #클로드코드 #Flutter #1인개발자 #앱개발`). 필요 시 편집.
+7. 캡션 준비: H1 title + 첫 hook 한 줄 + 해시태그. 해시태그는 `~/insta-autopost/hashtags.json` 에서 로드 (기본 `default` 키). 강대종님이 호출 시 톤 키워드(`릴리즈톤`/`release`, `인프라톤`/`infra`, `사이드톤`/`side`) 를 명시하면 해당 `presets` 키 사용. 둘 다 없으면 worklog 내용으로 추정(앱 출시 → release, 인프라/자동화 → infra, 그 외 → default). 필요 시 편집.
 8. 인스타 발행 (`--date` 는 publish.py 내부 dedup 가드용 — 중복 방지 레일 두 겹):
    ```bash
    URL=$(python3 ~/insta-autopost/publish.py --png "$PNG" --caption "$CAPTION" --date "<date>" | tail -1)
