@@ -63,6 +63,8 @@ OK 하면 진행합니다.
 
 사용자 OK 받으면 1.5 단계로.
 
+**self-check 용 시작 ts 기억**: 이 step 시작 epoch (`date +%s`) 를 `GOODNIGHT_START` 로 메모해두기. step 4·4.5 가 실제로 산출물을 갱신했는지 mtime 비교에 쓴다.
+
 ### 1.5. 자동 완료 todos 매칭 (✨ 2026-04-26 추가)
 
 오늘 끝낸 일과 todos.md 의 열린 항목을 토큰 매칭해 "이미 끝났는데 todo 만 안 옮긴" 항목을 자동 검출.
@@ -234,6 +236,8 @@ done 스킬이 알아서:
 - `~/daejong-page/done/$(date +%F).md` 저장/갱신
 - daejong-page push
 
+**self-check (✨ 2026-05-01 추가)**: 호출 후 `stat -f '%m' ~/daejong-page/done/$(date +%F).md` 가 `GOODNIGHT_START` 이후인지 확인. 작거나 파일 없으면 done 미실행으로 판정 → Skill tool 로 done 1회 재호출. 재호출 후에도 mtime 안 올라가면 텔레그램에 `⚠️ done 미반영` 1줄 surface 후 5단계로 계속 진행. 5/1 사고(이전 goodnight 세션 Claude 가 done/insta-post 둘 다 skip) forcing function.
+
 ### 4.5. insta-post 실행 (2026-04-24 추가, 2026-04-29 단순화 — Mac 직접 호출만)
 
 worklog 가 성공적으로 push 된 상태(3단계) 라는 전제 하에 인스타 카드 자동 업로드. **2026-04-29 부터 hostname 분기·WSL 핸드오프 폐기** — 어느 기기든 무조건 직접 호출.
@@ -248,7 +252,8 @@ insta-post 스킬이 worklog 파싱 → 카드 PNG 렌더 → posted.json dedup 
 
 실패 케이스 처리 (단순화 2026-05-01):
 - 어떤 사유든 실패 시 → 텔레그램에 `⚠️ 인스타 <사유>` 1줄 송신 + goodnight 은 **계속 진행** (worklog/done 이 push 됐으면 하루 마감은 이미 성공)
-- 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 안 박혔으면 미발행으로 판정 → 위 알림 + 다음날 `/insta-post <date>` 로 백필
+
+**self-check (✨ 2026-05-01 보강)**: 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 안 박혔으면 미발행으로 판정 → Skill tool 로 insta-post 1회 즉시 재호출. 재호출 후에도 entry 안 박히면 텔레그램에 `⚠️ 인스타 미발행 — 수동 점검 필요` 1줄 surface + 다음날 `/insta-post <date>` 로 백필. 5/1 사고(이전 goodnight 세션 Claude 가 step 4.5 자체를 skip) forcing function — "다음날 백필" 만 두면 사일런트 누락이 사용자 발견까지 노출 안 되는 문제 차단.
 
 ### 5. 3 repo 상태 점검
 
