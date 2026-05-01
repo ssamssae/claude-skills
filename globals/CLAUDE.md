@@ -35,20 +35,11 @@
 - Stop 훅 `telegram-reply-check.sh` 가 이 규칙을 강제함 (telegram 입력 + reply 0회 = block).
 - 답변 포맷이 "exploratory 2-3 sentences" 일 때도 **예외 없음**. 짧든 길든 reply 툴 경유.
 
-## 지휘관 1명 원칙 (hard rule, 2026-04-28 / 2026-05-01 역할 보강)
+## 역할 분담 (운영 사실, 2026-05-02 「지휘관 1명 원칙」 폐지)
 
-이 프로젝트의 지휘관은 **Mac 세션 1개뿐**. WSL 은 작업자, Mac mini 는 빌드/배포 실행 전용.
-
-- **WSL 세션** = 작업자.
-  - **wsl/\* 브랜치 직접 개발자 OK**: 코드/문서 수정 + commit + `git push origin wsl/<slug>` 가능. main 머지는 Mac 세션이 결정.
-  - **main 직접 push 금지** · **iOS/Android 빌드·App Store/Play 업로드 금지** (Mac mini 전담).
-  - 설계 변경/진행방향 변경/새 인프라 추가 제안 금지. 선택지 여러 개 던져 사용자 혼란 주기 금지. 자율적 작업 확장 금지.
-- **Mac mini** = 빌드/배포 실행 전용 노드.
-  - iOS ipa / Android aab 빌드 + 서명, ASC / Play Publisher API 업로드, 24/7 launchd 워커(night-builder v2, night-runner v1) 호스트.
-  - 챗봇 세션 추가 금지. 설계 판단/다음작업 결정 금지. 정해진 시간에 정해진 스크립트만.
-- **방향성**: Mac→WSL = 작업 지시 directive. WSL→Mac = 결과 보고 report (다음 방향 제안 금지).
-- 모든 최종 결정은 **Mac 세션**.
-- **예외 (운반체)**: 사용자 명령을 자동화로 라우팅하는 트리거(cross-device 자동 핸드오프 패턴)는 directive 가 아닌 운반체. WSL 세션이 자체 판단으로 새 방향을 결정한 게 아니면 새 원칙 위반 아님.
+- **WSL 세션**: wsl/\* 브랜치 코드 수정·commit·push OK. main 직접 push 금지, iOS/Android 빌드·스토어 업로드 금지(Mac mini 전담). 자율 제안·자율 스코프 확장 OK.
+- **Mac mini**: iOS ipa / Android aab 빌드 + 서명, ASC / Play Publisher API 업로드, 24/7 launchd 워커(night-builder v2, night-runner v1). 챗봇 세션 X.
+- **Mac 본진**: 메인 챗봇 세션, 최종 결정 권한.
 
 ## 크로스 디바이스 디렉티브 송신 (hard rule, 2026-04-29)
 
@@ -70,12 +61,12 @@
 
 ### WSL → Mac — 운반체 mac-report.sh (2026-04-29 추가)
 
-WSL 세션은 결과 보고만 (지휘관 1명 원칙). 보고 끝나면 2-channel 송신:
+WSL 세션이 작업 결과를 본진에 라우팅할 때 2-channel 송신:
 
 - **(1차)** `~/.claude/automations/scripts/mac-report.sh <report_abs_path> "<3줄 요약>"` 호출
   - 본진 tmux 'claude' 세션에 paste → 본진 챗봇이 자동으로 깨어나 보고서 fetch + 검토 + 회신
   - 강대종님 손 0 — "본진 idle 상태로 보고를 모르고 넘어감" 사고 방지용
-  - 운반체 호출은 directive 가 아니라 **정해진 양식의 보고 라우팅** = 지휘관 1명 원칙의 운반체 예외
+  - 운반체 호출은 directive 가 아니라 **정해진 양식의 보고 라우팅**
 - **(2차)** `mcp__plugin_telegram_telegram__reply` 로 강대종에게 1통 (사람 채널, 평소 그대로)
 
 mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 스킵하고 2차만 송신, 강대종이 운반.
