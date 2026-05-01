@@ -133,7 +133,7 @@ push_branch ~/daejong-page  "someday: <액션> <제목 짧게>"
 
 ## /goodnight 연계
 
-`/goodnight` step 5 에서 someday 변경사항 점검 단계가 있음 (skill `goodnight` SKILL.md 참조). 굿나잇 마무리할 때 "오늘 새로 떠오른 언젠가-할까-말까 거 있어요?" 묻고, 있으면 이 스킬 호출.
+`/goodnight` step 2.7 (2026-04-26 추가) 에서 someday 후보 점검 단계가 있음 (skill `goodnight` SKILL.md 참조). 굿나잇 마무리할 때 "오늘 새로 떠오른 언젠가-할까-말까 거 있어요?" 묻고, 있으면 이 스킬 호출.
 
 ## 금지
 
