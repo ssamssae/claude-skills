@@ -30,7 +30,7 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 - Android: Mac mini 에 keystore 보관 (`~/apps/<app>/android/<app>-upload-keystore.jks`), `android/key.properties` 존재, release 서명 설정 완료
 - Mac mini 에 `fastlane` 설치 (Phase A 셋업)
 - App Store Connect / Google Play API key 가 Mac mini `~/.claude/secrets/` 에 보관
-- Play Console / App Store Connect 메타·스크린샷·심사제출 버튼은 강대종님이 본진 브라우저에서 직접 (이 스킬은 aab/ipa 빌드 + 업로드까지만)
+- 메타·스크린샷·심사 제출까지 자동화 default (2026-05-01 결정 — `feedback_default_to_automation.md`, 포모도로/한컵 iOS 풀자동 제출 PASS). ASC API + fastlane deliver + Playwright 클릭 사용. **단** 가격/territory/유료 전환 같은 위험 카테고리는 강대종님 컨펌 후 진행 (아래 Step 3 안전 원칙 참조)
 
 ## 절차
 
@@ -190,14 +190,14 @@ App Store Connect 프로세싱 대기 (보통 5~20분) — `mail-watcher v5` 가
 ssh mac-mini "cd ~/apps/<앱명> && fastlane supply --aab build/app/outputs/bundle/release/<file>.aab --json_key ~/.claude/secrets/play-service-account.json --track internal --skip_upload_metadata --skip_upload_changelogs --skip_upload_images --skip_upload_screenshots"
 ```
 - `--track internal/alpha/beta/production` — 메모요처럼 Closed Testing 은 `internal` 또는 `beta`
-- 메타·스크린샷·what's new 는 강대종님 본진 브라우저에서 (자동화 X, 책임 명확화)
+- 메타·스크린샷·what's new = fastlane supply (Android) / fastlane deliver (iOS) 자동화 default (2026-05-01 자동화 룰). 위험 카테고리(가격/territory/유료 전환)만 사용자 컨펌
 
 업로드 후 검증:
 ```bash
 ssh mac-mini "fastlane supply --json_key ~/.claude/secrets/play-service-account.json --package_name com.daejongkang.<앱명> --validate_only=true" 2>&1 | tail -20
 ```
 
-심사 제출 버튼은 **자동화 X** — 강대종님 본진에서 직접 클릭 (책임 명확화 결정).
+심사 제출 = `asc-deliver --submit` (iOS) / `fastlane supply --release_status completed` (Android) 자동화 default (2026-05-01). 가격/territory/유료 전환 같은 위험 카테고리만 사용자 컨펌 후 자동 트리거. (포모도로/한컵 5/1 풀자동 제출 PASS — reviewSubmission 77f1d8b5/69b71c26)
 
 ### Step 4 — 심사 제출 후 모니터링 활성화
 
@@ -260,7 +260,7 @@ source: manual | auto-from-session | reviewer-feedback
 
 - BLOCKING 체크리스트 실패 시 중단, 강제 진행 금지
 - aab/ipa 파일은 커밋하지 않음 (build 산출물은 `.gitignore` 확인)
-- Play Console / App Store Connect 웹 UI 자동 조작은 이 스킬에서 하지 않음 (계정 리스크). 사용자가 직접.
+- Play Console / App Store Connect 웹 UI 자동 조작 = ASC API + fastlane + Playwright MCP 사용 자동화 default (2026-05-01). 가격/territory/유료 전환 등 위험 카테고리는 사용자 컨펌 필수.
 - 버전 bump 커밋은 push 금지 — 사용자가 확인 후 직접 push
 - `--force` / `--no-verify` 금지
 
