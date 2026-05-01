@@ -82,14 +82,6 @@ allowed-tools: Bash, Read, Write
 | `TOTAL_TIMEOUT_SEC` | 1200 | 전체 timeout |
 | `TG_SEND` | `~/.claude/channels/telegram/send.sh` | 텔레그램 송신 스크립트 |
 
-## 기기 라우팅
-
-| 기기 | 동작 |
-|------|------|
-| 🤖 Mac mini | launchd 자동 03:00 KST + 수동 호출 가능 |
-| 🍎 Mac 본진 | 수동 호출만 (지휘관이 검증 또는 디버깅 시) |
-| 🪟 WSL | 수동 호출만 (작업자가 검증 또는 디버깅 시) |
-
 ## projects.yaml 위치
 
 각 기기 로컬 `~/.claude/runner/projects.yaml` (path 필드가 기기마다 다르므로 git 동기화 부적합). Mac/Mac mini 배포 시 WSL 사본을 SCP 로 받은 후 path 필드만 해당 기기 경로로 수정.
