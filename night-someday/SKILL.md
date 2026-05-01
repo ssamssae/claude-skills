@@ -1,6 +1,6 @@
 ---
 name: night-someday
-description: someday 큐 자동 소진 v0 안전모드 — ~/todo/someday.md 항목 N개(기본 3, Week 2~ 5) 라운드로빈 선택 → 각 항목 stale check (메모리 grep) → markdown 보고서 + 텔레그램 1통. v0 = surface only, 자동 DROP/PR/commit/push 0. Mac mini launchd 매일 03:30 KST 자동 실행 + 수동 호출 동일. 트리거 "/night-someday".
+description: someday 큐 자동 소진 v0 안전모드 — ~/todo/someday.md 항목 N개(기본 3, Week 2~ 5) 라운드로빈 선택 → 각 항목 stale check (메모리 grep) → markdown 보고서 + 텔레그램 1통. v0 = surface only, 자동 DROP/PR/commit/push 0. Mac 본진 launchd 매일 03:30 KST 자동 실행 + 수동 호출 동일. 트리거 "/night-someday".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -16,7 +16,8 @@ allowed-tools: Bash, Read, Write
 
 ## 기기 라우팅
 
-🏭 Mac mini launchd 03:30 KST 자동 실행 (night-runner-check 03:00 직후) + Mac/Mac mini/WSL 어디서나 수동 호출 OK. v0 = read/write reports only, ~/todo/someday.md 수정 0.
+🍎 **Mac 본진 launchd** 03:30 KST 자동 실행. 데이터(~/todo/someday.md, 메모리 디렉토리) 가 본진에만 존재해서 본진에서 직접 가동. "사실상 24/7 stationary" 가동률 ~95% — 외출 시 미스 가능 OK (someday 자동 소진은 정확도보다 흐름 중요).
+어디서나 수동 호출 OK. v0 = read/write reports only, ~/todo/someday.md 수정 0.
 
 ## 호출 패턴
 
