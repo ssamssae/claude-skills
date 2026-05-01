@@ -42,7 +42,7 @@ for dir in ~/*/ ~/apps/*/; do
 done
 ```
 
-## 커버 대상 예시 (7개)
+## 커버 대상 예시 (8개)
 
 | 앱 | 경로 |
 | --- | --- |
@@ -53,6 +53,7 @@ done
 | 한컵 | `~/apps/hankeup` |
 | 가계부 | `~/apps/mini_expense` |
 | 포모도로 | `~/apps/pomodoro` |
+| 단어요 | `~/apps/wordyo` |
 
 새 앱을 ~/ 혹은 ~/apps/ 어디에 두든 `.git + pubspec.yaml` 조합만 맞으면 자동 픽업.
 
