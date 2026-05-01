@@ -77,7 +77,8 @@ fi
 
 4. **열린 todos × (최근 repo + 메모리 description) 교차검사**
    - 열린 todos 항목의 제목/설명에서 3글자 이상 토큰 추출 (STOPWORDS 제외 — goodnight step 1.5 와 동일 셋)
-   - step 2 의 repo name/description + step 3 의 메모리 description 토큰과 **2개 이상 겹치면 매칭 후보**
+   - 메모리 description 에 NEGATION_DESC_KEYWORDS("미발행/미완료/대기/보류/드롭" 등, goodnight step 1.5 정의) 가 있으면 그 메모리는 evidence 에서 **제외** (Ep.4 미발행 false positive 차단, 2026-05-01 추가)
+   - step 2 의 repo name/description + step 3 의 메모리 description(negation 통과한 것만) 토큰과 **2개 이상 겹치면 매칭 후보**
    - 매칭 후보 있으면 다음 액션 전에 텔레그램으로 surface:
      ```
      ⚠️ Stale 후보 N건 — 메모리/repo 보면 끝났을 수 있음:

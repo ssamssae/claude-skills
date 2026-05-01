@@ -86,11 +86,25 @@ import re
 # 토큰 추출 — 3글자+, 한/영/숫자, 흔한 stopword 제외
 STOPWORDS = {"오늘","내일","어제","처리","작업","완료","마무리","수정","변경","추가","제거","업데이트","검증","해결","진행","제출","빌드","배포"}
 
+# Negation 검출 — 메모리 description 에 이 키워드 들어있으면 그 메모리는 매칭 제외 (✨ 2026-05-01 추가, Ep.4 미발행 false positive 사고)
+NEGATION_DESC_KEYWORDS = {"미발행","미완료","미배포","미반영","안 됨","실패","차단","대기","예정","보류","드롭","폐지","취소"}
+
 def tokens(text):
     raw = re.findall(r'[가-힣A-Za-z0-9_]{3,}', text)
     return {w.lower() for w in raw if w.lower() not in STOPWORDS}
 
+def memory_is_negative(desc):
+    return any(neg in desc for neg in NEGATION_DESC_KEYWORDS)
+
 evidence_tokens = tokens(today_commits + today_done + today_worklog)
+
+# 메모리 evidence 추가 시 negation 필터링
+for memory_file in memories_7d:
+    desc = read_description(memory_file)
+    if memory_is_negative(desc):
+        continue  # "Ep.4 미발행" 같은 negation 메모리는 진척 evidence 아님 → 제외
+    evidence_tokens |= tokens(desc)
+
 for todo_line in open_todos:
     title = todo_line.split('  (')[0]  # 메타 빼고 본문만
     overlap = tokens(title) & evidence_tokens
@@ -98,7 +112,7 @@ for todo_line in open_todos:
         candidates.append((title, overlap))
 ```
 
-매칭 임계값 2개 — 1개는 false positive 너무 많음, 3개는 너무 빡빡.
+매칭 임계값 2개 — 1개는 false positive 너무 많음, 3개는 너무 빡빡. NEGATION_DESC_KEYWORDS 는 false positive 핵심 차단.
 
 **텔레그램 질문 포맷**:
 

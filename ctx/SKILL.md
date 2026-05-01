@@ -47,7 +47,7 @@ find ~/.claude/projects/-Users-user/memory -name "project_*.md" -mtime -7 \
   -exec awk '/^description:/{$1=""; print FILENAME":"$0}' {} \;
 ```
 
-각 진행중 todo 의 토큰 vs (오늘 commit + 메모리 description) 토큰 매칭 ≥ 2개면 stale 후보. STOPWORDS 는 goodnight step 1.5 와 동일.
+각 진행중 todo 의 토큰 vs (오늘 commit + 메모리 description) 토큰 매칭 ≥ 2개면 stale 후보. STOPWORDS + NEGATION_DESC_KEYWORDS 는 goodnight step 1.5 와 동일 셋. 메모리 description 에 negation 키워드("미발행/미완료/대기/보류/드롭" 등)가 있으면 그 메모리는 evidence 에서 제외 (Ep.4 미발행 false positive 차단).
 
 후보가 있으면 📝 섹션 항목 옆에 inline 표시 (자동 닫음 X — surface 만):
 
