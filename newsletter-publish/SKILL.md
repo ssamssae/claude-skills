@@ -253,7 +253,18 @@ PASS 시 강대종 (chat_id=538806975) 에게 1통:
 
 ## 검증 PASS 기록
 
-(첫 PASS 시 채워질 자리)
+### v0 첫 사이클 — Ep.4 (2026-05-01)
+
+다음 v0 호출 전에 확인할 학습점 3개. SKILL.md 본문 셀렉터/절차와 다르면 본문 갱신 트리거.
+
+1. **본문 에디터 selector** = `div.tiptap.ProseMirror.mousetrap` (실제 paste 타깃).
+   `div[role="textbox"][contenteditable="true"]` 는 사이드 패널과도 매치되는 모호 셀렉터 — Ep.4 사이클에서 사이드 패널이 잡히는 회귀가 있었음. 본문에 paste 가 안 들어가면 `.tiptap.ProseMirror.mousetrap` 셀렉터로 명시 클릭.
+
+2. **publish 모달 2단계** — 정식 publish 클릭 → "Send to everyone now" 모달 위에 "**Add subscribe buttons**" 모달이 한 번 더 뜨는 케이스 있음. 통과 버튼 = "**Publish without buttons**" (또는 "Skip"). 2-4 의 모달 핸들러를 두 모달 모두 통과하도록 확장 필요.
+
+3. **URL 추출 fast-path** — `/share-center?alreadyPublished=true` redirect 직후 archive API 호출보다 `page.innerText` 에서 "Your post is live!" 라인 + 인접한 `/p/<slug>` 링크 텍스트를 직접 grep 하는 게 1~2초 빠르고 안정적. archive API 는 백업 경로.
+
+(다음 사이클에서 위 3개 본문 반영 + 새 학습점 append.)
 
 ## 트리거 → 동작 매핑
 
