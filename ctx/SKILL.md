@@ -36,9 +36,26 @@ done
 
 `last_active_ts` / `last_user_prompt` / `last_recent_edit` 추려서 ⏳ 또는 ✅ 섹션에 반영. 두 기기 last_active 비교로 어느 쪽이 최신인지 판단.
 
-### 3. 진행중 todo
+### 3. 진행중 todo + 메모리 stale 매칭 (✨ 2026-05-01 보강)
 
 `~/todo/todos.md` 의 `## 진행중` 섹션 → `[ ]` 항목명만 (상세 X).
+
+**그리고 stale 매칭 1번** — 진척이 메모리에 적혔는데 todos 엔 반영 안 된 케이스 검출. todo SKILL.md 0.5 절(Reality Preflight) step 3-4 와 동일 로직:
+
+```bash
+find ~/.claude/projects/-Users-user/memory -name "project_*.md" -mtime -7 \
+  -exec awk '/^description:/{$1=""; print FILENAME":"$0}' {} \;
+```
+
+각 진행중 todo 의 토큰 vs (오늘 commit + 메모리 description) 토큰 매칭 ≥ 2개면 stale 후보. STOPWORDS 는 goodnight step 1.5 와 동일.
+
+후보가 있으면 📝 섹션 항목 옆에 inline 표시 (자동 닫음 X — surface 만):
+
+```
+- 🤝 한줄일기 1900원 유료 출시 (Android 잔여)  ← stale? `project_hanjul_android_alpha_review_submitted` (alpha 큐 진입)
+```
+
+후보 0건이면 표시 없음.
 
 ### 4. 본 세션 진행 내역
 

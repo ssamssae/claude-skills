@@ -39,16 +39,17 @@ fi
 
 텔레그램 전송 실패 시엔 "Mac 세션 깨어있으면 Mac 에서 /todo 로 처리해달라" 안내로 fallback.
 
-### 0.5. Reality Preflight (쓰기·추천 직전 의무)
+### 0.5. Reality Preflight (조회·쓰기·추천 직전 의무)
 
-**목적**: 다른 기기(WSL 등)가 먼저 일을 끝내고 todos 에 반영 안 했을 때, Mac 이 stale todos 만 보고 "아직 남은 할일" 로 추천하거나 잘못 편집하는 것을 차단. (근거: `issues/2026-04-21-mac-wsl-todos-desync.md`)
+**목적**: 다른 기기(WSL 등) 또는 launchd 자동화가 먼저 일을 끝내고 todos 에 반영 안 했을 때, Mac 이 stale todos 만 보고 "아직 남은 할일" 로 추천·표시·편집하는 것을 차단. (근거: `issues/2026-04-21-mac-wsl-todos-desync.md`)
 
 아래 상황에서 **반드시** 프리플라이트 실행:
+- **조회**(단순 "할일 뭐야" 포함, 2026-05-01 추가) — stale 표시 inline 노출
 - "오늘 할일 추천" / "오늘 뭐 해야 해" 류 **추천 요청**
 - `[x]` 완료 처리 / 보류·취소 이동 등 **상태 변경 쓰기**
 - `Edit`/`Write` 로 todos 파일 수정 직전
 
-절차 (3단계):
+절차 (4단계):
 
 1. **git pull --rebase**
    ```bash
@@ -63,23 +64,34 @@ fi
      | python3 -c 'import sys,json,datetime as dt; data=json.load(sys.stdin); now=dt.datetime.now(dt.timezone.utc); [print(f"{r[\"name\"]:20} {r[\"pushedAt\"]} {r.get(\"description\",\"\")[:60]}") for r in data if (now-dt.datetime.fromisoformat(r["pushedAt"].replace("Z","+00:00"))).total_seconds() < 86400]'
    ```
 
-3. **열린 todos × 최근 repo 교차검사**
-   - 열린 todos 항목의 제목/설명에서 3글자 이상 토큰 추출
-   - 2번의 최근 repo name/description 토큰과 **2개 이상 겹치면 매칭 후보**
-   - 매칭 후보 있으면 추천/편집 전에 텔레그램으로 먼저 경고:
-     ```
-     ⚠️ Reality Preflight 경고
-     열린 할일 "<제목>" 이 최근 24h 내 push 된 repo <name> 과 겹칩니다.
-     WSL 등 다른 기기에서 이미 진행중/완료일 수 있습니다.
-     확인 방법: gh api repos/ssamssae/<name>/commits
-     그대로 추천/편집 진행할까요? (y/수정)
-     ```
-   - 사용자 `y` 받으면 계속, 다른 답이면 사용자 지시대로.
+3. **최근 7일 메모리 closure 스캔** (✨ 2026-05-01 추가 — 핵심 stale 차단)
 
-4. 매칭 없으면 바로 step 1 로 진행. 조용히 다음 단계로.
+   진척이 메모리에는 적혔는데 todos 엔 반영 안 된 케이스(예: Ep.5 발행, 한줄일기 Android alpha 큐 진입) 검출:
+
+   ```bash
+   find ~/.claude/projects/-Users-user/memory -name "project_*.md" -mtime -7 \
+     -exec awk '/^description:/{$1=""; print FILENAME":"$0}' {} \;
+   ```
+
+   각 메모리 파일의 description 필드를 "evidence 토큰" 으로 추출.
+
+4. **열린 todos × (최근 repo + 메모리 description) 교차검사**
+   - 열린 todos 항목의 제목/설명에서 3글자 이상 토큰 추출 (STOPWORDS 제외 — goodnight step 1.5 와 동일 셋)
+   - step 2 의 repo name/description + step 3 의 메모리 description 토큰과 **2개 이상 겹치면 매칭 후보**
+   - 매칭 후보 있으면 다음 액션 전에 텔레그램으로 surface:
+     ```
+     ⚠️ Stale 후보 N건 — 메모리/repo 보면 끝났을 수 있음:
+     1. <todo 한 줄 제목> ← <memory_파일명 또는 repo:commit> (매칭: 단어1, 단어2)
+     2. ...
+
+     처리: "1,2" 닫을 번호 / "전부" / "없음" / "확인 필요"
+     ```
+   - 응답 처리: 번호/"전부" → `/todo 완료 <제목>` 호출 (완료 메모 "✨ Stale 자동 매칭 완료 (preflight, 메모리 cross-check)"). "없음" 또는 매칭 0개면 조용히 다음 단계.
+
+5. 매칭 없으면 바로 step 1 로 진행. 조용히 다음 단계로.
 
 **원칙**:
-- **조회만** 하는 경우(단순 "할일 리스트 뭐야")엔 step 1 만 해도 OK. Step 2-3 은 추천/편집 때 의무.
+- **조회 시에도 의무** (2026-05-01 변경) — 조회는 사용자 입장에서 "현재 상태" 라 stale 노출이 곧 잘못된 상태 노출. ctx 스킬도 동일 패턴 사용.
 - 프리플라이트 실패(네트워크 오류, gh 미인증 등)면 soft-fail — 사용자에게 "프리플라이트 스킵했음, 수동 교차검증 권장" 한 줄 보고 후 진행.
 - 프리플라이트는 리드온리(git pull 은 merge conflict 없으면 가역). 파괴적 작업 아님.
 

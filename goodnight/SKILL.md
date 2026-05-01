@@ -75,7 +75,7 @@ OK 하면 진행합니다.
   - 오늘 커밋 메시지
   - 오늘 done 항목
   - 오늘 worklog 본문
-  - **오늘 갱신된 메모리** (✨ 2026-04-26 추가): `find ~/.claude/projects/-Users-user/memory -name "*.md" -mtime -1` → 각 파일에서 "발행/배포/완료/성공/PASS/도달/충족/투입" 키워드 grep
+  - **최근 7일 갱신된 메모리** (✨ 2026-04-26 추가, 2026-05-01 윈도우 -1 → -7 로 확장): `find ~/.claude/projects/-Users-user/memory -name "*.md" -mtime -7` → 각 파일의 description 필드 + "발행/배포/완료/성공/PASS/도달/충족/투입/큐 진입" 키워드 grep. 윈도우 확장 사유: goodnight 가 야간에 호출되지 않은 날(launchd 누락/사용자 미호출) 다음 세션에서도 closure 잡혀야 함. 4/27~4/30 누락 사고로 5/1 부터 적용.
   - **오늘 텔레그램 reply 본문** (✨ 2026-04-26 추가): 현재 conversation 의 직전 reply 들 또는 transcript jsonl 의 오늘분 — `assistant` role 중 `mcp__plugin_telegram_telegram__reply` tool_use 의 `text` 인자에 동일 키워드 grep
 
 **매칭 알고리즘**:
