@@ -57,8 +57,12 @@ title = title_match.group(1).strip() if title_match else ""
 
 md = re.sub(r"\A\s*#\s+[^\n]*\n+", "", md, count=1)
 
-subtitle_match = re.match(r"\A_([^_\n]+)_\s*\n", md)
-subtitle = subtitle_match.group(1).strip() if subtitle_match else ""
+subtitle_match = re.match(r"\A_([^_\n]+)_\s*\n+", md)
+if subtitle_match:
+    subtitle = subtitle_match.group(1).strip()
+    md = md[subtitle_match.end():]
+else:
+    subtitle = ""
 
 md_transformed = table_to_list(md)
 
