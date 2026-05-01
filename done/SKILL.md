@@ -8,7 +8,7 @@ allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 
 ## 컨셉
 
-- **worklog** = 산문체 상세 기록 (네이버 카페 붙여넣기 용)
+- **worklog** = 산문체 상세 기록
 - **done** = 체크박스 한 줄씩 담백하게. 한 눈에 "오늘 뭐 했나" 파악
 - 두 스킬은 공존하며 서로 참조·수정하지 않는다
 
@@ -42,7 +42,7 @@ fi
 
 **(A) 프로젝트별 git 커밋 (오늘, KST 기준)**
 ```bash
-for repo in ~/simple_memo_app ~/daejong-page ~/todo ~/claude-skills ~/yakmukja ~/dutch_pay_calculator ~/babmeokja; do
+for repo in ~/simple_memo_app ~/daejong-page ~/todo ~/claude-skills ~/yakmukja ~/dutch_pay_calculator ~/babmeokja ~/apps/*/; do
   [ -d "$repo/.git" ] || continue
   git -C "$repo" log --since="TARGET_DATE 00:00 +0900" --until="TARGET_DATE 23:59 +0900" --pretty=format:"%s" --all 2>/dev/null
 done
@@ -68,7 +68,7 @@ done
 
 저장 경로: `~/daejong-page/done/YYYY-MM-DD.md`
 
-**파일명 규칙**: 같은 날짜 중복 호출 시 이전 파일을 **덮어쓰기** (worklog 처럼 버전 스냅샷 안 만듦 — 가장 최신 상태 하나만).
+**파일명 규칙**: 같은 날짜 중복 호출 시 이전 파일을 **갱신** (수동 추가 항목은 보존하며 자동 수집 부분만 새로 채움 — 병합 로직 line 159 참고). worklog 처럼 버전 스냅샷 안 만듦, 가장 최신 상태 하나만 유지.
 
 포맷:
 ```markdown
