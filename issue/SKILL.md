@@ -177,7 +177,7 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
        fi
        ```
        - 본문에 민감 정보(개인키·토큰·내부 호스트명·사적 이름 등) 가 있으면 공개본에서는 해당 라인을 `(비공개)` 로 마스킹해서 복사. 원본(claude-skills) 은 그대로 유지.
-       - daejong-page 동기화 실패는 **소프트 페일** — claude-skills push 는 이미 됐으므로 경고만 남기고 계속 진행.
+       - daejong-page 동기화 실패는 **하드 페일** (2026-05-01 변경) — claude-skills push 와 daejong-page sync 가 모두 통과해야 issue 작성 완료. sync 실패 시 텔레그램에 즉시 경고 + 14-d 재실행 또는 수동 복구 후에야 step 15 보고로 진행. forcing function = 2026-04-21 ~ 5/1 사이 daejong-page `issues/` 누락 13개 누적 사고(2026-05-01 16:55 KST 일괄 복구).
 15. 푸시 URL 두 개 텔레그램 최종 보고:
     - 내부: `https://github.com/ssamssae/claude-skills/blob/main/issues/<파일>`
     - 공개: `https://ssamssae.github.io/daejong-page/issues.html`

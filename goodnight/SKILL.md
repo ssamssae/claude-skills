@@ -276,6 +276,53 @@ done
 - dirty > 0 이면 → 안 커밋된 변경이 있음. 강대종님에게 diff 요약 보여주고 commit 여부 확인
 - unpushed > 0 이면 → commit 은 됐는데 push 안 됨. 즉시 push 시도
 
+### 5.5. daejong-page 미러 sync 갭 audit (✨ 2026-05-01 추가)
+
+step 5 의 git dirty/unpushed 만으로는 안 잡히는 케이스 — daejong-page 가 깨끗이 push 됐어도 SoT 와 mirror 가 어긋난 경우를 잡는다. 5/1 16:55 KST 일괄 sync 사고(someday 4h 갭, issues 13개 누적 누락, skills.html night-someday 누락) forcing function.
+
+다음 4 섹션 cmp/카운트 비교:
+
+```bash
+# someday
+if ! cmp -s ~/todo/someday.md ~/daejong-page/someday.md; then
+  echo "GAP someday — SoT $(wc -l < ~/todo/someday.md) / mirror $(wc -l < ~/daejong-page/someday.md)"
+fi
+
+# issues
+sot_n=$(ls ~/.claude/skills/issues/*.md 2>/dev/null | grep -v INDEX.md | wc -l | xargs)
+mir_n=$(ls ~/daejong-page/issues/*.md 2>/dev/null | wc -l | xargs)
+if [[ "$sot_n" != "$mir_n" ]]; then
+  echo "GAP issues — SoT $sot_n / mirror $mir_n"
+fi
+
+# skills (SKILL.md 디렉토리 vs skills.html 카드명)
+sot_skills=$(ls -d ~/.claude/skills/*/SKILL.md 2>/dev/null | xargs -n1 dirname | xargs -n1 basename | sort)
+for s in $sot_skills; do
+  if ! grep -q "/$s\b" ~/daejong-page/skills.html; then
+    echo "GAP skill — $s 카드 누락"
+  fi
+done
+
+# todos snapshot
+today=$(date +%F)
+if [[ ~/todo/todos.md -nt ~/daejong-page/todos/$today.md ]]; then
+  echo "GAP todos — SoT $(stat -f '%Sm' ~/todo/todos.md) / mirror $(stat -f '%Sm' ~/daejong-page/todos/$today.md)"
+fi
+```
+
+**갭 감지 시 처리**:
+- 0건: 조용히 6단계로
+- 1건 이상: 텔레그램에 갭 목록 surface + 즉시 auto-sync 진행 (mirror 작업이라 저위험):
+  - someday: `cp ~/todo/someday.md ~/daejong-page/someday.md`
+  - issues: 누락 .md 복사 + INDEX.md 복사 + index.json regen (frontmatter 파서 ad-hoc Python)
+  - skills: SKILL.md frontmatter 의 description 으로 skills.html 카드 자동 추가는 P3 (현재 미구현) — 누락 surface 만, 수동 패치 권고
+  - todos: `/todo` 스킬의 스냅샷 동기화 step 재호출 또는 직접 cp
+- sync 끝나면 daejong-page commit + push (step 5 의 unpushed 검사가 다음 사이클에서 잡음)
+
+**최종 보고에 1줄 추가** (step 6):
+- 갭 0: `미러 sync ✅` (한 줄만)
+- 갭 N건: `미러 sync 🔄 N건 자동 복구 (someday/issues/skills/todos)`
+
 ### 6. 최종 보고 (텔레그램)
 
 chat_id 538806975 로 한 메시지:
