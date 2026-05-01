@@ -20,7 +20,7 @@ ctx 호출되면 출력 작성 전에 다음 4개를 **실제로 실행해서** 
 ```bash
 KST_TODAY="$(date -d 'today 00:00' +%FT%T) +0900"
 for repo in ~/daejong-page ~/claude-skills ~/.claude/automations ~/ssamssae.github.io \
-            ~/apps/hanjul ~/apps/hankeup ~/apps/pomodoro ~/wordyo ~/review_radar; do
+            ~/apps/hanjul ~/apps/hankeup ~/apps/pomodoro ~/apps/wordyo ~/review_radar; do
   [[ -d "$repo/.git" ]] || continue
   out=$(cd "$repo" && git log --since="$KST_TODAY" --pretty='%h %s' --all 2>/dev/null)
   [[ -n "$out" ]] && printf '\n## %s\n%s\n' "$(basename "$repo")" "$out"

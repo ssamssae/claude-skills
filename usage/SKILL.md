@@ -98,7 +98,8 @@ else:
 
 # (B) 최근 10개 블록 히스토리
 print("\n📅 최근 5시간 블록 (최근 10개)")
-MODEL_ABBR = {"claude-opus-4-6":"O", "claude-sonnet-4-6":"S",
+MODEL_ABBR = {"claude-opus-4-6":"O", "claude-opus-4-7":"O",
+              "claude-sonnet-4-6":"S", "claude-sonnet-4-7":"S",
               "claude-haiku-4-5-20251001":"H", "claude-haiku-4-5":"H"}
 recent = [b for b in blocks if not b.get("isActive")][-10:]
 for b in recent:
