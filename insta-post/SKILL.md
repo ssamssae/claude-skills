@@ -1,6 +1,7 @@
 ---
 name: insta-post
 description: 오늘(또는 지정 날짜) worklog 를 1080×1350 인스타 텍스트 카드 PNG 로 렌더해 Instagram Graph API 로 개인 인스타 피드에 완전 자동 업로드한다. 사용자가 "인스타", "인스타 올려", "인스타 카드", "인스타 포스팅", "/insta-post" 라고 하면 이 스킬을 실행.
+allowed-tools: Bash, Read, Write, mcp__plugin_telegram_telegram__reply
 ---
 
 # /insta-post — worklog → 토스톤 카드 PNG → 인스타 피드 (완전 자동)
