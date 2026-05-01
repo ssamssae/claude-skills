@@ -11,7 +11,7 @@ description: Google Play Console 에 Flutter 앱을 **웹 UI 자동 클릭 + API
 
 - `/create-play-app <앱명>` — `~/apps/<앱명>/` 에서 메타데이터 읽어서 자동 등록
 - `/create-play-app <앱명> --name "<한글 이름>"` — 앱 이름 override
-- `/create-play-app <앱명> --package com.ssamssae.<name>` — 패키지 override (기본은 build.gradle.kts 에서 자동 감지)
+- `/create-play-app <앱명> --package com.daejongkang.<name>` — 패키지 override (기본은 build.gradle.kts 에서 자동 감지). **신규 패키지는 com.daejongkang.\* 도메인 우선** (`feedback_new_package_use_daejongkang_domain.md`, ssamssae 같은 일반 닉네임은 점유 충돌 위험)
 - `/create-play-app <앱명> --dry-run` — 실제 클릭 없이 입력값만 미리 보여줌
 
 ## 전제
@@ -106,9 +106,9 @@ ssh mac-mini "python3 ~/.claude/automations/scripts/play-upload.py --check <name
 등록 직후 `~/.claude/skills/submit-app/keystore-sot.md` 의 "## Registry" 섹션에 현재 기기 기준으로 한 줄 append:
 
 ```
-<앱명>: 🍎 Mac (keystore: android/<name>-upload-keystore.jks, created: YYYY-MM-DD)
+<앱명>: 🏭 Mac mini (keystore: android/<name>-upload-keystore.jks, created: YYYY-MM-DD)
 ```
-(hostname 이 `*MacBook*`/`*MBP*` 면 🍎 Mac, `DESKTOP-*` 면 🪟 WSL)
+2026-04-29 부터 keystore SoT = 🏭 Mac mini (룰: `feedback_android_build_deploy_mac_mini.md`). 신규 등록은 무조건 Mac mini 표기. 🍎 Mac 또는 🪟 WSL 표기는 마이그레이션 미완료 레거시만.
 
 이어서 커밋 (이 스킬은 **Mac 전용** — Mac mini SSH 라우팅 또는 본진 직접 호출만. WSL 에서는 호출 안 됨):
 ```bash
