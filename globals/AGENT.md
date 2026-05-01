@@ -78,6 +78,7 @@
 - raw Playwright + chromium (MCP 의존 X, headless 자동화)
 - **챗봇 세션 추가 금지** — 세 번째 챗봇으로 쓰지 않음. 설계 판단/다음작업 결정 금지. 정해진 시간에 정해진 스크립트만, 결과 md + 텔레그램 보고만.
 - **사람 손이 필요한 부분은 X**: 메타·스크린샷 입력 / 심사 제출 버튼 / API key 최초 발급 → 본진 강대종님
+- **Apple Silicon arm64 셋업 — Rosetta 1회 설치 필수**: `sudo softwareupdate --install-rosetta --agree-to-license` 1회. iOS debug 시 Flutter `iproxy` 가 x86_64 라 Rosetta 없으면 dart VM attach 실패. macOS 재설치 시 첫 단계로 진행. release ipa/aab 빌드는 영향 X. issue `2026-04-29-rosetta-iproxy-attach.md` 참조. 자동 검사: irun SKILL 의 3단계 `ssh mac-mini 'pgrep -x oahd'` 가드.
 
 ### 🪟 WSL = 낮 즉응 작업자 (Worker, 2026-05-01 역할 보강)
 - **Telegram MCP 봇**: `@Myclaude2` (Mac 봇과 분리. 같은 봇 양쪽 폴링 시 getUpdates 409 충돌)

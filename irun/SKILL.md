@@ -41,19 +41,25 @@ allowed-tools: Bash, Monitor
    - `REPO=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")`
    - mac mini 측 경로: `~/apps/$REPO`
 
-3. **mac mini 측 빌드 + 실행** (run_in_background=true)
+3. **Rosetta 사전체크** (M1 mac mini iOS debug 필수 — 빌드 시작 전)
+   - `ssh mac-mini 'pgrep -x oahd >/dev/null 2>&1 && echo OK || echo MISSING'`
+   - 응답이 `MISSING` 이면 즉시 abort + 다음 1줄 안내:
+     "Rosetta 미설치. mac mini 에 1회 직접 실행 필요: `ssh -t mac-mini 'sudo softwareupdate --install-rosetta --agree-to-license'`. 설치 후 irun 재시도."
+   - 근거: iOS debug 시 Flutter 가 묶어 보내는 `iproxy` 가 x86_64 빌드 → arm64 mac mini 에서 Rosetta 없으면 dart VM attach 실패. release ipa 빌드는 영향 X (codesign 만). issue 2026-04-29-rosetta-iproxy-attach.md 참조.
+
+4. **mac mini 측 빌드 + 실행** (run_in_background=true)
    - 명령:
      ```
      ssh mac-mini "cd ~/apps/$REPO && git pull --rebase --autostash && /opt/homebrew/bin/flutter clean && /opt/homebrew/bin/flutter run --debug -d $DEVICE_ID"
      ```
    - **release 모드 금지** — release ipa SoT 는 mac mini night-build (launchd) 또는 별도 /submit-app 흐름
 
-4. **Monitor 로 빌드 이벤트 관찰**
+5. **Monitor 로 빌드 이벤트 관찰**
    - 성공 패턴: `Installing and launching|Xcode build done|Syncing files|to quit|Flutter run key commands`
    - 실패 패턴: `error:|Error:|FAILED|Exception|BUILD FAILED|No devices`
    - timeout_ms: 600000 (iOS clean 빌드 첫회 5~10분 가능)
 
-5. **완료 보고**
+6. **완료 보고**
    - 성공: "iPhone17 ($DEVICE_ID) 에 debug install+launch 완료. (mac mini BG 프로세스 유지)"
    - 실패: 마지막 ~30줄 SSH 출력 발췌
    - hot reload 가 필요하면 강대종님이 직접 mac mini SSH attach: `ssh mac-mini` → tmux 또는 해당 터미널 찾아서 키 입력
