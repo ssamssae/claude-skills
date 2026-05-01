@@ -8,7 +8,7 @@ allowed-tools: Bash, Monitor
 
 현재 Flutter 프로젝트를 **mac mini 에 USB 연결된 iPhone17** 에 clean 빌드 후 **debug** 모드로 실행한다. 본진 Mac, WSL, 어디서 호출해도 동일하게 mac mini 가 빌드 SoT.
 
-> **2026-04-29 정책 변경**: iPhone/Galaxy 실기기 빌드 SoT = 🤖 mac mini 단독. 본진 Mac/WSL 은 시뮬레이터 빌드만 (그 경우 일반 `flutter run` 로컬 사용, irun 호출 X). irun = 실기기 debug install/run 전용, mac mini SSH 로 위임.
+> **2026-04-29 정책 변경**: iPhone/Galaxy 실기기 빌드 SoT = 🏭 Mac mini 단독. 본진 Mac/WSL 은 시뮬레이터 빌드만 (그 경우 일반 `flutter run` 로컬 사용, irun 호출 X). irun = 실기기 debug install/run 전용, Mac mini SSH 로 위임.
 
 ## 기기 라우팅 (지휘관 1명 원칙)
 
