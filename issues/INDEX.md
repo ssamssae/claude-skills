@@ -1,10 +1,11 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-05-01 20:54 KST_
+_마지막 생성: 2026-05-02 08:06 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-02 | [policy-race-mac-wsl](2026-05-02-policy-race-mac-wsl.md) | 본진·WSL 가 globals/CLAUDE.md 를 stale-on-stale 로 동시 수정 — 「지휘관 1명 원칙」 폐기 사이클의 race | medium (정책 파일 → 잘못 통합되면 두 작업자 행동 룰 자체가 깨짐) | medium (정책 갱신 사이클 또는 같은 파일 동시 작업 발생 시 동일 패턴) | — | — |
 | 2026-05-01 | [wsl-mac-race-skill-edit](2026-05-01-wsl-mac-race-skill-edit.md) | Mac 본진 push 직후 WSL 가 stale base 로 같은 repo 작업 시작 — race 자동 merge | low (이번엔 충돌 라인 안 겹쳐 git 이 자동 해결) | medium (handoff 패턴 + 본진 동시작업이 일상) | — | — |
 | 2026-05-01 | [ep5-backfill-overwrite](2026-05-01-ep5-backfill-overwrite.md) | Substack backfill 이 Ep5 원본 prose 를 덮어씀 — 컨벤션 두 갈래 공존 | medium | high (다음 ep 도 substack-first 면 같은 사고) | — | — |
 | 2026-04-29 | [rosetta-iproxy-attach](2026-04-29-rosetta-iproxy-attach.md) | Apple Silicon mac mini 에서 Flutter iOS debug attach 가 Rosetta 없이는 실패 | medium (debug 빌드 막힘, release ipa 는 영향 없음) | low (1회 설치하면 영구 해결, 단 macOS 재설치 시 재발) | — | — |
