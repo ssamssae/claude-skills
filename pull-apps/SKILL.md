@@ -8,6 +8,12 @@ allowed-tools: Bash
 
 `~/` 최상위(메모요/약먹자/더치페이 등) + `~/apps/*/` (한줄일기/한컵/가계부/포모도로 등) 의 모든 Flutter 앱 repo 를 한 번에 `git pull --rebase --autostash` 한다. 기준: `.git` 디렉터리 + `pubspec.yaml` 존재. Mac ↔ WSL 기기 간 앱 코드 동기화 gap 을 즉시 메우는 게 목적.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 양 기기 호출 OK — 호출한 기기에서 git pull, repo 별 자동. push 안 함 (read-only sync).
+
 ## 언제 호출되는가
 
 - 다른 기기(주로 Mac) 에서 앱 코드를 push 했고 이 기기(주로 WSL) 에서 바로 받고 싶을 때
