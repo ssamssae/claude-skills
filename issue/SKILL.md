@@ -195,7 +195,7 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
 - **재발 가능성 high + forcing function 있는 이슈** 는 `feedback_*.md` 메모리로도 동시 저장 권장. (쌓이는 이슈 파일은 아카이브용, 메모리는 매 세션 로드용.)
 - 이미 있는 memory 파일은 issue 의 "관련 링크" 섹션에서 인용.
 
-## 예시 (오늘)
+## 예시
 
 - `2026-04-20-telegram-client-delivery-lag.md` — 텔레그램 답이 안 오는 줄 알았는데 클라이언트가 pull 을 못 해서 뒤늦게 받은 건
 - `2026-04-20-terminal-only-reply-missed-telegram.md` — 답변을 터미널에만 찍고 reply 툴로 안 보낸 실수
