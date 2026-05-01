@@ -8,7 +8,7 @@ allowed-tools: Bash, Write, Edit, Read
 
 ## 데이터 소스
 
-- **파일**: `~/todo/todos.md` (진행중/완료/보류/사이드프로젝트 4개 섹션)
+- **파일**: `~/todo/todos.md` (진행중/완료/보류 3개 섹션). 사이드 프로젝트는 2026-05-01 부터 별도 SoT `~/todo/parking-lot.md` 로 분리.
 - **버전 관리**: `~/todo/` 가 git 저장소. 모든 수정은 커밋으로 남겨 이력 추적.
 - **미리알림 앱**: macOS Reminders 의 `"Claude"` 목록과 연동 (AppleScript 경유)
 
@@ -196,7 +196,7 @@ fi
 1. Read 로 todos.md 읽기
 2. 요청 범위에 맞는 섹션만 필터링해서 응답:
    - "할일" / "진행중" → 진행중 섹션
-   - "사이드 프로젝트" → 사이드프로젝트 섹션
+   - "사이드 프로젝트" / "Parking Lot" → `~/todo/parking-lot.md` 의 `## 모아둠` 섹션 Read
    - "오늘" / "이번주" → 진행중 중 마감일 기준 필터
    - "완료" → 최근 완료 10건
    - "Mac 할일", "🍎 만" → 🍎 태그만
@@ -294,7 +294,7 @@ todos.md 를 수정한 후에는 항상 개인 홈페이지(`ssamssae.github.io/
 2. 메모요 위젯 기획 (마감 없음)
 3. worklog 스킬 테스트 (마감 없음)
 
-사이드 프로젝트 2건:
+Parking Lot 2건 (parking-lot.md):
 - 카페 추천 봇
 - 영어회화 카톡봇
 ```
