@@ -12,7 +12,8 @@ allowed-tools: Bash, Read, Glob, Grep
 
 오늘(KST) 각 프로젝트 git 커밋 수집:
 ```bash
-for repo in ~/simple_memo_app ~/daejong-page ~/todo; do
+for repo in ~/simple_memo_app ~/daejong-page ~/todo ~/yakmukja ~/dutch_pay_calculator ~/babmeokja ~/apps/*/; do
+  [ -d "$repo/.git" ] || continue
   echo "=== $(basename $repo) ==="
   git -C "$repo" log --since="today 00:00" --oneline --no-merges 2>/dev/null || echo "(no commits)"
 done
