@@ -8,6 +8,12 @@ allowed-tools: Read, Edit, Write, Bash, Grep, Glob
 
 앱 제출은 자주 하는 루틴이지만 플랫폼 정책(Apple 3.1.1, aab 파일명 등) 때문에 매번 같은 함정에 빠질 수 있다. 이 스킬은 **과거 실수를 먼저 읽고** 사용자에게 확인시킨 뒤 빌드·업로드·심사 제출을 진행한다.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 🍎 Mac 본진에서 호출 → 🏭 Mac mini SSH 라우팅으로 빌드/업로드 (자산 SoT = Mac mini). 🪟 WSL 호출 X (코드 SoT 도 Mac mini).
+
 ## 호출 패턴
 
 - `/submit-app <앱명> --platform=ios` — App Store Connect 제출
@@ -177,7 +183,7 @@ ssh mac-mini "cd ~/apps/<앱명> && fastlane pilot upload --ipa build/ios/ipa/<f
 ```bash
 ssh mac-mini "xcrun altool --upload-app -f ~/apps/<앱명>/build/ios/ipa/<file>.ipa -t ios --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>"
 ```
-App Store Connect 프로세싱 대기 (보통 5~20분) — 처리 완료는 ASC 웹/이메일로 직접 확인.
+App Store Connect 프로세싱 대기 (보통 5~20분) — `mail-watcher v5` 가 결과 알림 수신.
 
 **Android** (Google Play Publisher API + fastlane supply):
 ```bash
@@ -193,9 +199,9 @@ ssh mac-mini "fastlane supply --json_key ~/.claude/secrets/play-service-account.
 
 심사 제출 버튼은 **자동화 X** — 강대종님 본진에서 직접 클릭 (책임 명확화 결정).
 
-### Step 4 — 심사 제출 후 안내
+### Step 4 — 심사 제출 후 모니터링 활성화
 
-업로드 완료 시 텔레그램으로 "심사 제출 완료 — ASC 웹/이메일에서 상태 확인" 공지. 자동 모니터링은 없음 (mail-watcher 2026-05-01 드롭).
+맥미니 mail-watcher v5 (4시간 폴링) 가 Gmail 모니터링하므로 별도 조치 불필요. 업로드 완료 시 텔레그램으로 "심사 제출 완료 — Gmail 상태 알림 대기" 공지.
 
 ### Step 5 — 회고 & Lesson 추가
 
@@ -277,5 +283,6 @@ source: manual | auto-from-session | reviewer-feedback
 ## 관련 스킬
 
 - `/irun`, `/arun` — 빌드·실기기 설치 (제출 전 동작 확인, mac mini SSH 빌드)
+- 맥미니 mail-watcher v5 — 제출 후 2시간 폴링 Gmail 심사·결제 알림 (스킬 아닌 백그라운드 자동화)
 - `/issue` — 포괄적 이슈 로깅 (앱 제출 관련이면 이 스킬의 lessons/ 에도 저장)
 - `/worklog` — 제출 작업 로그 기록

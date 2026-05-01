@@ -8,6 +8,12 @@ allowed-tools: Bash, Write, Edit, Read, Glob, Grep
 
 **지정 날짜에 수행한 모든 작업**(현재 프로젝트 + 다른 프로젝트 + 다른 Claude Code 세션)을 수집해 작업일지를 작성하고 GitHub·홈페이지에 올립니다. 단일 프로젝트만 기록하던 과거 동작과 다르게, 그날 하루 전체 궤적을 한 문서에 합칩니다.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 양 기기 호출 가능. WSL 에서 호출 시 commit/push 가 `wsl/*` 브랜치 정책 따라야 함 (이번 docs PR 은 본문 가이드만, 코드 분기는 별도 PR 예정).
+
 ## 출력 파일 2종 (이원화)
 
 - **마크다운 원본 (강대종님 본인 기록용)** — `~/daejong-page/worklog-source/YYYY-MM-DD_vX.Y.Z.md`

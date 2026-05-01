@@ -8,6 +8,12 @@ allowed-tools: Bash, Read
 
 WSL `/night-runner` 가 밤사이 janitor/YYYY-MM-DD 브랜치로 밀어 올린 PR 을 맥 본진에서 머지·닫는다. 사용자가 "PR #N 머지" 또는 "PR #N 닫아" 같이 자연어로 호출해 이 스킬을 실행시킨다.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 🍎 Mac 본진 호출 — PR 머지 결정은 지휘관 책임. 🪟 WSL 에서는 호출 X (머지는 SoT 권한).
+
 ## 호출 패턴
 
 전부 이 스킬을 호출해야 함:

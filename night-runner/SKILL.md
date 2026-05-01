@@ -8,6 +8,12 @@ allowed-tools: Bash, Read, Write
 
 **v1 = read-only 점검만, 코드 수정 0.** ~/claude-automations/scripts/night-runner-check.sh 를 진입점으로 호출하고 결과를 텔레그램으로 보고한다.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 🏭 Mac mini launchd 03:00 KST 자동 실행 + 양 기기 수동 호출 OK. read-only 점검만이라 commit/push 0 (룰 충돌 가능성 없음).
+
 ## 호출 패턴
 
 - `/night-runner` — `bash ~/claude-automations/scripts/night-runner-check.sh` 호출

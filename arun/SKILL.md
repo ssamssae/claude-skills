@@ -10,6 +10,12 @@ allowed-tools: Bash, Monitor
 
 > **2026-04-29 정책 변경**: 실기기 빌드 SoT = 🤖 mac mini 단독. 본진 Mac/WSL 은 시뮬레이터/에뮬레이터 빌드만 (그 경우 일반 `flutter run` 로컬 사용, arun 호출 X). arun = 실기기 debug install/run 전용, mac mini SSH 위임. release aab SoT 도 mac mini night-build (launchd) 단독.
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 어느 기기에서 호출해도 🏭 Mac mini SSH 경유 (S24 USB 직결 mac mini 단독). 본진/WSL 직접 빌드 X.
+
 ## 입력
 
 `$ARGUMENTS`:

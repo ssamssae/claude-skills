@@ -6,6 +6,12 @@ allowed-tools: Bash, Write, mcp__plugin_telegram_telegram__reply
 
 # Session Close (lean)
 
+## 기기 라우팅 (지휘관 1명 원칙)
+
+🍎 Mac 본진 = 지휘관(설계·결정·메인 세션, main 머지 결정) / 🏭 Mac mini = 빌드·배포 워커(SSH 라우팅 수신) / 🪟 WSL = 작업자(`wsl/*` 브랜치 push, main 직접 push 금지). 운반체 = `wsl-directive.sh` / `mac-report.sh`.
+
+**이 스킬**: 🍎 Mac 본진 전용 — 체크포인트 메모리 SoT 가 본진이라 WSL 에서 호출 X.
+
 ## 발동
 
 "세션 클리어/초기화/재시작 해도 돼?" / "이 세션 닫아도 돼?" / "/clear 해도 돼?" / "/session-close" — **의문형**이 시그널. 그냥 `/clear` 만 친 거면 발동 X.
