@@ -196,9 +196,19 @@ iframe 안의 `[data-click-area="tpb.publish"]` 버튼 (또는 `.publish_btn__*`
 
 `--category` 인자 들어왔으면 모달의 카테고리 select / dropdown 에서 매칭. 없으면 default 둠.
 
-### 6-4. 최종 발행
+### 6-4. 최종 발행 (검증됨 2026-05-01 19:07 KST)
 
-모달 안의 `발행` 버튼 (모달 안에 별도 발행 버튼 있음, top-bar 발행과 다름) 클릭 → redirect 대기.
+모달 안의 발행 버튼 — 정확한 selector 는 `[data-testid="seOnePublishBtn"]` (또는 `[data-click-area="tpb*i.publish"]`, `.confirm_btn__*`). evaluate:
+```javascript
+() => {
+  const doc = document.querySelector('iframe#mainFrame').contentDocument;
+  const btn = doc.querySelector('[data-testid="seOnePublishBtn"]');
+  btn.click();
+  return { clicked: !!btn };
+}
+```
+
+클릭 후 5초 정도 대기 → 페이지가 `https://blog.naver.com/ssamssae/<postNo>` 로 자동 redirect. tab url 에서 postNo 캡처.
 
 ## 7. 결과 URL 캡쳐
 
@@ -245,9 +255,15 @@ PASS 시 강대종 (chat_id=538806975) 에게 1통:
 - 첫 풀그린 검증 글은 강대종이 보고 받은 직후 공개/비공개/삭제 결정.
 - 다른 탭(ASC, etc.) 건드리지 말 것 — 새 탭 1개에서만 작업.
 
-## 미해결 / 후속 (v1 검증 시 update)
+## 미해결 / 후속
 
-- 임시저장 팝업 정확한 selector
-- 발행 모달 공개설정 라디오 정확한 selector
-- 카테고리 dropdown 패턴
+- 임시저장 팝업 정확한 selector (v1 시점에 미발현)
+- 카테고리 dropdown 자동 변경 패턴 (default 둠으로 충분 — 강대종 블로그 default 카테고리 = "게시판")
 - 표/이미지 첨부 패턴 (본문 paste 만 검증, 이미지·파일 첨부는 v2)
+- 본문 h1 자동 제거 — 현재 md 의 첫 `# h1` 줄을 제목으로 set 하면서도 본문 paste 에는 그대로 들어감 → 발행 글에 제목+h1 듀플 노출. v2 polish: paste 전 md 에서 첫 h1 라인 제거.
+
+## 검증 PASS 기록 (v1 첫 풀그린)
+
+- **2026-05-01 19:07 KST** — `/tmp/naver_test.md` → https://blog.naver.com/ssamssae/224271760586 (전체공개)
+- 제목/본문 매치 PASS, 모달 default 그대로 (카테고리 "게시판" / 주제 "상품리뷰" / 공개 "전체공개" / 댓글·공감·검색·공유 모두 허용 default)
+- claude-skills 5a6d1d6 + 본 update → 다음 commit
