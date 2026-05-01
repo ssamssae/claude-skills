@@ -246,21 +246,9 @@ insta-post 스킬이 worklog 파싱 → 카드 PNG 렌더 → posted.json dedup 
 
 **왜 단순화했나 (2026-04-29):** 이전엔 Mac 에서 호출되면 WSL 로 텔레그램 핸드오프했음. 그러나 (1) WSL = 야간 OFF 라 야간 /goodnight 핸드오프는 사일런트 실패, (2) Mac=SoT 지휘관 1명 원칙과도 정렬 안 됨. Mac 에 IG 시크릿·venv·posted.json 미러링이 이미 돼있어 직접 호출이 안전.
 
-실패 케이스 처리:
-- worklog 가 없으면 insta-post 내부 가드가 "worklog 없음" 으로 중단 + 텔레그램 알림 → goodnight 은 **계속 진행**, 최종 보고에 "⚠️ 인스타 스킵: worklog 없음"
-- 이미 올렸으면 dedup 가드로 중단 → 기존 permalink 를 최종 보고에 넣음
-- API 에러 또는 토큰 만료 → "⚠️ 인스타 실패: <사유>" 로 보고, 5단계로 계속
-- **publish.py wait_public timeout** → publish.py 자체에 300s + 120s retry 박혀있음 (2026-04-28 도입). 그래도 timeout 나면 "⚠️ 인스타 발행 실패 (GH Pages 빌드 timeout): 내일 `/insta-post <date>` 로 백필 권장" 텔레그램 알림. 다음 날 첫 호출 시 강대종님이 인지
-
-**미발행 사후 점검 (2026-04-28 추가)**: insta-post 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 박혔는지 확인. 안 박혔으면 publish 단계가 죽은 거 → 위 "발행 실패" 알림 송신. 알림:
-
-```
-⚠️ 인스타 미발행: <date> posted.json 에 entry 없음
-사유: <publish.py 마지막 stderr>
-백필: 내일 /insta-post <date> 호출
-```
-
-**중요**: 인스타 업로드가 실패해도 goodnight 전체를 중단하지 말 것. worklog/done 이 홈페이지에 올라갔으면 하루 마감은 이미 성공. 다만 미발행 사실이 텔레그램에 명시적으로 떠야 다음 날 백필 가능.
+실패 케이스 처리 (단순화 2026-05-01):
+- 어떤 사유든 실패 시 → 텔레그램에 `⚠️ 인스타 <사유>` 1줄 송신 + goodnight 은 **계속 진행** (worklog/done 이 push 됐으면 하루 마감은 이미 성공)
+- 호출 후 `~/insta-autopost/posted.json` 에 `<date>` entry 안 박혔으면 미발행으로 판정 → 위 알림 + 다음날 `/insta-post <date>` 로 백필
 
 ### 5. 3 repo 상태 점검
 
