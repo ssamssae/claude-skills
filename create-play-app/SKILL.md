@@ -110,7 +110,7 @@ ssh mac-mini "python3 ~/.claude/automations/scripts/play-upload.py --check <name
 ```
 (hostname 이 `*MacBook*`/`*MBP*` 면 🍎 Mac, `DESKTOP-*` 면 🪟 WSL)
 
-이어서 커밋:
+이어서 커밋 (이 스킬은 **Mac 전용** — Mac mini SSH 라우팅 또는 본진 직접 호출만. WSL 에서는 호출 안 됨):
 ```bash
 cd ~/.claude/skills && git add submit-app/keystore-sot.md && git commit -m "keystore-sot: <앱명> 등록 (<🍎 Mac|🪟 WSL>)" && git push
 ```

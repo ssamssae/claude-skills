@@ -86,18 +86,30 @@ todos 와 다르게 someday 는 reminders 앱 등록 X. "지금 알림" 이 아�
 
 ### 6. 양쪽 commit + push
 
-```bash
-# 1) ~/todo
-cd ~/todo && git pull --rebase origin main 2>&1 | tail -3
-git add someday.md
-git commit -m "someday: <액션> <제목 짧게>"
-git push origin main
+WSL 에선 `wsl/someday-YYYY-MM-DD` 브랜치 push 후 main 머지는 Mac SoT 결정. Mac 에선 main 직접 push.
+(지휘관 1명 원칙: WSL 은 main 직접 push 금지)
 
-# 2) ~/daejong-page
-cd ~/daejong-page && git pull --rebase origin main 2>&1 | tail -3
-git add someday.md
-git commit -m "someday: <액션> <제목 짧게>"
-git push origin main
+```bash
+push_branch() {
+  local repo="$1" msg="$2"
+  cd "$repo"
+  git pull --rebase origin main 2>&1 | tail -3
+  git add someday.md
+  if [[ "$(hostname)" == DESKTOP-* ]]; then
+    BR="wsl/someday-$(date +%F)"
+    git checkout -b "$BR" 2>/dev/null || git checkout "$BR"
+    git commit -m "$msg"
+    git push -u origin "$BR"
+    # main 머지는 Mac SoT 결정
+    git checkout main
+  else
+    git commit -m "$msg"
+    git push origin main
+  fi
+}
+
+push_branch ~/todo          "someday: <액션> <제목 짧게>"
+push_branch ~/daejong-page  "someday: <액션> <제목 짧게>"
 ```
 
 승격 케이스면 todos.md 도 같이.

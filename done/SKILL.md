@@ -127,12 +127,23 @@ done
 
 ### 7. 커밋 & 푸시
 
-daejong-page 저장소에만 커밋:
+daejong-page 저장소에만 커밋. WSL 에선 `wsl/done-YYYY-MM-DD` 브랜치 push 후 main 머지는 Mac SoT 결정. Mac 에선 main 직접 push.
+(지휘관 1명 원칙: WSL 은 main 직접 push 금지)
+
 ```bash
 cd ~/daejong-page
 git add done/YYYY-MM-DD.md done/index.json
-git commit -m "done: YYYY-MM-DD"
-git push origin main
+if [[ "$(hostname)" == DESKTOP-* ]]; then
+  BR="wsl/done-$(date +%F)"
+  git checkout -b "$BR" 2>/dev/null || git checkout "$BR"
+  git commit -m "done: YYYY-MM-DD"
+  git push -u origin "$BR"
+  # main 머지는 Mac SoT 결정
+  git checkout main
+else
+  git commit -m "done: YYYY-MM-DD"
+  git push origin main
+fi
 ```
 
 ### 8. 결과 응답

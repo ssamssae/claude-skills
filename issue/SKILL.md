@@ -136,13 +136,22 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
        python3 ~/.claude/skills/issue/tools/regen_index.py
        ```
        → issues/ 디렉터리 스캔 후 INDEX.md 전체 덮어쓰기. 수동 편집 금지 상단 주석 포함.
-    c. skills repo 에서 commit+push:
+    c. skills repo 에서 commit+push (지휘관 1명 원칙: WSL 은 main 직접 push 금지, `wsl/issue-YYYY-MM-DD` 브랜치 사용):
        ```
        cd ~/.claude/skills
        git pull --rebase origin main
        git add issues/
-       git commit -m "issue: <제목 한 줄>"
-       git push origin HEAD
+       if [[ "$(hostname)" == DESKTOP-* ]]; then
+         BR="wsl/issue-$(date +%F)"
+         git checkout -b "$BR" 2>/dev/null || git checkout "$BR"
+         git commit -m "issue: <제목 한 줄>"
+         git push -u origin "$BR"
+         # main 머지는 Mac SoT 결정
+         git checkout main
+       else
+         git commit -m "issue: <제목 한 줄>"
+         git push origin HEAD
+       fi
        ```
     d. **daejong-page 공개본 동기화** (2026-04-20 추가 — 맥/데스크탑 공통):
        ```
@@ -155,8 +164,17 @@ prevention_deferred: null   # "YYYY-MM-DD" 를 넣으면 그 날짜까지 예방
        cd ~/daejong-page
        git pull --rebase origin main
        git add issues/<파일> issues/index.json
-       git commit -m "issue: <제목 한 줄> 공개본 동기화"
-       git push origin main
+       if [[ "$(hostname)" == DESKTOP-* ]]; then
+         BR="wsl/issue-$(date +%F)"
+         git checkout -b "$BR" 2>/dev/null || git checkout "$BR"
+         git commit -m "issue: <제목 한 줄> 공개본 동기화"
+         git push -u origin "$BR"
+         # main 머지는 Mac SoT 결정
+         git checkout main
+       else
+         git commit -m "issue: <제목 한 줄> 공개본 동기화"
+         git push origin main
+       fi
        ```
        - 본문에 민감 정보(개인키·토큰·내부 호스트명·사적 이름 등) 가 있으면 공개본에서는 해당 라인을 `(비공개)` 로 마스킹해서 복사. 원본(claude-skills) 은 그대로 유지.
        - daejong-page 동기화 실패는 **소프트 페일** — claude-skills push 는 이미 됐으므로 경고만 남기고 계속 진행.
