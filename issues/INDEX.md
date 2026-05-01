@@ -1,10 +1,11 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-04-29 23:29 KST_
+_마지막 생성: 2026-05-01 14:59 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-01 | [wsl-mac-race-skill-edit](2026-05-01-wsl-mac-race-skill-edit.md) | Mac 본진 push 직후 WSL 가 stale base 로 같은 repo 작업 시작 — race 자동 merge | low (이번엔 충돌 라인 안 겹쳐 git 이 자동 해결) | medium (handoff 패턴 + 본진 동시작업이 일상) | — | — |
 | 2026-04-29 | [rosetta-iproxy-attach](2026-04-29-rosetta-iproxy-attach.md) | Apple Silicon mac mini 에서 Flutter iOS debug attach 가 Rosetta 없이는 실패 | medium (debug 빌드 막힘, release ipa 는 영향 없음) | low (1회 설치하면 영구 해결, 단 macOS 재설치 시 재발) | — | — |
 | 2026-04-28 | [cf-colo-region-block](2026-04-28-cf-colo-region-block.md) | CF colo region-block 으로 친구 wifi 에서만 OpenAI 호출 거부 | high (1900원 유료 출시 블로커) | medium (CF Workers 에서 OpenAI/Anthropic 등 region-block 권역 API 를 직접 호출하는 모든 앱) | — | — |
 | 2026-04-27 | [wsl-hanjul-push-classifier-block](2026-04-27-wsl-hanjul-push-classifier-block.md) | WSL 측 hanjul main push 가 auto-mode classifier 에 막힘 + Mac SSH 우회도 동일 룰로 막힘 | medium | high (다른 앱·다른 기기에도 동일 발생 가능) | 3회 | — |
