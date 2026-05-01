@@ -58,54 +58,72 @@
 
 ## 4. 멀티 기기 운영 (Multi-device)
 
-강대종님은 **Mac (MacBook Pro) + 윈도우 데스크탑 (3900X/2070S, WSL Ubuntu) + iPhone (Termius)** 3-way 환경에서 Claude Code 를 사용한다. 기기마다 역할이 다르므로 현재 호스트에 맞게 행동한다.
+강대종님은 **Mac 본진 (MacBook Pro) + Mac mini (M1, 빌드/배포 엔진) + 윈도우 데스크탑 (3900X/2070S, WSL Ubuntu) + iPhone (Termius)** 4-노드 환경에서 Claude Code 를 사용한다. 기기마다 역할이 다르므로 현재 호스트에 맞게 행동한다. SoT 통합본은 `~/.claude/skills/MACHINE_ROLES.md`.
 
-### 🍎 Mac = 본진 (Headquarter)
-- **모든 launchd 자동화의 단일 진실 소스** (todo-reminder, mac-mini mail-watcher 등)
+### 🍎 Mac 본진 = 지휘관 (Headquarter)
+- **모든 설계/판단/메인 세션** + 최종 결정 (App Store/Play 심사 제출 클릭, PR 머지 결정, 자산 발급)
 - **Telegram MCP 메인 봇**: `@MyClaude` (1봇 1세션 원칙)
-- **iOS 빌드** 전담 (Xcode/Flutter iOS — 윈도우 불가)
-- 메인 git push 권한 (consistency)
-- 일상 짧은 작업·실시간 대화
+- todos / done / worklog 쓰기 SoT
+- iOS 메타·스크린샷 입력 (브라우저)
+- launchd 자동화 호스트 (todo-reminder 등 — 단 빌드/배포 워커는 Mac mini 로 이전됨)
+- main git push 권한 (consistency)
 
-### 🪟 윈도우 데스크탑 = 전위 (Worker)
+### 🏭 Mac mini = 빌드/배포 엔진 (M1 arm64, 24/7 워커, 2026-05-01 역할 보강)
+- **iOS ipa 빌드 + codesign** (xcodebuild/Flutter) — 본진/WSL 에 빌드 위임 X
+- **Android aab 빌드 + 서명** — keystore SoT (`~/apps/<app>/android/{key.properties,*-upload-keystore.jks}`)
+- **App Store Connect 업로드** (altool / fastlane pilot)
+- **Play Console 업로드** (fastlane supply / Android Publisher API)
+- **launchd 워커**: night-builder v2.0a (야간 자동 빌드), night-runner v1 (03:00 KST read-only 점검). mail-watcher v5 는 2026-05-01 드롭됨.
+- **API key/Service Account/세션쿠키 SoT** (`~/.claude/secrets/`) — 본진 분산 X
+- raw Playwright + chromium (MCP 의존 X, headless 자동화)
+- **챗봇 세션 추가 금지** — 세 번째 챗봇으로 쓰지 않음. 설계 판단/다음작업 결정 금지. 정해진 시간에 정해진 스크립트만, 결과 md + 텔레그램 보고만.
+- **사람 손이 필요한 부분은 X**: 메타·스크린샷 입력 / 심사 제출 버튼 / API key 최초 발급 → 본진 강대종님
+
+### 🪟 WSL = 낮 즉응 작업자 (Worker, 2026-05-01 역할 보강)
 - **Telegram MCP 봇**: `@Myclaude2` (Mac 봇과 분리. 같은 봇 양쪽 폴링 시 getUpdates 409 충돌)
-- **Android dev/debug 빌드 + 갤럭시 S24 adb 실기** (3900X + 2070S 활용)
-- 무거운 작업 (장시간 리서치/리팩토링/배치)
-- 실험적·파괴적 작업 (실패해도 본진 무영향)
-- **launchd 잡 신규 추가 금지** (본진 충돌 방지)
-- **Android release aab 빌드 금지** (2026-04-29) — release/keystore SoT 는 🤖 Mac mini 단일. release 효과 폰 검증 필요하면 mac-mini night-build 산출물(`~/apps/<app>/build/app/outputs/bundle/release/app-release.aab`) 받아 `adb install`
+- **wsl/\* 브랜치 직접 개발자 OK**: 코드/문서 수정 + commit + `git push origin wsl/<slug>` 가능. main 머지는 Mac 본진이 결정 (PR 또는 직접 머지)
+- **main 직접 push 금지**: 모든 main 반영은 본진 검토 후
+- **Android dev/debug 빌드 + 갤럭시 S24 adb 실기** OK (3900X + 2070S 활용, 단발 폰 검증용)
+- 코드/로그 분석, 보고서 초안, Windows ADB 게이트 (S24 무선 토글), WSL→Windows Chrome CDP (Playwright attach)
+- 무거운 작업 (장시간 리서치/리팩토링/배치), 실험적·파괴적 작업 (실패해도 본진 무영향)
+- **launchd 잡 신규 추가 금지** (Mac mini 가 워커 호스트 SoT — 충돌 방지)
+- **iOS 빌드 금지** (Xcode/Flutter iOS — 윈도우 불가)
+- **Android release aab 빌드 + Play 배포 금지** (2026-04-29) — Mac mini 전담. release 효과 폰 검증 필요하면 mac-mini night-builder 산출물 받아 `adb install`
+- **App Store Connect / Play Console 배포 클릭 금지** (강대종님 본진)
 
 ### 📱 iPhone Termius = 원격 컨트롤러
-- Tailscale 경유로 Mac (`100.74.85.37`, user@) 또는 데스크탑 (`100.80.253.65`, ssamssae@) SSH 접속
+- Tailscale 경유로 Mac 본진 (`100.74.85.37`, user@) 또는 Mac mini / WSL SSH 접속
 - 외부에서 가벼운 명령. 긴 세션은 본체 권장
 
-### 🤖 M1 Mac mini = 24/7 자동 실행 노드 (당직자) + Android release 빌드 SoT
-- launchd 워커 호스트 (mail-watcher, night-build 등)
-- **Android release aab 빌드 단일 진실 소스 (2026-04-29)** — 모든 앱의 release 서명 빌드는 여기서만. v2.0a 풀그린 검증 끝(PASS:4 FAIL:0)
-- **Android upload keystore SoT (2026-04-29)** — `~/apps/<app>/android/{key.properties, *-upload-keystore.jks}` 단일 위치. Mac 본진/WSL 에 release keystore 두지 말 것 (이중 SoT 혼선 방지)
-- **챗봇 세션 추가 금지** — 세 번째 챗봇으로 쓰지 않음
-- 설계 판단/다음작업 결정/다른 봇에게 지시 금지
-- 정해진 시간에 정해진 스크립트만 실행. 결과 md 작성 + 필요 시 텔레그램 보고만
+### 지휘관 1명 원칙 (2026-04-28 / 2026-05-01 역할 보강)
 
-### 지휘관 1명 원칙 (2026-04-28)
-
-이 프로젝트의 지휘관은 **Mac 세션 1개뿐**. WSL 세션은 작업자.
+이 프로젝트의 지휘관은 **Mac 본진 세션 1개뿐**. WSL 은 작업자, Mac mini 는 빌드/배포 실행 전용.
 
 **WSL 작업자 금지사항:**
+- main 직접 push 금지 (wsl/* 브랜치 push 만 OK)
+- 빌드/배포/심사 제출 클릭 일체 금지 (Mac mini + 본진 책임)
 - 설계 변경 제안 금지
 - 진행 방향 변경 금지
 - 새 인프라 추가 제안 금지
-- Mac 세션에 역지시 금지
+- Mac 본진 세션에 역지시 금지
 - 선택지 여러 개 던져 사용자 혼란 주기 금지
 - 다른 작업을 자율적으로 확장하기 금지
 
-**핸드오프 방향성:**
-- **Mac→WSL = 작업 지시 directive**: 목표 / 수정 파일 / 금지 사항 / 성공 기준 / 보고 형식 명시
-- **WSL→Mac = 결과 보고 report**: 수행한 작업 / 수정한 파일 / 테스트 결과 / 실패 로그 / Mac 세션이 판단해야 할 사항. WSL 이 다음 방향을 새로 정하지 않음
-- 채널(SSH+tmux METHOD A / peer-bot / fallback reply) 자체는 양방향이지만 **컨텐츠는 비대칭**
-- **예외 (운반체)**: 사용자 명령을 자동화로 운반하는 트리거(예: Mac `/goodnight` step 4.5 → WSL `/insta-post` 핸드오프)는 directive 아님. WSL/Mac 세션이 자체 판단으로 새 방향을 결정하는 경우만 새 원칙 적용.
+**Mac mini 워커 금지사항:**
+- 챗봇 세션 추가 금지
+- 설계 판단·다음작업 결정 금지
+- 정해진 시간/정해진 스크립트 외 작업 금지
+- App Store / Play 심사 제출 버튼 클릭 금지 (책임 명확화 — 강대종님 본진)
 
-**Mac 세션 측 책임 (참고):** 같은 파일을 WSL 과 동시에 직접 수정 금지, WSL 이 작업 중인 범위를 중간에 바꾸기 금지.
+**핸드오프 방향성:**
+- **Mac 본진→WSL = 작업 지시 directive**: 목표 / 수정 파일 / 금지 사항 / 성공 기준 / 보고 형식 명시
+- **Mac 본진→Mac mini = 빌드/배포 트리거 (SSH)**: `ssh mac-mini "<자동화 스크립트>"`. 인터랙티브 챗봇 세션 X
+- **WSL→Mac 본진 = 결과 보고 report**: 수행한 작업 / 수정한 파일 / 테스트 결과 / 실패 로그. WSL 이 다음 방향을 새로 정하지 않음
+- **Mac mini→Mac 본진 = mac-report.sh 운반체**: 빌드/배포 결과 본진 tmux 'claude' 세션 자동 paste
+- 채널(SSH+tmux METHOD A / peer-bot / fallback reply) 자체는 양방향이지만 **컨텐츠는 비대칭**
+- **예외 (운반체)**: 사용자 명령을 자동화로 운반하는 트리거(예: Mac `/goodnight` step 4.5 → WSL `/insta-post` 핸드오프, `/submit-app` → Mac mini SSH 라우팅)는 directive 아님. WSL/Mac mini 세션이 자체 판단으로 새 방향을 결정하는 경우만 새 원칙 적용.
+
+**Mac 본진 측 책임 (참고):** 같은 파일을 WSL 과 동시에 직접 수정 금지, WSL 이 작업 중인 범위를 중간에 바꾸기 금지.
 
 ### 공유 vs 분리
 - ✅ **공유 (git: ssamssae/claude-skills)**: 스킬, 글로벌 CLAUDE.md/AGENT.md, 키바인딩

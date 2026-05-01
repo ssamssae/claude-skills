@@ -2,12 +2,20 @@
 
 Mac↔WSL Claude 직통 핸드오프 채널. 긴 directive 본문을 텔레그램 메시지로 복붙하지 않고 git 으로 운반한다.
 
+## 기기 역할 (2026-05-01 보강)
+
+- **Mac 본진 (지휘관)** — directive 발신 / 결과 검토 / main 머지 결정. SoT.
+- **WSL (작업자)** — directive 수신 후 wsl/\* 브랜치에서 코드 수정 + `git push origin wsl/<slug>`. main 직접 push 금지. 빌드/배포 일체 금지.
+- **Mac mini (빌드/배포 엔진)** — handoffs/ 채널 사용 X. 본진이 SSH 로 직접 트리거(`/submit-app` 등). 결과는 mac-report.sh 운반체로 본진 tmux 'claude' 세션에 자동 paste.
+
+상세: `~/.claude/skills/MACHINE_ROLES.md`, `~/.claude/CLAUDE.md` 지휘관 1명 원칙.
+
 ## 흐름
 
 1. 발신측 Claude 가 `handoffs/YYYY-MM-DD-HHMM-{from}-{to}-{slug}.md` 작성 후 push
 2. 발신측이 수신측 tmux 안 Claude 프롬프트에 짧은 핑 1줄 입력 (수단은 무관 — 보통 SSH+`tmux send-keys`)
 3. 수신측 Claude 가 `git pull && cat handoffs/...md` 으로 본문 읽고 진행
-4. 종료 조건 충족 시 텔레그램으로 결과 보고
+4. 종료 조건 충족 시 텔레그램으로 결과 보고 (WSL→Mac 은 mac-report.sh 도 함께)
 
 ## 파일명 규칙
 
