@@ -22,7 +22,7 @@ allowed-tools: Bash, Read, Write
 ## 호출 패턴
 
 - `/night-someday` — `bash ~/claude-automations/scripts/night-someday.sh` 호출
-- 자동 실행: Mac mini launchd `com.claude.night-someday` 매일 03:30 KST (RunAtLoad false)
+- 자동 실행: Mac 본진 launchd `com.claude.night-someday` 매일 03:30 KST (RunAtLoad false)
 
 ## 절차
 
