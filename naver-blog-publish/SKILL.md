@@ -28,6 +28,8 @@ python3 ~/.claude/skills/naver-blog-publish/scripts/md_to_html.py "$MD" > /tmp/n
 cp "$MD" /tmp/naver_body.md
 ```
 
+`md_to_html.py` 가 **첫 `# h1` 라인을 자동 제거** 후 HTML 변환 — h1 듀플(제목 셀 + 본문 paste 양쪽 노출) 회피용 (v1 검증 시점에 cosmetic 결함으로 발견, 즉시 polish). 첫 h1 은 4장 제목 셋의 fallback 으로만 사용, 본문 paste 에는 안 들어감.
+
 표(table) 가 들어가는 글이면 Substack 패턴(`reference_substack_publish_pipeline.md`)의 표→리스트 변환 함수를 먼저 적용한 뒤 HTML 변환. **nl2br extension 절대 쓰지 말 것.**
 
 ## 2. Playwright MCP 세션 점검
@@ -260,10 +262,10 @@ PASS 시 강대종 (chat_id=538806975) 에게 1통:
 - 임시저장 팝업 정확한 selector (v1 시점에 미발현)
 - 카테고리 dropdown 자동 변경 패턴 (default 둠으로 충분 — 강대종 블로그 default 카테고리 = "게시판")
 - 표/이미지 첨부 패턴 (본문 paste 만 검증, 이미지·파일 첨부는 v2)
-- 본문 h1 자동 제거 — 현재 md 의 첫 `# h1` 줄을 제목으로 set 하면서도 본문 paste 에는 그대로 들어감 → 발행 글에 제목+h1 듀플 노출. v2 polish: paste 전 md 에서 첫 h1 라인 제거.
+- ~~본문 h1 자동 제거~~ → md_to_html.py default 동작으로 박힘 (2026-05-01 19:23 KST polish, 다음 호출부터 적용)
 
-## 검증 PASS 기록 (v1 첫 풀그린)
+## 검증 PASS 기록
 
-- **2026-05-01 19:07 KST** — `/tmp/naver_test.md` → https://blog.naver.com/ssamssae/224271760586 (전체공개)
-- 제목/본문 매치 PASS, 모달 default 그대로 (카테고리 "게시판" / 주제 "상품리뷰" / 공개 "전체공개" / 댓글·공감·검색·공유 모두 허용 default)
-- claude-skills 5a6d1d6 + 본 update → 다음 commit
+- **2026-05-01 19:07 KST** — `/tmp/naver_test.md` → https://blog.naver.com/ssamssae/224271760586 (전체공개) → 19:23 KST 강대종 직접 삭제 (본문에 h1 듀플 + "비공개 테스트 글" stale 텍스트 = cosmetic 결함). 메커니즘 자체는 PASS, 결과물 글은 v2 polish 필요로 분류.
+- 19:23 KST polish: md_to_html.py 가 첫 `# h1` 라인 자동 제거. 다음 사이클부터 깨끗한 본문.
+- 모달 default 그대로 (카테고리 "게시판" / 주제 "상품리뷰" / 공개 "전체공개" / 댓글·공감·검색·공유 모두 허용 default)
