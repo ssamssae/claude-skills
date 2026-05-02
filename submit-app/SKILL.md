@@ -199,6 +199,22 @@ ssh mac-mini "fastlane supply --json_key ~/.claude/secrets/play-service-account.
 
 심사 제출 = `asc-deliver --submit` (iOS) / `fastlane supply --release_status completed` (Android) 자동화 default (2026-05-01). 가격/territory/유료 전환 같은 위험 카테고리만 사용자 컨펌 후 자동 트리거. (포모도로/한컵 5/1 풀자동 제출 PASS — reviewSubmission 77f1d8b5/69b71c26)
 
+### Step 3.5 — ASC 가드 3종 (iOS, dry-run default)
+
+자동 출시(AFTER_APPROVAL) quirk 우회 + reject 답글 자동화. 본 스킬 흐름에서 호출하는 dry-run 가드 3종. 위험 카테고리(territory/availability)이라 `--apply` 명시 + 강대종 컨펌 후에만 실 ASC API 호출. 미지정 시 dry-run, system-level 변경 0.
+
+| 가드 | 트리거 | 스크립트 | 우회 대상 |
+|------|--------|----------|-----------|
+| W6 territory-verify | 자동 출시 직후 | `~/.claude/automations/scripts/asc-territory-verify.py --app-id <APP_ID>` | 174 territory record 누락 (2026-04-30 약먹자/더치페이 22분 unlist 사례) |
+| W7 asc-resubmit | UNRESOLVED_ISSUES reject 수신 | `~/.claude/automations/scripts/asc-resubmit.py --app-id <APP_ID> --platform IOS` | reviewSubmission cancel→new sub→submit (2026-04-30 한줄일기 11:06 우회→13:29 승인) |
+| W8 asc-rc-reply | territory/availability reject 답글 | `~/.claude/automations/scripts/asc-rc-reply.py --review-submission-id <SUB_ID> --message-template territory_fix` | reviewer 답글 자동화 (2026-04-29 강대종 손 친 답글 원본) |
+
+호출 흐름:
+1. Step 3 (업로드) 완료 후 mail-watcher v5 가 심사 결과 수신
+2. **승인 + AFTER_APPROVAL 자동 출시** → W6 dry-run 1회 → 강대종 컨펌 후 `--apply`
+3. **UNRESOLVED_ISSUES reject** → W7 dry-run 1회 → 강대종 컨펌 후 `--apply` → W8 dry-run + 컨펌 후 `--apply`
+4. 가드 실패(스크립트 NotImplementedError 또는 API 변경) 시 즉시 강대종 텔레그램 보고 + 수동 fallback
+
 ### Step 4 — 심사 제출 후 모니터링 활성화
 
 맥미니 mail-watcher v5 (4시간 폴링) 가 Gmail 모니터링하므로 별도 조치 불필요. 업로드 완료 시 텔레그램으로 "심사 제출 완료 — Gmail 상태 알림 대기" 공지.
@@ -261,6 +277,7 @@ source: manual | auto-from-session | reviewer-feedback
 - BLOCKING 체크리스트 실패 시 중단, 강제 진행 금지
 - aab/ipa 파일은 커밋하지 않음 (build 산출물은 `.gitignore` 확인)
 - Play Console / App Store Connect 웹 UI 자동 조작 = ASC API + fastlane + Playwright MCP 사용 자동화 default (2026-05-01). 가격/territory/유료 전환 등 위험 카테고리는 사용자 컨펌 필수.
+- ASC 가드 3종(W6/W7/W8) = dry-run default. `--apply` 는 강대종 컨펌 필수 (Step 3.5).
 - 버전 bump 커밋은 push 금지 — 사용자가 확인 후 직접 push
 - `--force` / `--no-verify` 금지
 
@@ -284,5 +301,6 @@ source: manual | auto-from-session | reviewer-feedback
 
 - `/irun`, `/arun` — 빌드·실기기 설치 (제출 전 동작 확인, mac mini SSH 빌드)
 - 맥미니 mail-watcher v5 — 제출 후 2시간 폴링 Gmail 심사·결제 알림 (스킬 아닌 백그라운드 자동화)
+- ASC 가드 3종 (`~/.claude/automations/scripts/asc-{territory-verify,resubmit,rc-reply}.py`) — 자동 출시 quirk 우회 + reject 답글 자동화 (Step 3.5)
 - `/issue` — 포괄적 이슈 로깅 (앱 제출 관련이면 이 스킬의 lessons/ 에도 저장)
 - `/worklog` — 제출 작업 로그 기록
