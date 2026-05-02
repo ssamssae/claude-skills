@@ -88,6 +88,64 @@ mcp__plugin_playwright_playwright__browser_press_key(key='ControlOrMeta+v')
 
 (2-3 초 대기) — Substack 의 tiptap 은 CDP synthetic paste 를 받아 HTML 해석.
 
+### 2-3.5. 🖼 IMAGE 업로드 (paste 후, publish 전)
+
+본문에 `> 🖼 IMAGE N (caption) — ...` placeholder 가 있으면 발행 전에 실제 이미지로 치환. 누락 사고(2026-04-30 Ep.3 4컷) 방지.
+
+#### Step A — placeholder 스캔 (asset 매핑)
+
+```bash
+python3 ~/.claude/skills/newsletter-publish/scripts/scan_images.py "$MD" > /tmp/nl_images.json
+```
+
+출력:
+```json
+[
+  {"index": 1, "asset_path": "/abs/.../assets/ep3/01-hero.png", "caption_line": "..."},
+  {"index": 2, "asset_path": null, "caption_line": "..."}
+]
+```
+
+`asset_path: null` 이 1개라도 있으면 **즉시 강대종 surface + GO 결정 대기.** Substack 본문은 이미 paste 됐어도 publish 전이라 placeholder 텍스트만 남고 publish 하면 회귀. PIL+Pretendard fallback 생성은 Track D 의 자료 활용.
+
+#### Step B — Substack 본문 IMAGE N 자리에 file_upload
+
+각 entry 별 1회 (직렬, 병렬 X — tiptap 의 caret 위치 race condition 회피):
+
+```javascript
+// Substack tiptap 안에서 "🖼 IMAGE N" 텍스트가 들어간 line 의 paragraph 노드 찾고 caret 위치
+mcp__plugin_playwright_playwright__browser_evaluate(function=`
+(needle) => {
+  const root = document.querySelector('div.tiptap.ProseMirror.mousetrap');
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    if (walker.currentNode.textContent.includes(needle)) {
+      const range = document.createRange();
+      range.selectNodeContents(walker.currentNode);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return { found: true, text: walker.currentNode.textContent.slice(0, 80) };
+    }
+  }
+  return { found: false };
+}`, args=[`🖼 IMAGE ${entry.index}`])
+
+// caret 자리에 image insert — Substack 의 image button 클릭 → file dialog
+mcp__plugin_playwright_playwright__browser_click(target='button[aria-label*="image" i], button[data-testid*="image" i]')
+mcp__plugin_playwright_playwright__browser_file_upload(paths=[entry.asset_path])
+
+// upload 대기 (CDN 진행 spinner 사라질 때까지, 최대 30s)
+mcp__plugin_playwright_playwright__browser_wait_for(text='', timeout=2000)
+```
+
+이미지 insert 후 placeholder 텍스트는 수동으로 안 지우면 본문에 남음 — Substack 발행 후 OG/article fetch 단계(§5)에서 `🖼 IMAGE` 카운트 = 0 인지 검증해 회귀 차단.
+
+#### 한계
+
+- Substack 의 image button selector 는 UI 변경 시 깨질 수 있음. 첫 사이클에서 snapshot 으로 정확한 selector 캡처 후 본문 정정.
+- v1 = Substack 만. Naver SmartEditor 는 file dialog 모달 동작이 OS-level 인 케이스 → §4-5.5 v1.1 후속 (현재 Naver 본문은 IMAGE placeholder 텍스트 그대로 paste 됨).
+
 ### 2-4. 발행 + Send to everyone now
 
 ```javascript
@@ -242,14 +300,17 @@ PASS 시 강대종 (chat_id=538806975) 에게 1통:
 - 4조건 (네이버) 깨질 가능성 surface, override 는 강대종 명시 directive 필요.
 - substack tiptap = Playwright synthetic paste OK. naver SmartEditor = OS-level keystroke 필수. 두 채널 paste 메커니즘 절대 섞지 말 것.
 - substack 발행 → sync 사이 시간차 = GitHub Pages 빌드 (~1-2분). 즉시 검증 실패해도 abort 안 함.
-- 본문 첨부 이미지 / 외부 CTA 블록은 v0 미지원. v1+ 후속.
+- 본문 첨부 이미지: Substack v1 자동화 §2-3.5. Naver v1.1 후속. CTA 블록은 v1+ 후속 그대로.
+- 누락 asset 1개라도 있으면 publish 안 함 (강대종 surface + GO 대기). Ep.3 4컷 누락 사고 재발 차단.
 
 ## 미해결 / 후속
 
 - 임시저장 팝업 자동 처리 (현재 surface 후 강대종 결정 대기)
 - Substack 발행 모달 옵션 (Send to everyone vs Publish without buttons) 선택 정책
 - 발행 실패 시 자동 재시도 룰
-- 이미지·CTA 블록 자동화 (v1+)
+- Naver SmartEditor 이미지 업로드 v1.1 (file dialog 모달이 OS-level 일 가능성 — Mac 본진 dry-run 1회로 selector 확정 필요)
+- CTA 블록 자동화 (v1+)
+- §2-3.5 Substack image button selector 첫 사이클 검증 후 본문 정정 (현재 placeholder selector)
 
 ## 검증 PASS 기록
 
