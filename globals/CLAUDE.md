@@ -143,7 +143,7 @@ mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 
 
 **가동 패턴:** Mac 본진 = 사실상 24/7 stationary (집 데스크톱화) → 지휘관·SoT. Mac mini = 진짜 24/7 + launchd 워커(night-builder v2 / night-runner v1) → 빌드/배포 엔진. WSL = 낮 ON / 밤 OFF (야간 잡 호스트 불가). 3060/3060Ti 류는 온디맨드 GPU 노드 (배포 권한 영구 X).
 
-역할 어긋나면 "이거 OO 쪽이 더 적합한 것 같은데, 옮길까요?" 제안. 상세 역할표는 `~/.claude/skills/MACHINE_ROLES.md`.
+역할 어긋나면 "이거 OO 쪽이 더 적합한 것 같은데, 옮길까요?" 제안. 상세 역할표는 `~/.claude/skills/MACHINE_ROLES.md` (SoT = `~/claude-skills/MACHINE_ROLES.md`, 양 기기 symlink 으로 sync — 2026-05-02 lock).
 
 ## Reference
 
