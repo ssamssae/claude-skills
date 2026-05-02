@@ -34,6 +34,10 @@
 - `<channel source="plugin:telegram:telegram">` 에서 온 메시지 답변은 **반드시** `mcp__plugin_telegram_telegram__reply` 툴로 전송. 터미널 평문은 강대종님 폰에 안 보임.
 - Stop 훅 `telegram-reply-check.sh` 가 이 규칙을 강제함 (telegram 입력 + reply 0회 = block).
 - 답변 포맷이 "exploratory 2-3 sentences" 일 때도 **예외 없음**. 짧든 길든 reply 툴 경유.
+- **기기 prefix 1줄** (모든 텔레그램 답변, 양 기기 공통, 2026-05-02 추가):
+  - 답변 본문 첫 줄을 `[기기아이콘] [hostname-short] [HH:MM KST]` 로 시작. 예: `🍎 USERui-MacBookPro 17:08 KST` / `🪟 DESKTOP-I4TR99I 17:01 KST`.
+  - 아이콘 매핑: `USERui-MacBookPro*` = 🍎 / `mac-mini` = 🏭 / `DESKTOP-*` = 🪟 / 그 외 = 📱.
+  - 강대종님이 어떤 기기 발화인지 한눈에 식별 + 세션 바뀌어도 일관성 유지.
 
 ## 병렬 작업 + 충돌 방지 원칙 (2026-05-02 「지휘관 1명 원칙」 폐기 후 교체)
 
@@ -145,4 +149,4 @@ mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 
 
 - `~/.claude/AGENT.md` — 상세 규칙 (제품/슬래시/할일 자동화/멀티기기/가드레일)
 - `~/.claude/projects/-Users-user/memory/MEMORY.md` — 자동 메모리 인덱스
-- `~/.claude/skills/` — 개별 스킬 상세
+- `~/.claude/skills/` — 개별 스킬 상세. **모든 챗봇 환경(Mac 본진/WSL)에서 `~/claude-skills` repo 의 symlink** (2026-05-02 통일). SoT = `~/claude-skills` repo. Mac mini 는 부재 (워커, 챗봇 X).
