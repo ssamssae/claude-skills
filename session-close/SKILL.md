@@ -51,8 +51,8 @@ B. <한 줄>
 
 ## 3. 컨펌 처리
 
-- `💤 A B` → 선택 항목만 분류해 박음. **someday 폐지 (2026-05-02) 후 분기**:
-  - **사이드 프로젝트/콘텐츠 아이디어** → `parking-lot.md` (todo SKILL.md 의 parking-lot 흐름)
+- `💤 A B` → 선택 항목만 분류해 박음. **someday 폐지 (2026-05-02) + parking-lot 통합 (2026-05-02) 후 분기**:
+  - **사이드 프로젝트/언젠가/여유 되면 류 아이디어** → `parking-lot.md` (someday + 사이드 프로젝트 통합 한 통)
   - **활성 작업/트리거 박힌 것** → `todos.md` `## 진행중` (`/todo` 스킬 호출)
   - **인프라 후속·운영 튜닝/재발 시 재기소** → drop (todos.md `## 보류/취소`)
   - 분류 모호하면 강대종에게 1줄 추가 컨펌
@@ -92,3 +92,4 @@ reply 1줄: `✅ 닫아도 OK. /clear 진행하셔도 됩니다.`
 - v0.2 (2026-04-27 20:10 KST): host-aware MEMORY_DIR + METHOD A handoff + takeover 처리 추가 → 280줄로 비대해짐
 - v0.3 (2026-04-27 22:50 KST): 강대종님 "토큰 1/5 으로" 지시. git log 루프 / in_progress 스캔 / takeover 라이프사이클 / no-op 휴리스틱 모두 제거. host-aware path 만 유지. ~60줄
 - v0.4 (2026-05-02): someday 폐지 반영. "someday 후보" → "후속안 (todos/parking-lot/drop 분류)". someday 직접 호출 흐름 제거.
+- v0.5 (2026-05-02): parking-lot 정의 확장 — 「사이드 프로젝트」 한정에서 「사이드 프로젝트 + 언젠가/여유 되면 류 아이디어」 통합 한 통으로. someday 컨셉 자체를 parking-lot 에 흡수.
