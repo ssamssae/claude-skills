@@ -189,30 +189,6 @@ for todo_line in open_todos:
 
 이 단계가 고비용(사용자 입력 대기) 이라 후보가 명확히 0개면 사용자에게 안 물어봐도 됨. 다만 감지 애매하면 반드시 질문.
 
-### 2.7. someday 후보 점검 (✨ 2026-04-26 추가)
-
-오늘 세션에서 "지금 할 건 아닌데 언젠가 해보면 좋을 것 같다" 류 아이디어가 떠올랐는지 점검. todo 가 아닌 someday 로 박을 후보들.
-
-감지 기준:
-- 사용자 발화에 "나중에" / "언젠가" / "여유 되면" / "이런 거 있으면 좋겠다" 같은 표현
-- 이번 세션에서 검토했지만 채택 안 한 대안 (오늘 케이스: 핸드오프 가드 강화 대안 C)
-- "아 이런 옵션도 있구나" 식의 미해결 가능성
-
-매칭되는 게 있으면 텔레그램으로 묻음:
-
-```
-💭 someday 후보 N건:
-1. <후보 1 — 한 줄>
-2. <후보 2 — 한 줄>
-박을 번호 / "전부" / "없음"
-```
-
-응답 처리:
-- **번호** / **"전부"**: Skill tool 로 `someday` 스킬 호출, 해당 항목 추가.
-- **"없음"** 또는 후보 0개: skip, 3단계로.
-
-이 단계도 고비용이라 후보 0개면 사용자에게 안 물어봄. 결정 박제(2.5) 와 다른 점: 2.5 는 "박아둘 결정", 2.7 은 "박아둘 옵션/아이디어".
-
 ### 3. worklog 실행
 
 ```
@@ -271,16 +247,11 @@ done
 
 ### 5.5. daejong-page 미러 sync 갭 audit (✨ 2026-05-01 추가)
 
-step 5 의 git dirty/unpushed 만으로는 안 잡히는 케이스 — daejong-page 가 깨끗이 push 됐어도 SoT 와 mirror 가 어긋난 경우를 잡는다. 5/1 16:55 KST 일괄 sync 사고(someday 4h 갭, issues 13개 누적 누락, skills.html night-someday 누락) forcing function.
+step 5 의 git dirty/unpushed 만으로는 안 잡히는 케이스 — daejong-page 가 깨끗이 push 됐어도 SoT 와 mirror 가 어긋난 경우를 잡는다. 5/1 16:55 KST 일괄 sync 사고(issues 13개 누적 누락, skills.html night-someday 누락) forcing function. someday cmp 는 2026-05-02 someday 폐지 후 제거됨.
 
-다음 4 섹션 cmp/카운트 비교:
+다음 3 섹션 cmp/카운트 비교:
 
 ```bash
-# someday
-if ! cmp -s ~/todo/someday.md ~/daejong-page/someday.md; then
-  echo "GAP someday — SoT $(wc -l < ~/todo/someday.md) / mirror $(wc -l < ~/daejong-page/someday.md)"
-fi
-
 # issues
 sot_n=$(ls ~/.claude/skills/issues/*.md 2>/dev/null | grep -v INDEX.md | wc -l | xargs)
 mir_n=$(ls ~/daejong-page/issues/*.md 2>/dev/null | wc -l | xargs)
@@ -306,7 +277,6 @@ fi
 **갭 감지 시 처리**:
 - 0건: 조용히 6단계로
 - 1건 이상: 텔레그램에 갭 목록 surface + 즉시 auto-sync 진행 (mirror 작업이라 저위험):
-  - someday: `cp ~/todo/someday.md ~/daejong-page/someday.md`
   - issues: 누락 .md 복사 + INDEX.md 복사 + index.json regen (frontmatter 파서 ad-hoc Python)
   - skills: SKILL.md frontmatter 의 description 으로 skills.html 카드 자동 추가는 P3 (현재 미구현) — 누락 surface 만, 수동 패치 권고
   - todos: `/todo` 스킬의 스냅샷 동기화 step 재호출 또는 직접 cp
@@ -314,7 +284,7 @@ fi
 
 **최종 보고에 1줄 추가** (step 6):
 - 갭 0: `미러 sync ✅` (한 줄만)
-- 갭 N건: `미러 sync 🔄 N건 자동 복구 (someday/issues/skills/todos)`
+- 갭 N건: `미러 sync 🔄 N건 자동 복구 (issues/skills/todos)`
 
 ### 6. 최종 보고 (텔레그램)
 
