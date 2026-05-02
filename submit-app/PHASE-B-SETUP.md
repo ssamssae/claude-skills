@@ -151,6 +151,10 @@ npx playwright install chromium
 # 로그인 + 쿠키 저장 스크립트 (본진에서 1회 실행)
 cat > /tmp/save-google-session.js <<'EOF'
 const { chromium } = require('playwright');
+
+// Play Console developer ID — 강대종님 기본값. 다른 계정이면 여기만 수정.
+const DEVELOPER_ID = '6982984193099657371';
+
 (async () => {
   // stealth 4종 — Google OAuth 자동화 차단 우회. 4개 동시 적용 필수.
   // 근거: ~/.claude/skills/issues/2026-05-02-google-oauth-playwright-stealth-bypass.md
@@ -167,21 +171,38 @@ const { chromium } = require('playwright');
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   await page.goto('https://play.google.com/console');
-  console.log('🔓 브라우저에서 Google 계정으로 로그인 + 2FA 까지 완료한 뒤');
-  console.log('   터미널에서 Enter 누르세요...');
-  process.stdin.once('data', async () => {
-    await ctx.storageState({ path: '/tmp/google-session.json' });
-    console.log('✅ /tmp/google-session.json 저장됨');
-    await browser.close();
-    process.exit(0);
-  });
+  console.log('🔓 브라우저에서 Google 로그인 + 2FA 만 마치세요. 그 외 클릭/네비게이션은 자동.');
+
+  // 로그인 완료 감지: URL 이 play.google.com/console/* 에 도달 + accounts/signin 아님.
+  // 최대 5분 대기 (2FA + 비밀번호 매니저 시간 여유).
+  await page.waitForURL(
+    (u) => {
+      const s = u.toString();
+      return s.includes('play.google.com/console') &&
+        !s.includes('accounts.google.com') &&
+        !s.includes('signin');
+    },
+    { timeout: 5 * 60 * 1000 },
+  );
+
+  // developers 스코프 페이지 자동 이동 → 그 스코프 쿠키까지 확보.
+  // 이 단계 빼면 /developers/* 페이지에서 /create-play-app 자동화가 권한 부족으로 깨질 수 있음.
+  await page.goto(
+    `https://play.google.com/console/u/0/developers/${DEVELOPER_ID}/app-list`,
+    { waitUntil: 'networkidle', timeout: 30000 },
+  );
+
+  await ctx.storageState({ path: '/tmp/google-session.json' });
+  console.log('✅ /tmp/google-session.json 저장됨 (강대종 손 = OAuth 1회만)');
+  await browser.close();
+  process.exit(0);
 })();
 EOF
 
 node /tmp/save-google-session.js
 ```
 
-브라우저 열리면 → Google 로그인 + 2FA → Play Console 정상 진입 확인 → 본진 터미널로 돌아와 **Enter 한 번** → 쿠키 자동 저장.
+브라우저 열리면 → Google 로그인 + 2FA → 자동으로 `/console/u/0/developers/{DEVELOPER_ID}/app-list` 까지 이동 → 쿠키 저장 → 브라우저 자동 닫힘. 강대종님 손은 OAuth 1회만 (Play Console 메뉴 클릭 0회).
 
 ### 3.2 Mac mini 로 전송
 
