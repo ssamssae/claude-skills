@@ -8,7 +8,7 @@ allowed-tools: Bash, Write, Edit, Read
 
 ## 데이터 소스
 
-- **파일**: `~/todo/todos.md` (진행중/완료/보류 3개 섹션). 사이드 프로젝트는 2026-05-01 부터 별도 SoT `~/todo/parking-lot.md` 로 분리.
+- **파일**: `~/todo/todos.md` (진행중/완료/보류 3개 섹션). 사이드 프로젝트 + 언젠가 아이디어는 2026-05-01 부터 별도 SoT `~/todo/parking-lot.md` 로 분리 (2026-05-02 someday.md 폐지 후 「언젠가」 컨셉도 parking-lot 으로 통합).
 - **버전 관리**: `~/todo/` 가 git 저장소. 모든 수정은 커밋으로 남겨 이력 추적.
 - **미리알림 앱**: macOS Reminders 의 `"Claude"` 목록과 연동 (AppleScript 경유)
 
@@ -216,8 +216,9 @@ fi
 ### 수정
 - 제목 변경·마감일 변경 등은 todos.md 해당 라인 Edit + 미리알림 앱에서도 해당 항목 update
 
-### 사이드 프로젝트 (Parking Lot, 2026-05-01 분리)
+### 사이드 프로젝트 + 언젠가 아이디어 (Parking Lot, 2026-05-01 분리 + 2026-05-02 someday 통합)
 - SoT 는 **`~/todo/parking-lot.md` 의 `## 모아둠` 섹션** (todos.md 가 아님)
+- 포함 범위: 사이드 프로젝트 후보 + "언젠가/여유 되면/이런 게 있으면 좋겠다" 류 아이디어 모두 한 통
 - 공개 미러: `~/daejong-page/parking-lot.md` (홈페이지 `parking-lot.html` 가 fetch)
 - 미리알림 앱엔 **기본적으로 추가하지 않음** (할일 아님)
 - 사용자가 명시적으로 "이거 이번 주에 시작할게" 같이 말하면 todos.md 의 `## 진행중` 섹션으로 promote (parking-lot.md 에서는 제거)
