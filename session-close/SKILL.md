@@ -1,6 +1,6 @@
 ---
 name: session-close
-description: 강대종님이 "세션 클리어/초기화/재시작 해도 돼?" 류 의문형으로 세션 끝낼지 물을 때, 이번 세션에서 답변으로 제안만 하고 안 한 후속안을 someday 후보로 추려 텔레그램 1통으로 던지고 OK 받으면 체크포인트 메모리 파일 1개 추가하고 닫음. v0.3 lean (2026-04-27, 토큰 1/5).
+description: 강대종님이 "세션 클리어/초기화/재시작 해도 돼?" 류 의문형으로 세션 끝낼지 물을 때, 이번 세션에서 답변으로 제안만 하고 안 한 후속안을 todos/parking-lot/drop 분류 후보로 추려 텔레그램 1통으로 던지고 OK 받으면 체크포인트 메모리 파일 1개 추가하고 닫음. v0.4 (2026-05-02 someday 폐지 반영).
 allowed-tools: Bash, Write, mcp__plugin_telegram_telegram__reply
 ---
 
@@ -40,19 +40,23 @@ esac
 
 진행 한 줄: <어디까지 갔는지>
 
-someday 후보:
+후속안:
 A. <한 줄>
 B. <한 줄>
 
-응답: "💤 A B" 추가 / "💤 X" 드롭 / "닫아" 끝
+응답: "💤 A B" 박음 / "💤 X" 드롭 / "닫아" 끝
 ```
 
 후보 0건이면 본문 한 줄 — "후속안 0건, 닫아도 OK."
 
 ## 3. 컨펌 처리
 
-- `💤 A B` → 선택 항목만 someday 트리거. Mac 이면 `someday` 스킬 직접 호출, WSL/iPhone 이면 텔레그램 reply 1통으로 Mac 운반체 송신 (Mac 세션이 받아 someday 처리)
-- `💤 X` / `닫아` / `OK` → someday skip
+- `💤 A B` → 선택 항목만 분류해 박음. **someday 폐지 (2026-05-02) 후 분기**:
+  - **사이드 프로젝트/콘텐츠 아이디어** → `parking-lot.md` (todo SKILL.md 의 parking-lot 흐름)
+  - **활성 작업/트리거 박힌 것** → `todos.md` `## 진행중` (`/todo` 스킬 호출)
+  - **인프라 후속·운영 튜닝/재발 시 재기소** → drop (todos.md `## 보류/취소`)
+  - 분류 모호하면 강대종에게 1줄 추가 컨펌
+- `💤 X` / `닫아` / `OK` → 후속안 skip
 - `잠깐만` → 발동 취소, 통상 응답 복귀
 
 ## 4. 체크포인트 저장 (선택)
@@ -69,7 +73,7 @@ type: project
 - 기기: 🍎/🪟/📱
 - 진행: <한 줄>
 - 다음 step: <한 줄> (이어가기일 때만)
-- 추가한 someday: <항목들 또는 없음>
+- 추가한 후속안: <todos/parking-lot/drop 분류로 <항목들> 또는 없음>
 ```
 
 MEMORY.md 인덱스에는 안 올림 (1회용). 5분 미만 짧은 세션이면 skip.
@@ -87,3 +91,4 @@ reply 1줄: `✅ 닫아도 OK. /clear 진행하셔도 됩니다.`
 - v0.1 (2026-04-27 18:05 KST): 초기 버전 (4-source cross-check + 다턴 컨펌)
 - v0.2 (2026-04-27 20:10 KST): host-aware MEMORY_DIR + METHOD A handoff + takeover 처리 추가 → 280줄로 비대해짐
 - v0.3 (2026-04-27 22:50 KST): 강대종님 "토큰 1/5 으로" 지시. git log 루프 / in_progress 스캔 / takeover 라이프사이클 / no-op 휴리스틱 모두 제거. host-aware path 만 유지. ~60줄
+- v0.4 (2026-05-02): someday 폐지 반영. "someday 후보" → "후속안 (todos/parking-lot/drop 분류)". someday 직접 호출 흐름 제거.
