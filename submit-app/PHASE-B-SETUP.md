@@ -152,7 +152,18 @@ npx playwright install chromium
 cat > /tmp/save-google-session.js <<'EOF'
 const { chromium } = require('playwright');
 (async () => {
-  const browser = await chromium.launch({ headless: false });
+  // stealth 4종 — Google OAuth 자동화 차단 우회. 4개 동시 적용 필수.
+  // 근거: ~/.claude/skills/issues/2026-05-02-google-oauth-playwright-stealth-bypass.md
+  // (channel: 'chrome' 만으로는 차단됨, 3차 시도에서 4종 동시 = 통과)
+  const browser = await chromium.launch({
+    headless: false,
+    channel: 'chrome',
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--disable-features=IsolateOrigins,site-per-process',
+    ],
+    ignoreDefaultArgs: ['--enable-automation'],
+  });
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   await page.goto('https://play.google.com/console');
