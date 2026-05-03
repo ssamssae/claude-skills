@@ -206,6 +206,8 @@ ssh mac-mini "fastlane supply --json_key ~/.claude/secrets/play-service-account.
 | 가드 | 트리거 | 스크립트 | 우회 대상 |
 |------|--------|----------|-----------|
 | W6 territory-verify | 자동 출시 직후 | `~/.claude/automations/scripts/asc-territory-verify.py --app-id <APP_ID>` | 174 territory record 누락 (2026-04-30 약먹자/더치페이 22분 unlist 사례) |
+
+<!-- territory ID 캐시: skills/submit-app/data/asc_territories.json (174개 ISO 3166-1 alpha-3) -->
 | W7 asc-resubmit | UNRESOLVED_ISSUES reject 수신 | `~/.claude/automations/scripts/asc-resubmit.py --app-id <APP_ID> --platform IOS` | reviewSubmission cancel→new sub→submit (2026-04-30 한줄일기 11:06 우회→13:29 승인) |
 | W8 asc-rc-reply | territory/availability reject 답글 | `~/.claude/automations/scripts/asc-rc-reply.py --review-submission-id <SUB_ID> --message-template territory_fix` | reviewer 답글 자동화 (2026-04-29 강대종 손 친 답글 원본) |
 
