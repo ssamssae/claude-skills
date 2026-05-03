@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "fetched_at": null,
+  "source": "ASC API GET /v1/territories (mac mainline only)",
+  "territories": [],
+  "unavailable": ["CHN"]
+}
