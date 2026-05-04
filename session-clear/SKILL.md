@@ -9,39 +9,47 @@
 
 ## 절차
 
-1. 텔레그램 reply 전송 (chat_id 538806975):
-   ```
-   🔄 [기기아이콘] [hostname] [HH:MM KST]
-   세션 클리어합니다
-   ```
+### 1. 후속안 추출 (대화 컨텍스트만)
 
-2. sleep 2 후 tmux send-keys:
-   ```bash
-   TMUX_BIN=/opt/homebrew/bin/tmux  # Mac
-   # WSL: /usr/bin/tmux
-   sleep 2 && $TMUX_BIN send-keys -t claude "/clear" Enter
-   ```
+이 세션 turn 들에서 제안만 하고 실행 안 한 후속안 식별. 패턴: "다음에 X 도 가능" · "나중에 ..." · "v0.X 에서 ..." · "옵션으로 ..." · "TODO: ...".
 
-## 실행 코드
+**외부 grep / git log / 메모리 스캔 없음.** 대화 기억만 사용. 후보 0개면 2번 스킵.
 
-```python
-import subprocess, time
+### 2. 자동 분류 + 저장 (후보 있을 때만)
 
-host = subprocess.check_output("hostname", shell=True).decode().strip()
-is_mac = "MacBook" in host or "MBP" in host or "mac" in host.lower()
-tmux = "/opt/homebrew/bin/tmux" if is_mac else "/usr/bin/tmux"
+- **활성 작업/마감/트리거 박힌 것** → `~/todo/todos.md` `## 진행중` 상단 추가
+- **사이드 프로젝트/언젠가/아이디어 류** → `~/todo/parking-lot.md` 끝에 추가 + `~/daejong-page/parking-lot.md` mirror
+- **일회성/인프라 후속** → drop (저장 X)
 
-# 텔레그램 reply는 스킬 실행 직전 Claude가 먼저 전송
-time.sleep(2)
-subprocess.run([tmux, "send-keys", "-t", "claude", "/clear", "Enter"])
+저장 후 `~/daejong-page` commit + push.
+
+### 3. 텔레그램 reply 전송
+
+```
+🔄 [기기아이콘] [hostname] [HH:MM KST]
+
+박힌 것:
+- todos → <항목> (있을 때만)
+- parking-lot → <항목> (있을 때만)
+- 후속안 없음 (0건일 때)
+
+(자동 /clear 진행합니다)
+```
+
+### 4. /clear 실행
+
+```bash
+TMUX_BIN=/opt/homebrew/bin/tmux  # Mac
+# WSL: /usr/bin/tmux
+sleep 2 && $TMUX_BIN send-keys -t claude "/clear" Enter
 ```
 
 ## 주의
 
 - tmux 'claude' 세션이 없으면 조용히 실패 (에러 없음)
-- `/clear` 가 전송되면 이 대화 컨텍스트가 초기화됨 — 진행 중인 작업 있으면 먼저 확인
-- parallel-cycle 끝에 session-close 가 자동 호출할 때와 동일한 메커니즘
+- `/clear` 가 전송되면 이 대화 컨텍스트가 초기화됨
 
 ## 버전
 
 - v0.1 (2026-05-04): 초기 버전 — session-close 의 /clear 부분만 독립 분리
+- v0.2 (2026-05-04): 후속안 박기 + 보고 추가 (session-close 흐름 일부 이식)
