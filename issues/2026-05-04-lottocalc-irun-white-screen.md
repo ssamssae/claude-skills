@@ -1,7 +1,7 @@
 ---
 date: 2026-05-04
 slug: lottocalc-irun-white-screen
-status: open
+status: resolved
 ---
 
 # lottocalc irun 흰화면 버그
@@ -30,9 +30,18 @@ status: open
 
 iOS 26 + Flutter 3.41.9 Metal 렌더링 호환 문제. flutter doctor에서 CocoaPods 미설치 경고도 있음.
 
-## 다음 시도
+## 해결 (2026-05-04)
 
-- `flutter doctor` 전체 출력 확인 및 CocoaPods 이슈 해결
-- Flutter stable 최신 채널 재확인
-- iOS 26 Flutter 이슈 트래커 검색
-- 다른 앱(hanjul 등)도 같은 증상인지 확인 → 기기 수준 문제인지 판별
+실제 원인: 이전 `flutter run` 프로세스가 mac-mini에 좀비로 남아 기기 포트를 점유 → 새 세션이 Dart VM attach 실패.
+
+해결 방법:
+```bash
+ssh mac-mini "pkill -f 'flutter run.*lottocalc'; pkill -f 'iproxy'"
+```
+이후 `flutter run --debug` 재실행 → Dart VM 연결 성공, 앱 정상 실행.
+
+**실제 흰화면 원인은 iOS 26 렌더링 문제가 아니라 좀비 프로세스 점유였음.**
+
+## 예방
+
+irun 재시도 시 먼저 mac-mini 에서 이전 flutter/iproxy 프로세스 kill 후 실행.
