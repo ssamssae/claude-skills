@@ -1,6 +1,6 @@
 # 머신 역할표 + 위험 작업 블랙리스트
 
-마지막 갱신: 2026-05-02 (KST) — 3060 두 대 호스트명 채움 + 클라이언트 only 명시
+마지막 갱신: 2026-05-04 (KST) — Mac mini 역할 갱신: OpenClaw 호스트 + 실기기 irun/arun 타겟 (GUI 있음)
 SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 
 ## 1. 역할표 (한 줄 요약)
@@ -10,7 +10,7 @@ SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 | 머신 | 호스트 | 역할 | 가동 | 봇 |
 |------|--------|------|------|----|
 | 🍎 **Mac 본진** | `USERui-MacBookPro` | 운전대 / 지휘관 / SoT / 최종 결정 | 사실상 24/7 (집 데스크톱화) | `@MyClaude` |
-| 🏭 **Mac mini** | `mac-mini` (M1, arm64) | 엔진 / 24/7 워커 / 빌드·서명·자동배포 | 진짜 24/7 | (워커, 챗봇 X) |
+| 🏭 **Mac mini** | `mac-mini` (M1, arm64) | OpenClaw 호스트 + 실기기 debug 타겟 (iPhone17 + Galaxy S24 USB) | 24/7, GUI 있음 | (챗봇 X) |
 | 🪟 **WSL** | `DESKTOP-*` | 낮 즉응 작업자 + Windows 게이트웨이 | 낮 ON / 밤 OFF | `@Myclaude2` |
 | 📱 **iPhone Termius** | (원격) | 외출용 원격 헤드 | 강대종님 동행 | — |
 | 🎨 **데스크탑 3060Ti** | `desktop-0vab3qc` | 온디맨드 GPU 연구소 (LLM/SD/Whisper 실험) · 클라이언트 only · 인바운드 0 | 필요 시만 | — |
@@ -37,26 +37,21 @@ SoT(Source of Truth): 이 파일 자체 — 흩어진 룰의 통합본
 - 야간 자동 작업 (Mac mini 가 함)
 - 무거운 빌드 반복 (Mac mini 가 함)
 
-### Mac mini (엔진)
+### Mac mini (OpenClaw 호스트 + 실기기 debug 타겟)
+
+> **2026-05-04 역할 갱신**: 빌드/배포 엔진 역할 폐기 (launchd 잡 전부 제거, 2026-05-03). 현재 = OpenClaw 샌드박스 호스트 + iPhone17/Galaxy S24 USB 연결 실기기 debug 타겟. GUI 있음.
 
 **한다:**
-- iOS ipa 빌드 + codesign (`/submit-app` iOS 분기, ssh 라우팅 수신)
-- Android aab 빌드 + 서명 + Play 배포 (2026-04-29 전담 결정)
-- **자동 신규 앱 등록** (`/create-play-app` raw playwright 호출 수신, 2026-04-30 정비)
-- **fastlane 자동 업로드** (App Store Connect / Play Publisher API)
-- night-runner v1 (read-only 점검, 03:00 KST launchd)
-- night-builder v2.0a (야간 자동 빌드)
-- mac-report.sh / wsl-directive.sh 운반체 받는 쪽
-- 키스토어 보관 (`~/apps/<app>/android/*-upload-keystore.jks`)
-- **API key/Service Account/세션쿠키 보관** (`~/.claude/secrets/`, 2026-04-30 추가)
-- raw Playwright + chromium (Mac mini 단독 자동화, MCP 의존 X)
+- **OpenClaw 샌드박스 호스트** (강대종 직접 운영)
+- **실기기 irun 타겟** (iPhone17 USB, device `00008150-0018459C2161401C`)
+- **실기기 arun 타겟** (Galaxy S24 USB, device `R3CX10GX1XR`)
+- mac-report.sh / wsl-directive.sh 운반체 받는 쪽 (SSH 수신)
 
 **안 한다:**
-- Claude Code 챗봇 세션 추가 (지휘관 1명 원칙)
+- Claude Code 챗봇 세션
+- iOS ipa / Android aab 릴리즈 빌드·배포 (launchd 잡 제거됨)
+- night-builder / night-runner (폐기됨, 2026-05-03)
 - 앱 방향/스코프 결정
-- 새 인프라 설계 판단
-- 메타데이터/스크린샷 입력 (사람 클릭 — 강대종님 본진)
-- 심사 제출 버튼 클릭 (사람 결정 — 강대종님 본진)
 
 ### WSL (낮 즉응 작업자)
 
