@@ -111,7 +111,12 @@ mac-report.sh 직후 바로 실행. 확인 없이 자동 진행:
 - parking-lot → <항목> (없으면 생략)
 - 후속안 없음 (0건일 때)
 
-/clear 진행하셔도 됩니다.
+(자동 /clear 진행합니다)
+```
+
+6. 텔레그램 전송 확인 후 자동 /clear:
+```bash
+sleep 2 && tmux send-keys -t claude "/clear" Enter
 ```
 
 ## 제약

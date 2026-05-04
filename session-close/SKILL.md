@@ -69,6 +69,14 @@ MEMORY.md 인덱스에는 안 올림 (1회용). 5분 미만 짧은 세션이면 
 
 ## 5. 종료
 
+텔레그램 reply 후 **2초 대기 → tmux send-keys로 자동 /clear**:
+
+```bash
+# 1. 텔레그램 reply (아래 형식)
+# 2. 전송 확인 후:
+sleep 2 && tmux send-keys -t claude "/clear" Enter
+```
+
 reply 형식:
 ```
 💤 세션 마무리 (HH:MM KST)
@@ -78,7 +86,7 @@ reply 형식:
 - parking-lot → <항목 한 줄> (있을 때만)
 - 후속안 없음 (0건일 때)
 
-/clear 진행하셔도 됩니다.
+(자동 /clear 진행합니다)
 ```
 
 ## 헷갈리지 말 것
