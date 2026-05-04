@@ -1,3 +1,8 @@
+---
+name: session-clear
+description: 텔레그램에서 현재 세션을 클리어. 트리거: "세션 클리어", "클리어 해줘", "세션 초기화", "세션 지워줘", "/session-clear". 후속안 저장 후 /clear 자동 실행.
+---
+
 # /session-clear — 텔레그램에서 현재 세션 클리어
 
 ## 용도
