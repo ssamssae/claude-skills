@@ -73,10 +73,11 @@ grep '^\- \[ \]' "$LATEST" | grep -v 'HOLD\|강대종 직접\|실기기\|USB 연
 
 ## 완료 보고 (필수)
 
-모든 작업 완료 후 mac-report.sh 반드시 호출:
+모든 작업 완료 후 순서대로:
+
+### 1. mac-report.sh 호출
 
 ```bash
-# 보고서 파일 생성
 cat > /tmp/parallel-cycle-wsl-done.md << 'EOF'
 [PARALLEL-CYCLE-WSL-DONE]
 
@@ -89,10 +90,34 @@ EOF
 ~/.claude/automations/scripts/mac-report.sh /tmp/parallel-cycle-wsl-done.md "WSL 3개 완료"
 ```
 
+### 2. WSL session-close (자동)
+
+mac-report.sh 직후 바로 실행. 확인 없이 자동 진행:
+
+1. 이번 WSL 작업에서 나온 후속안 식별 (대화 컨텍스트만)
+2. daejong-page 최신화: `cd ~/daejong-page && git pull --ff-only`
+3. 후속안 자동 분류·저장:
+   - 활성 작업/트리거 → `todos.md` `## 진행중` 상단에 추가 (🪟 prefix)
+   - 사이드 아이디어/언젠가 → `parking-lot.md` 끝에 추가
+   - 일회성/인프라 튜닝 → drop (저장 X)
+4. 변경 있으면: `git add -p && git commit -m "chore: WSL session-close 후속안" && git push`
+5. 텔레그램 1통:
+
+```
+🪟 [hostname] [HH:MM KST] 세션 마무리
+
+박힌 것:
+- todos → <항목> (없으면 생략)
+- parking-lot → <항목> (없으면 생략)
+- 후속안 없음 (0건일 때)
+
+/clear 진행하셔도 됩니다.
+```
+
 ## 제약
 
 - wsl/* 브랜치 사용, main 직접 push 금지
-- store/* 수정 금지
+- store/* 수정 금지 (daejong-page todos/parking-lot 제외)
 - 작업 시작/종료 텔레그램 보고
 ```
 
@@ -152,3 +177,4 @@ session-close 진행합니다.
 
 v0.1 (2026-05-04): 초기 버전
 v0.2 (2026-05-04): 0단계 자동화 — todos 자동 선택, 확인 제거, 시작 알림만 후 즉시 진행
+v0.3 (2026-05-04): WSL session-close 추가 — mac-report.sh 직후 WSL도 자동 분류·저장·"클리어해도 됩니다"
