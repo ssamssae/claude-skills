@@ -1,22 +1,21 @@
 ---
 name: todo
-description: 할일(todo)과 사이드 프로젝트를 ~/todo/todos.md 에 기록하고 미리알림 앱 "Claude" 목록과 연동한다. 사용자가 "할일", "해야할거", "미리알림", "todo", "할거", "사이드프로젝트" 등을 이야기하면 이 스킬의 규칙대로 처리한다.
+description: 할일(todo)과 사이드 프로젝트를 ~/todo/todos.md 에 기록한다. 사용자가 "할일", "해야할거", "todo", "할거", "사이드프로젝트" 등을 이야기하면 이 스킬의 규칙대로 처리한다.
 allowed-tools: Bash, Write, Edit, Read
 ---
 
-# 할일 관리 & 미리알림 연동
+# 할일 관리
 
 ## 데이터 소스
 
 - **파일**: `~/todo/todos.md` (진행중/완료/보류 3개 섹션). 사이드 프로젝트 + 언젠가 아이디어는 2026-05-01 부터 별도 SoT `~/todo/parking-lot.md` 로 분리 (2026-05-02 someday.md 폐지 후 「언젠가」 컨셉도 parking-lot 으로 통합).
 - **버전 관리**: `~/todo/` 가 git 저장소. 모든 수정은 커밋으로 남겨 이력 추적.
-- **미리알림 앱**: macOS Reminders 의 `"Claude"` 목록과 연동 (AppleScript 경유)
 
 ## 호출 시 항상 먼저 할 일
 
 ### 0. 기기 라우팅 (맥 본진 집중 실행)
 
-/todo 는 `~/todo/todos.md` (Mac 로컬) + macOS Reminders AppleScript + `/Users/user/daejong-page/...` 하드코딩 경로를 쓰므로 **맥 전용**.  맥 아닌 기기(WSL/iPhone)에서 호출되면 아래 규칙 적용:
+/todo 는 `~/todo/todos.md` (Mac 로컬) + `/Users/user/daejong-page/...` 하드코딩 경로를 쓰므로 **맥 전용**.  맥 아닌 기기(WSL/iPhone)에서 호출되면 아래 규칙 적용:
 
 1. **조회 (read-only)** — `~/daejong-page/todos/YYYY-MM-DD.md` 스냅샷이 git 으로 동기화돼 있음. WSL 에서도 Read 해서 응답 가능. 마감일/오늘 진행중 조회까지는 여기서 끝.
 2. **쓰기 (추가/완료/취소/이동/수정)** — 맥에서만 가능. 텔레그램 reply 로 chat_id 538806975 에 아래 본문 전송하고 종료 (사용자 발화 운반체 — globals 운반체 예외 적용):
@@ -146,31 +145,13 @@ fi
 사용자: "오늘 더치페이 아이콘 앱스토어 업로드"
 1. todos.md 진행중 섹션에 한 줄 추가:
    `- [ ] 더치페이 아이콘 앱스토어 업로드  (추가: YYYY-MM-DD, 마감: YYYY-MM-DD 또는 없음)`
-2. 미리알림 앱에 같은 이름으로 reminder 생성:
-   ```
-   osascript -e 'tell application "Reminders"
-       tell list "Claude"
-           make new reminder with properties {name:"<제목>"}
-       end tell
-   end tell'
-   ```
-   (마감일 있으면 `due date:date "..."` 도 추가)
-3. git add + commit: `todo: 추가 - <제목>` + 가능하면 push (원격 있을 때)
+2. git add + commit: `todo: 추가 - <제목>` + 가능하면 push (원격 있을 때)
 
 ### 완료 (done)
 사용자: "더치페이 아이콘 완료"
 1. todos.md 진행중 섹션에서 해당 항목 찾기
 2. 완료 섹션으로 이동하며 `(완료: YYYY-MM-DD)` 추가
-3. 미리알림 앱에서 완료 체크:
-   ```
-   osascript -e 'tell application "Reminders"
-       tell list "Claude"
-           set r to first reminder whose name is "<제목>"
-           set completed of r to true
-       end tell
-   end tell'
-   ```
-4. git commit: `todo: 완료 - <제목>`
+3. git commit: `todo: 완료 - <제목>`
 
 ### 삭제 (delete / cancel / archive)
 사용자: "그거 취소해" / "필요없어졌어" / "지우자" / "빼자" / "삭제" / "TODO 에서 빼" / "정리해"
@@ -180,16 +161,7 @@ fi
 1. todos.md 의 해당 항목을 보류/취소 섹션으로 이동:
    - 형식: `- [-] ~~<제목>~~ (취소: YYYY-MM-DD) — <사유>`
    - 사유: 사용자가 말한 이유를 한 줄로. 사용자가 "머리속에 있음"·"외움"·"사유 생략" 같이 말해 사유 기록을 거부하면 → `(사유 비공개, 강대종님 메모)` 로 표기 (라인 자체는 유지).
-2. 미리알림 앱에서 해당 reminder 삭제:
-   ```
-   osascript -e 'tell application "Reminders"
-       tell list "Claude"
-           set r to first reminder whose name is "<제목>"
-           delete r
-       end tell
-   end tell'
-   ```
-3. git commit: `todo: 취소 - <제목>`
+2. git commit: `todo: 취소 - <제목>`
 
 ### 조회 (list)
 사용자: "오늘 할일 뭐야" / "할일 불러와" / "사이드프로젝트 뭐 있지"
@@ -214,13 +186,12 @@ fi
 4. 텔레그램 세션이면 reply 로 전송
 
 ### 수정
-- 제목 변경·마감일 변경 등은 todos.md 해당 라인 Edit + 미리알림 앱에서도 해당 항목 update
+- 제목 변경·마감일 변경 등은 todos.md 해당 라인 Edit
 
 ### 사이드 프로젝트 + 언젠가 아이디어 (Parking Lot, 2026-05-01 분리 + 2026-05-02 someday 통합)
 - SoT 는 **`~/todo/parking-lot.md` 의 `## 모아둠` 섹션** (todos.md 가 아님)
 - 포함 범위: 사이드 프로젝트 후보 + "언젠가/여유 되면/이런 게 있으면 좋겠다" 류 아이디어 모두 한 통
 - 공개 미러: `~/daejong-page/parking-lot.md` (홈페이지 `parking-lot.html` 가 fetch)
-- 미리알림 앱엔 **기본적으로 추가하지 않음** (할일 아님)
 - 사용자가 명시적으로 "이거 이번 주에 시작할게" 같이 말하면 todos.md 의 `## 진행중` 섹션으로 promote (parking-lot.md 에서는 제거)
 - 모든 수정은 `~/todo/` 와 `~/daejong-page/` 둘 다 commit + push
 
@@ -230,12 +201,6 @@ fi
 1. todos.md 진행중 섹션에서 부분 일치 검색
 2. 후보가 1개면 바로 진행
 3. 후보가 여러 개면 어느 것인지 한 줄로 확인 요청
-
-## AppleScript 안전 수칙
-
-- 제목에 큰따옴표(`"`), 백슬래시(`\`), 작은따옴표가 포함되면 쉘에서 깨질 수 있으므로 heredoc 또는 임시 파일로 넘기기
-- 한글은 UTF-8 로 그대로 가능
-- 실패 시(권한 거부 등) todos.md 업데이트는 진행하되 사용자에게 미리알림 동기화 실패를 한 줄로 보고
 
 ## git 커밋 메시지 규칙
 
