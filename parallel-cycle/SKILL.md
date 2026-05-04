@@ -17,26 +17,28 @@ hostname  # USERui-MacBookPro* 이면 OK
 ## 0단계: 작업 자동 선택
 
 **args 있으면** 파싱:
-- `"N개씩"` 또는 `"N개"` 형태 → Mac N개 + WSL N개 목표 (todos에서 자동 선택, 단 N개 미만이면 있는 만큼)
+- `"N개씩"` 또는 `"N개"` 형태 → Mac N개 + WSL N개 목표 (todos + parking-lot 양쪽에서 자동 선택, 단 N개 미만이면 있는 만큼)
 - 구체적 작업명 나열 → Mac / WSL 배분 명시 시 그대로, 아니면 순서대로 전반부 Mac / 후반부 WSL
 - args 없으면 기본 Mac 3 + WSL 3
 
-**todos 자동 선택 시:**
+**todos + parking-lot 자동 선택 시:**
 
 ```bash
 # 최신 todos 파일 읽기
 TODOS_DIR="$HOME/daejong-page/todos"
 LATEST=$(ls "$TODOS_DIR"/*.md 2>/dev/null | sort | tail -1)
-# [ ] 항목 중 실행 불가 항목 제외
-grep '^\- \[ \]' "$LATEST" | grep -v 'HOLD\|강대종 직접\|실기기\|USB 연결\|손으로\|계약 만료\|사업자번호'
+PARKING="$HOME/daejong-page/todos/parking-lot.md"
+EXCLUDE='HOLD\|강대종 직접\|실기기\|USB 연결\|손으로\|계약 만료\|사업자번호'
+# 두 소스 병합 후 제외 필터
+{ grep '^\- \[ \]' "$LATEST"; grep '^\- \[ \]' "$PARKING" 2>/dev/null; } | grep -v "$EXCLUDE"
 ```
 
 선택 기준:
+- todos + parking-lot **양쪽** 동시에 후보 발굴 (어느 한 쪽이 부족해도 다른 쪽으로 채움)
 - `[ ]` 미완료 항목만
 - HOLD / 강대종 직접 / 실기기 연결 / 사용자 물리 액션 / 외부 차단(계약 만료 등) 제외
 - 🍎 prefix → Mac 우선, 🪟 prefix → WSL 우선, 🤝 → 부하 적은 쪽
 - Mac: Playwright·ASC·GitHub 관련 / WSL: 코드·분석·디자인·문서 관련
-- parking-lot.md 에서도 추가 발굴 가능 (todos 항목이 부족할 때)
 - 목표 N개 미만이면 있는 만큼만 진행 (고정 개수 불필요)
 
 ## 1단계: 시작 알림 (확인 없음)
@@ -185,3 +187,4 @@ v0.1 (2026-05-04): 초기 버전
 v0.2 (2026-05-04): 0단계 자동화 — todos 자동 선택, 확인 제거, 시작 알림만 후 즉시 진행
 v0.3 (2026-05-04): WSL session-close 추가 — mac-report.sh 직후 WSL도 자동 분류·저장·"클리어해도 됩니다"
 v0.4 (2026-05-04): N개 유연 지원 — 3+3 고정 → M+W 가변. "N개씩" args 파싱, todos+parking-lot 발굴, 템플릿 M/W 변수화
+v0.5 (2026-05-04): 자동 선택 소스 todos 단독 → todos + parking-lot 동시 병합. 어느 쪽이든 부족하면 다른 쪽으로 채움
