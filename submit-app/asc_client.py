@@ -2,9 +2,9 @@
 """Shared ASC REST API client — JWT auth + HTTP send().
 
 Used by asc-territory-verify.py, asc-resubmit.py, asc-rc-reply.py.
-Credentials: ~/.claude/secrets/asc-api-key.json + AuthKey_<KEY_ID>.p8
+Credentials: env vars (ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_P8_PATH)
+             or ~/.claude/secrets/asc-api-key.json (fallback).
 """
-import json
 import sys
 import time
 from pathlib import Path
@@ -12,24 +12,17 @@ from pathlib import Path
 import jwt
 import requests
 
+from asc_credentials import load_credentials
+
 ASC_BASE = "https://api.appstoreconnect.apple.com"
-_SECRETS = Path.home() / ".claude" / "secrets"
-_CREDS_FILE = _SECRETS / "asc-api-key.json"
 
 
 def make_jwt() -> str:
     """Generate short-lived (20 min) ASC JWT."""
-    if not _CREDS_FILE.exists():
-        raise FileNotFoundError(
-            f"ASC 자격증명 없음: {_CREDS_FILE}\n"
-            "asc-api-key.json 형식: {\"key_id\": \"...\", \"issuer_id\": \"...\", \"key_path\": \"...\"}"
-        )
-    cfg = json.loads(_CREDS_FILE.read_text())
-    key_id = cfg["key_id"]
-    issuer_id = cfg["issuer_id"]
-    p8_path = Path(cfg.get("key_path", str(_SECRETS / f"AuthKey_{key_id}.p8")))
-    if not p8_path.exists():
-        raise FileNotFoundError(f"ASC p8 키 없음: {p8_path}")
+    creds = load_credentials()
+    key_id = creds.key_id
+    issuer_id = creds.issuer_id
+    p8_path = creds.p8_path
     p8 = p8_path.read_text()
     now = int(time.time())
     return jwt.encode(
