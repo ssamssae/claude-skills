@@ -12,8 +12,16 @@
 
 set -euo pipefail
 
-# Python 3.13 framework bin (pip3 install mitmproxy 경로)
-export PATH="/Library/Frameworks/Python.framework/Versions/3.13/bin:${PATH}"
+# mitmproxy 경로 — brew(M1/Intel Mac) 또는 pip3 Python 3.13 framework
+for _p in \
+    /opt/homebrew/bin \
+    /usr/local/bin \
+    "/Library/Frameworks/Python.framework/Versions/3.13/bin" \
+    "$HOME/Library/Python/3.13/bin" \
+    "$HOME/Library/Python/3.12/bin"; do
+  [[ -x "${_p}/mitmproxy" ]] && export PATH="${_p}:${PATH}" && break
+done
+unset _p
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CAPTURE_DIR="${SCRIPT_DIR}/captures"
@@ -22,7 +30,12 @@ ADDON_REPLAY="${SCRIPT_DIR}/addon_replay.py"
 DATE=$(date +%Y-%m-%d)
 CAPTURE_FILE="${CAPTURE_DIR}/korail-capture-${DATE}.har"
 
-PROXY_HOST="$(hostname -I | awk '{print $1}')"
+# macOS / Linux 호환 로컬 IP 검출
+if [[ "$(uname)" == "Darwin" ]]; then
+  PROXY_HOST="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "127.0.0.1")"
+else
+  PROXY_HOST="$(hostname -I | awk '{print $1}')"
+fi
 PROXY_PORT=8080
 
 # ── 의존성 확인 ──────────────────────────────────────────────
