@@ -1,0 +1,10 @@
+{
+  "_comment": "캡처 후 재전송할 예약 타깃 정보. addon_replay.py --book 모드에서 사용.",
+  "departure": "서울",
+  "arrival": "진영",
+  "date": "20260523",
+  "time": "090000",
+  "train_type": "KTX",
+  "seat_type": "일반실",
+  "passengers": 1
+}
