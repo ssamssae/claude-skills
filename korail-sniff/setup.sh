@@ -12,6 +12,9 @@
 
 set -euo pipefail
 
+# Python 3.13 framework bin (pip3 install mitmproxy 경로)
+export PATH="/Library/Frameworks/Python.framework/Versions/3.13/bin:${PATH}"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CAPTURE_DIR="${SCRIPT_DIR}/captures"
 ADDON_FILTER="${SCRIPT_DIR}/addon_filter.py"
