@@ -150,3 +150,5 @@ mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 
 - `~/.claude/AGENT.md` — 상세 규칙 (제품/슬래시/할일 자동화/멀티기기/가드레일)
 - `~/.claude/projects/-Users-user/memory/MEMORY.md` — 자동 메모리 인덱스
 - `~/.claude/skills/` — 개별 스킬 상세. **모든 챗봇 환경(Mac 본진/WSL)에서 `~/claude-skills` repo 의 symlink** (2026-05-02 통일). SoT = `~/claude-skills` repo. Mac mini 는 부재 (워커, 챗봇 X).
+
+@RTK.md
