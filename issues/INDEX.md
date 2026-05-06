@@ -1,10 +1,13 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-05-02 21:01 KST_
+_마지막 생성: 2026-05-06 21:11 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-06 | [hanjul-openai-org-member-removed](2026-05-06-hanjul-openai-org-member-removed.md) | 한줄일기 AI 응원 기능 중단 — OpenAI Organization 멤버 remove로 API 키 접근 차단 | high (유료 앱 핵심 기능 전체 중단) | medium | — | — |
+| 2026-05-05 | [session-clear-triggered-goodnight](2026-05-05-session-clear-triggered-goodnight.md) | "세션클리어하자" → /goodnight 잘못 발화 사고 | ? | ? | — | — |
+| 2026-05-04 | [lottocalc-irun-white-screen](2026-05-04-lottocalc-irun-white-screen.md) | lottocalc irun 흰화면 버그 | ? | ? | — | — |
 | 2026-05-02 | [policy-race-mac-wsl](2026-05-02-policy-race-mac-wsl.md) | 본진·WSL 가 globals/CLAUDE.md 를 stale-on-stale 로 동시 수정 — 「지휘관 1명 원칙」 폐기 사이클의 race | medium (정책 파일 → 잘못 통합되면 두 작업자 행동 룰 자체가 깨짐) | medium (정책 갱신 사이클 또는 같은 파일 동시 작업 발생 시 동일 패턴) | — | — |
 | 2026-05-02 | [playwright-mcp-cwd-output-dir](2026-05-02-playwright-mcp-cwd-output-dir.md) | Playwright MCP server cwd 가 `/` 일 때 `/.playwright-mcp` mkdir ENOENT | medium (Playwright MCP 도구 호출 100% 실패 → Substack republish · Play Console 자동화 등 차단) | high (plugin update / cache 재생성 시 .mcp.json 원복되면서 재현) | — | — |
 | 2026-05-02 | [google-oauth-playwright-stealth-bypass](2026-05-02-google-oauth-playwright-stealth-bypass.md) | Playwright 로 띄운 Chrome 에서 Google OAuth 로그인 차단 — stealth args 3종 우회 성공 | medium (`/create-play-app` 자동화 + Play Console 신규 등록 자동화 전체가 차단되는 함정) | high (Google 자동화 차단 정책 상시 강화 추세, 규칙 변경 시 또 깨질 수 있음) | — | — |
