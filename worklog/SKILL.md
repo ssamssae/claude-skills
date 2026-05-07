@@ -101,6 +101,26 @@ fi
   ```
 - git 저장소가 아닌 폴더는 건너뜀(오류 무시)
 
+### 3b. 맥미니 Obsidian 작업일지 수집 (소프트 페일)
+
+맥미니 `~/Documents/openclaw_macmini/Worklog/` 에 날짜별 옵시디언 작업일지가 쌓인다. TARGET_DATE 에 해당하는 파일을 SSH 로 읽어 내용을 병합한다.
+
+```bash
+# TARGET_DATE 형식: YYYY-MM-DD
+OBS_FILES=$(ssh -o ConnectTimeout=5 mac-mini \
+  "ls ~/Documents/openclaw_macmini/Worklog/${TARGET_DATE}*.md 2>/dev/null" 2>/dev/null)
+
+if [[ -n "$OBS_FILES" ]]; then
+  for f in $OBS_FILES; do
+    ssh mac-mini "cat '$f'" 2>/dev/null
+  done
+fi
+```
+
+- SSH 실패 / 파일 없음 → **소프트 페일**: 에러 없이 건너뜀. 나머지 수집은 계속.
+- 파일이 있으면 내용을 그대로 읽어 5단계(요약) 입력에 포함. 맥미니 Obsidian 일지에만 있는 활동(OpenClaw·Codex 관련 맥미니 작업 등)이 worklog 에 반영된다.
+- **중복 제거**: 같은 사건이 git 커밋 + Obsidian 양쪽에 기록된 경우 한 번만 서술.
+
 ### 4. 사용자가 수동 보강한 내용 병합
 
 - 현재 대화 컨텍스트에서 사용자가 "오늘 OO도 했어", "어제 웹에서 OO 했어" 같은 내용을 얘기했으면 포함
