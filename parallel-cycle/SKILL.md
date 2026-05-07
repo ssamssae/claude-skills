@@ -1,6 +1,6 @@
 ---
 name: parallel-cycle
-description: Mac N개 + WSL N개 작업을 병렬로 나눠 실행하고, 둘 다 끝나면 session-close 자동 호출. 트리거 "/parallel-cycle", "병렬 사이클", "N개씩", "N개 나눠서 해줘", "작업 나눠서 병렬로", "사이클 돌려줘".
+description: Mac M개 + WSL W개 + 맥미니 P개 작업을 병렬로 나눠 실행하고, 모두 끝나면 session-close 자동 호출. 트리거 "/parallel-cycle", "병렬 사이클", "N개씩", "N개 나눠서 해줘", "작업 나눠서 병렬로", "사이클 돌려줘".
 allowed-tools: Bash, Write, mcp__plugin_telegram_telegram__reply
 ---
 
@@ -37,8 +37,8 @@ EXCLUDE='HOLD\|강대종 직접\|실기기\|USB 연결\|손으로\|계약 만료
 - todos + parking-lot **양쪽** 동시에 후보 발굴 (어느 한 쪽이 부족해도 다른 쪽으로 채움)
 - `[ ]` 미완료 항목만
 - HOLD / 강대종 직접 / 실기기 연결 / 사용자 물리 액션 / 외부 차단(계약 만료 등) 제외
-- 🍎 prefix → Mac 우선, 🪟 prefix → WSL 우선, 🤝 → 부하 적은 쪽
-- Mac: Playwright·ASC·GitHub 관련 / WSL: 코드·분석·디자인·문서 관련
+- 🍎 prefix → Mac 우선, 🪟 prefix → WSL 우선, 🏭 prefix → 맥미니 우선, 🤝 → 부하 적은 쪽
+- Mac: Playwright·ASC·GitHub 관련 / WSL: 코드·분석·디자인·문서 관련 / 맥미니: iOS·Android 빌드·배포·OpenClaw 관련
 - 목표 N개 미만이면 있는 만큼만 진행 (고정 개수 불필요)
 
 ## 1단계: 시작 알림 (확인 없음)
@@ -46,7 +46,7 @@ EXCLUDE='HOLD\|강대종 직접\|실기기\|USB 연결\|손으로\|계약 만료
 텔레그램 1통 보내고 **즉시 2단계 진행** (OK 기다리지 않음):
 
 ```
-🔀 병렬 사이클 시작 (HH:MM KST) — Mac M개 + WSL W개
+🔀 병렬 사이클 시작 (HH:MM KST) — Mac M개 + WSL W개 + 맥미니 P개
 
 🍎 Mac:
 1. <Mac 작업1>
@@ -56,10 +56,16 @@ EXCLUDE='HOLD\|강대종 직접\|실기기\|USB 연결\|손으로\|계약 만료
 N+1. <WSL 작업1>
 ...
 
+🏭 맥미니 (SSH 실행):
+N+W+1. <맥미니 작업1>
+...
+
 (멈추려면 "멈춰")
 ```
 
-## 2단계: WSL 디렉티브 생성 + 발송
+맥미니 작업 0개이면 해당 섹션 생략.
+
+## 2단계: WSL 디렉티브 생성 + 발송 / 맥미니 작업 준비
 
 `/tmp/parallel-cycle-wsl-directive.md` 생성 (작업 수 W개로 가변):
 
@@ -131,9 +137,35 @@ sleep 2 && tmux send-keys -t claude "/clear" Enter
 
 wsl-directive.sh -f /tmp/parallel-cycle-wsl-directive.md 호출.
 
-## 3단계: Mac 작업 실행
+맥미니 작업(P개)이 있으면 `/tmp/parallel-cycle-macmini-tasks.md` 에 작업 목록을 기록해 둔다 (3단계에서 SSH로 실행).
 
-WSL 디렉티브 발송 직후, Mac 작업 1→2→...→M 순서 실행.
+```bash
+# P > 0 인 경우만 생성
+cat > /tmp/parallel-cycle-macmini-tasks.md << 'EOF'
+맥미니 작업:
+1. <맥미니 작업1>
+... (P개)
+EOF
+```
+
+## 3단계: Mac 작업 실행 + 맥미니 SSH 실행
+
+WSL 디렉티브 발송 직후, Mac 작업과 맥미니 SSH 작업을 순서대로 실행.
+
+**맥미니 작업(P개)이 있으면** SSH로 먼저 실행:
+
+```bash
+# 각 맥미니 작업을 ssh mac-mini "..." 로 실행
+# 작업 완료마다 하트비트: 💓 맥미니 N/P 완료: <작업명>
+# SSH 실패 시 텔레그램 에러 알림 + Mac 작업으로 계속
+```
+
+SSH 실행 원칙:
+- 맥미니 챗봇 세션 없음 → Mac이 `ssh mac-mini "<명령>"` 으로 직접 실행
+- 맥미니 GitHub: SSH 인증 ✅ (HTTPS remote + osxkeychain). git pull/push 가능
+- 빌드 결과물(ipa/aab)은 작업 특성에 따라 SCP로 가져오거나 맥미니 로컬 보관
+
+**Mac 작업** 1→2→...→M 순서 실행.
 
 각 작업 완료마다 하트비트: `💓 Mac N/M 완료: <작업명>`
 
@@ -144,9 +176,11 @@ echo '{"mac_done": true, "ts": "'$(date +%s)'"}' > /tmp/parallel-cycle-state.jso
 
 텔레그램:
 ```
-🍎 Mac M개 완료. WSL 대기 중...
+🍎 Mac M개 완료. 🏭 맥미니 P개 완료. WSL 대기 중...
 WSL 완료되면 자동으로 session-close 진행합니다.
 ```
+
+맥미니 작업 0개이면 `맥미니 0개` 줄 생략.
 
 ## 4단계: WSL 완료 감지 (새 턴에서)
 
@@ -169,6 +203,7 @@ rm -f /tmp/parallel-cycle-state.json /tmp/parallel-cycle-wsl-directive.md /tmp/p
 
 🍎 Mac: 작업1 / 작업2 / ... 완료 (M개)
 🪟 WSL: 작업N+1 / 작업N+2 / ... 완료 (W개)
+🏭 맥미니: 작업X / 작업Y / ... 완료 (P개)   ← P=0이면 생략
 
 session-close 진행합니다.
 ```
@@ -180,6 +215,7 @@ session-close 진행합니다.
 - WSL 디렉티브 발송 실패 → 텔레그램 에러 알림, Mac 작업만 계속
 - Mac 작업 중 하나 실패 → 텔레그램 에러 알림, 계속 vs 중단 확인
 - WSL 30분 이상 무응답 → 텔레그램: "WSL 응답 없음, 수동 확인해주세요"
+- 맥미니 SSH 실패 → 텔레그램 에러 알림 + 해당 작업 skip, 나머지 계속
 
 ---
 
@@ -188,3 +224,4 @@ v0.2 (2026-05-04): 0단계 자동화 — todos 자동 선택, 확인 제거, 시
 v0.3 (2026-05-04): WSL session-close 추가 — mac-report.sh 직후 WSL도 자동 분류·저장·"클리어해도 됩니다"
 v0.4 (2026-05-04): N개 유연 지원 — 3+3 고정 → M+W 가변. "N개씩" args 파싱, todos+parking-lot 발굴, 템플릿 M/W 변수화
 v0.5 (2026-05-04): 자동 선택 소스 todos 단독 → todos + parking-lot 동시 병합. 어느 쪽이든 부족하면 다른 쪽으로 채움
+v0.6 (2026-05-08): 맥미니 세 번째 참여자 추가 — 🏭 prefix 라우팅, SSH 직접 실행(챗봇 세션 없음), 0/1/3/5단계 반영
