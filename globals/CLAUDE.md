@@ -145,6 +145,16 @@ mac-report.sh 가 닿지 않을 때(SSH 다운, 본진 tmux 부재) → 1차는 
 
 역할 어긋나면 "이거 OO 쪽이 더 적합한 것 같은데, 옮길까요?" 제안. 상세 역할표는 `~/.claude/skills/MACHINE_ROLES.md` (SoT = `~/claude-skills/MACHINE_ROLES.md`, 양 기기 symlink 으로 sync — 2026-05-02 lock).
 
+## 에이전트 간 메시지 포맷 (2026-05-07)
+
+기기끼리 텔레그램으로 메시지 보낼 때 **수신자 채팅방**에 이 형식으로 보낸다:
+
+`[발신이모지→수신이모지] [타입] 내용`
+
+- 기기 이모지: 🍎=맥북 / 🪟=WSL / 🏭=맥미니
+- 타입 4종: `[명령]` `[결과]` `[알림]` `[상태]`
+- 스크립트: `~/.claude/automations/scripts/agent-msg-notify.sh <from> <to> <type> <summary>`
+
 ## Reference
 
 - `~/.claude/AGENT.md` — 상세 규칙 (제품/슬래시/할일 자동화/멀티기기/가드레일)
