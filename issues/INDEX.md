@@ -1,10 +1,11 @@
 # Issues Index
 
 _자동 생성됨. 이 파일은 수동 편집 금지 — `python3 ~/.claude/skills/issue/tools/regen_index.py` 로만 갱신._
-_마지막 생성: 2026-05-08 00:55 KST_
+_마지막 생성: 2026-05-08 01:41 KST_
 
 | 날짜 | slug | 제목 | 심각도 | 재발 가능성 | 재발 이력 | 예방 deferred |
 | --- | --- | --- | --- | --- | --- | --- |
+| 2026-05-08 | [mac-report-fake-result-notify](2026-05-08-mac-report-fake-result-notify.md) | mac-report.sh 래퍼가 자동으로 가짜 [결과] 알림 생성 | medium | low | — | — |
 | 2026-05-08 | [codex-session-relay-telegram-mirror](2026-05-08-codex-session-relay-telegram-mirror.md) | codex-session-relay가 Codex 응답을 본진 채팅에 중복 미러링 | medium | low | — | — |
 | 2026-05-06 | [hanjul-openai-org-member-removed](2026-05-06-hanjul-openai-org-member-removed.md) | 한줄일기 AI 응원 기능 중단 — OpenAI Organization 멤버 remove로 API 키 접근 차단 | high (유료 앱 핵심 기능 전체 중단) | medium | — | — |
 | 2026-05-05 | [session-clear-triggered-goodnight](2026-05-05-session-clear-triggered-goodnight.md) | "세션클리어하자" → /goodnight 잘못 발화 사고 | ? | ? | — | — |
